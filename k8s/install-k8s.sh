@@ -1,3 +1,10 @@
+#!/bin/sh
+
+# Start k8s cluster
+
+set -e
+set -x
+
 # FIXME: 192.168.0.0/16 causes problems with Travis(?)
 export POD_NETWORK_CIDR="10.244.0.0/16"
 
