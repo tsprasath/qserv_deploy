@@ -50,7 +50,7 @@ RUN mkdir ~/.zsh && kubectl completion bash > ~/.zsh/kubectl.completion
 WORKDIR /root
 COPY admin/ admin/
 COPY dot-bashrc .bashrc
-ENV KUBECONFIG $HOME/.lsst/qserv-cluster/kubeconfig
+ENV KUBECONFIG /root/.lsst/qserv-cluster/kubeconfig
 
 # Expose kubernetes dashboard
 EXPOSE 8001
