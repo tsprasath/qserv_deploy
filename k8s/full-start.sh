@@ -24,7 +24,7 @@ set -x
 # Get the options
 while getopts hO c ; do
     case $c in
-        C) OPENSTACK=true ;;
+        O) OPENSTACK=true ;;
         h) usage ; exit 0 ;;
         \?) usage ; exit 2 ;;
     esac
