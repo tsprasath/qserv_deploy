@@ -4,7 +4,7 @@ language: minimal
 
 env:
   global:
-    - KUBECTL_VERSION=1.6.3
+    - KUBECTL_VERSION=1.9.0
     - KUBECONFIG=$HOME/.lsst/qserv-cluster/kubeconfig
     - TAG=testing
 
