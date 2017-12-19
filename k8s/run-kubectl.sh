@@ -19,8 +19,9 @@ elif [ -x "$CLUSTER_CONFIG_DIR_DEFAULT_2" ]; then
     CLUSTER_CONFIG_DIR="$CLUSTER_CONFIG_DIR_DEFAULT_2"
 fi
 echo $CLUSTER_CONFIG_DIR
-     
-TAG="${TAG:-latest}"
+
+# Load VERSION variable (i.e. version of qserv/qserv and qserv/kubectl to use)
+. "$CLUSTER_CONFIG_DIR"/env.sh
 
 usage() {
     cat << EOD
@@ -78,9 +79,9 @@ fi
 # Launch container
 #
 # Use host network to easily publish k8s dashboard
-IMAGE=qserv/kubectl:$TAG
+IMAGE="qserv/kubectl:$VERSION"
 docker pull "$IMAGE"
 docker run $BASH_OPTS --net=host \
     --rm \
-    --volume "$CLUSTER_CONFIG_DIR":/root/.kube/ \
+    --volume "$CLUSTER_CONFIG_DIR":/root/.lsst/qserv-cluster/ \
     "$IMAGE" $CMD

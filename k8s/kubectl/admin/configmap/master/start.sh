@@ -67,10 +67,6 @@ echo "USER:CHANGEME" > $QSERV_RUN_DIR/etc/wmgr.secret
 
 $QSERV_RUN_DIR/etc/init.d/qserv-wmgr start || echo "ERROR: fail to start qserv-wmgr"
 
-# Start mysql-proxy 
-#
-$QSERV_RUN_DIR/etc/init.d/mysql-proxy start || echo "ERROR: fail to start mysql-proxy"
-
 # Start xrootd
 #
 $QSERV_RUN_DIR/etc/init.d/xrootd start || echo "ERROR: fail to start xrootd"
@@ -80,11 +76,6 @@ while /bin/true; do
     if ! "$QSERV_RUN_DIR"/etc/init.d/qserv-wmgr status > /dev/null
     then
         echo "ERROR: qserv-wmgr is not running, exiting"
-        exit -1
-    fi
-    if ! "$QSERV_RUN_DIR"/etc/init.d/mysql-proxy status > /dev/null
-    then
-        echo "ERROR: mysql-proxy is not running, exiting"
         exit -1
     fi
     if ! "$QSERV_RUN_DIR"/etc/init.d/xrootd status > /dev/null

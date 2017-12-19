@@ -155,19 +155,30 @@ if __name__ == "__main__":
         container_id = _get_container_id('master')
         if container_id is not None:
             container = yaml_data['spec']['containers'][container_id]
-            # TODO: (see DM-11130) remove QSERV_MASTER when master pod
-            # is splitted into multiple containers
-            command = ["sh", "/config-start/start.sh"]
+            # Use 'script' to create terminal for su
+            command = ["script", "--return", "--quiet", "--command",
+                "su qserv -c 'sh /config-start/start.sh'"]
+            # Uncomment line below for debugging purpose
+            # command = ["tail", "-f", "/dev/null"]
             container['command'] = command
             container['image'] = config.get('spec', 'image')
             yaml_data['spec']['containers'][container_id] = container
+
+        # Configure mysql-proxy
+        #
+        container_id = _get_container_id('myproxy')
+        if container_id is not None:
+            container = yaml_data['spec']['containers'][container_id]
+            container['image'] = config.get('spec', 'image')
 
         # Configure worker
         #
         container_id = _get_container_id('worker')
         if container_id is not None:
             yaml_data['spec']['containers'][container_id]['image'] = config.get('spec', 'image')
-            command = ["sh", "/config-start/start.sh"]
+            # Use 'script' to create terminal for su
+            command = ["script", "--return", "--quiet", "--command",
+                "su qserv -c 'sh /config-start/start.sh'"]
             yaml_data['spec']['containers'][container_id]['command'] = command
 
         # Configure mariadb
@@ -233,7 +244,8 @@ if __name__ == "__main__":
             # initContainer: configure qserv-run-dir using qserv image
             #
             init_container = dict()
-            command = ["bash", "/config/qserv-configure.sh"]
+            command = ["script", "--return", "--quiet", "--command",
+                "su qserv -c 'bash /config/qserv-configure.sh'"]
             init_container['command'] = command
             init_container['env'] = []
             init_container['env'].append({'name': 'NODE_TYPE',
@@ -273,7 +285,8 @@ if __name__ == "__main__":
             #
             init_container = dict()
 
-            command = ["bash", "/config/qserv-configure.sh"]
+            command = ["script", "--return", "--quiet", "--command",
+                "su qserv -c 'bash /config/qserv-configure.sh'"]
             init_container['command'] = command
             env = dict()
             env['name'] = 'QSERV_MASTER'

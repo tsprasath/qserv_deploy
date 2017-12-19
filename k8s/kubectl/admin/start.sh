@@ -78,6 +78,12 @@ kubectl create configmap --from-file="$CONFIGMAP_DIR/master/sql" config-master-s
 kubectl delete configmap --ignore-not-found=true config-my-dot-cnf
 kubectl create configmap --from-file="$CONFIGMAP_DIR/my.cnf" config-my-dot-cnf
 
+kubectl delete configmap --ignore-not-found=true config-myproxy-etc
+kubectl create configmap --from-file="$CONFIGMAP_DIR/master/myproxy/etc" config-myproxy-etc
+
+kubectl delete configmap --ignore-not-found=true config-myproxy-start
+kubectl create configmap --from-file="$CONFIGMAP_DIR/master/myproxy/start.sh" config-myproxy-start
+
 kubectl delete configmap --ignore-not-found=true config-qserv-configure
 kubectl create configmap --from-file="$CONFIGMAP_DIR/qserv-configure.sh" config-qserv-configure
 
