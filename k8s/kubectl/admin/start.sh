@@ -18,7 +18,7 @@ CONFIGMAP_DIR="${DIR}/configmap"
 
 # For in2p3 cluster: k8s schema cache must not be on AFS
 TMP_DIR=$(mktemp -d --suffix=-kube-$USER)
-SCHEMA_CACHE_OPT="--schema-cache-dir=$TMP_DIR/schema"
+CACHE_OPT="--cache-dir=$TMP_DIR/schema"
 
 usage() {
   cat << EOD
@@ -91,7 +91,7 @@ kubectl delete configmap --ignore-not-found=true config-worker-start
 kubectl create configmap --from-file="$CONFIGMAP_DIR/worker/start.sh" config-worker-start
 
 echo "Create kubernetes pod for Qserv master"
-kubectl create $SCHEMA_CACHE_OPT -f "$YAML_FILE"
+kubectl create $CACHE_OPT -f "$YAML_FILE"
 
 YAML_WORKER_TPL="${CFG_DIR}/pod.worker.yaml.tpl"
 j=1
@@ -113,6 +113,6 @@ pod_name: worker-$j
 EOF
     "$DIR"/yaml-builder.py -i "$INI_FILE" -r "$RESOURCE_DIR" -t "$YAML_WORKER_TPL" -o "$YAML_FILE"
     echo "Create kubernetes pod for Qserv worker-${j}"
-    kubectl create $SCHEMA_CACHE_OPT -f "$YAML_FILE"
+    kubectl create $CACHE_OPT -f "$YAML_FILE"
     j=$((j+1));
 done
