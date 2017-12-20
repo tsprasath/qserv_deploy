@@ -82,5 +82,5 @@ IMAGE=qserv/kubectl:$TAG
 docker pull "$IMAGE"
 docker run $BASH_OPTS --net=host \
     --rm \
-    --volume "$CLUSTER_CONFIG_DIR":/root/.lsst/qserv-cluster/ \
+    --volume "$CLUSTER_CONFIG_DIR":/root/.kube/ \
     "$IMAGE" $CMD
