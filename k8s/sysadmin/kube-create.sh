@@ -17,6 +17,13 @@ TOKEN=$(ssh $SSH_CFG_OPT "$ORCHESTRATOR" "sudo -- kubeadm token generate")
 SSH_TUNNEL_OPT="--apiserver-cert-extra-sans=localhost"
 ssh $SSH_CFG_OPT "$ORCHESTRATOR" "sudo -- kubeadm init $SSH_TUNNEL_OPT --token '$TOKEN'"
 
+"$DIR"/export-kubeconfig.sh
+ssh $SSH_CFG_OPT "$ORCHESTRATOR" "mkdir -p \$HOME/.kube && \
+    sudo cp /etc/kubernetes/admin.conf \$HOME/.kube/config && \
+    sudo chown -R qserv:qserv \$HOME/.kube && \
+	KUBEVER=\$(kubectl version | base64 | tr -d '\n') && \
+    kubectl apply -f \"https://cloud.weave.works/k8s/net?k8s-version=\$KUBEVER\""
+
 HASH=$(ssh $SSH_CFG_OPT "$ORCHESTRATOR" "openssl x509 -pubkey -in \
     /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null \
 	| openssl dgst -sha256 -hex | sed 's/^.* //'")

@@ -37,17 +37,12 @@ Usage: $(basename "$0") [options]
 
   Configure a Qserv worker/master image, at pod startup
 
-  Environnement variables:
-  - QSERV_MASTER must be defined
+  Environnement variable:
   - NODE_TYPE can be set to 'master', default to worker
 EOD
 }
 NODE_TYPE=${NODE_TYPE:-worker}
 
-if [ -z "$QSERV_MASTER" ]; then
-    echo "ERROR: define QSERV_MASTER environment variable"
-	exit 2
-fi
 
 # get the options
 while getopts hm c ; do
@@ -64,9 +59,9 @@ if [ $# -ne 0 ] ; then
 fi
 
 QSERV_DATA_DIR=/qserv/data
+QSERV_MASTER="master.qserv"
 QSERV_RUN_DIR=/qserv/run
 QSERV_CUSTOM_DIR=/qserv/custom
-# QSERV_MASTER is set using k8s yaml configuration
 
 . /qserv/stack/loadLSST.bash
 setup qserv_distrib -t qserv-dev

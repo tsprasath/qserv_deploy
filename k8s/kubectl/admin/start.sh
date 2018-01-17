@@ -51,19 +51,8 @@ YAML_MASTER_TPL="${CFG_DIR}/pod.master.yaml.tpl"
 YAML_FILE="${CFG_DIR}/master.yaml"
 INI_FILE="${CFG_DIR}/pod.master.ini"
 
-cat << EOF > "$INI_FILE"
-[spec]
-host_data_dir: $HOST_DATA_DIR
-host_log_dir: $HOST_LOG_DIR
-host_tmp_dir: $HOST_TMP_DIR
-host: $MASTER
-image: $CONTAINER_IMAGE
-image_mariadb: qserv/mariadb_scisql:$MARIADB_VERSION
-master_hostname: $MASTER
-pod_name: master
-EOF
-
-"$DIR"/yaml-builder.py -i "$INI_FILE" -r "$RESOURCE_DIR" -t "$YAML_MASTER_TPL" -o "$YAML_FILE"
+echo "Create Qserv headless service"
+kubectl apply $CACHE_OPT -f "${CFG_DIR}/qserv-headless-service.yaml"
 
 echo "Create kubernetes configmaps for Qserv"
 kubectl delete configmap --ignore-not-found=true config-mariadb-configure
@@ -87,16 +76,26 @@ kubectl create configmap --from-file="$CONFIGMAP_DIR/master/myproxy/start.sh" co
 kubectl delete configmap --ignore-not-found=true config-qserv-configure
 kubectl create configmap --from-file="$CONFIGMAP_DIR/qserv-configure.sh" config-qserv-configure
 
-kubectl delete configmap --ignore-not-found=true config-master-start
-kubectl create configmap --from-file="$CONFIGMAP_DIR/master/start.sh" config-master-start
-
 kubectl delete configmap --ignore-not-found=true config-worker-sql
 kubectl create configmap --from-file="$CONFIGMAP_DIR/worker/sql" config-worker-sql
 
-kubectl delete configmap --ignore-not-found=true config-worker-start
-kubectl create configmap --from-file="$CONFIGMAP_DIR/worker/start.sh" config-worker-start
+kubectl delete configmap --ignore-not-found=true config-xrootd-start
+kubectl create configmap --from-file="$CONFIGMAP_DIR/xrootd-start.sh" config-xrootd-start
 
 echo "Create kubernetes pod for Qserv master"
+cat << EOF > "$INI_FILE"
+[spec]
+host_data_dir: $HOST_DATA_DIR
+host_log_dir: $HOST_LOG_DIR
+host_tmp_dir: $HOST_TMP_DIR
+host: $MASTER
+image: $CONTAINER_IMAGE
+image_mariadb: qserv/mariadb_scisql:$MARIADB_VERSION
+pod_name: master
+EOF
+
+"$DIR"/yaml-builder.py -i "$INI_FILE" -r "$RESOURCE_DIR" -t "$YAML_MASTER_TPL" -o "$YAML_FILE"
+
 kubectl create $CACHE_OPT -f "$YAML_FILE"
 
 YAML_WORKER_TPL="${CFG_DIR}/pod.worker.yaml.tpl"
@@ -113,12 +112,11 @@ host_tmp_dir: $HOST_TMP_DIR
 host: $host
 image: $CONTAINER_IMAGE
 image_mariadb: qserv/mariadb_scisql:$MARIADB_VERSION
-master_hostname: $MASTER
 mysql_root_password: CHANGEME
 pod_name: worker-$j
 EOF
     "$DIR"/yaml-builder.py -i "$INI_FILE" -r "$RESOURCE_DIR" -t "$YAML_WORKER_TPL" -o "$YAML_FILE"
     echo "Create kubernetes pod for Qserv worker-${j}"
-    kubectl create $CACHE_OPT -f "$YAML_FILE"
+    kubectl apply $CACHE_OPT -f "$YAML_FILE"
     j=$((j+1));
 done

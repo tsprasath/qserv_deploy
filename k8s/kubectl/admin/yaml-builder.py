@@ -157,7 +157,7 @@ if __name__ == "__main__":
             container = yaml_data['spec']['containers'][container_id]
             # Use 'script' to create terminal for su
             command = ["script", "--return", "--quiet", "--command",
-                "su qserv -c 'sh /config-start/start.sh'"]
+                "su qserv -c 'sh /config-start/xrootd-start.sh'"]
             # Uncomment line below for debugging purpose
             # command = ["tail", "-f", "/dev/null"]
             container['command'] = command
@@ -178,7 +178,7 @@ if __name__ == "__main__":
             yaml_data['spec']['containers'][container_id]['image'] = config.get('spec', 'image')
             # Use 'script' to create terminal for su
             command = ["script", "--return", "--quiet", "--command",
-                "su qserv -c 'sh /config-start/start.sh'"]
+                "su qserv -c 'sh /config-start/xrootd-start.sh'"]
             yaml_data['spec']['containers'][container_id]['command'] = command
 
         # Configure mariadb
@@ -250,8 +250,6 @@ if __name__ == "__main__":
             init_container['env'] = []
             init_container['env'].append({'name': 'NODE_TYPE',
                 'value': 'master'})
-            init_container['env'].append({'name': 'QSERV_MASTER',
-                'value': config.get('spec', 'master_hostname')})
             init_container['image'] = config.get('spec', 'image')
             init_container['imagePullPolicy'] = 'Always'
             init_container['name'] = 'init-run-dir'
@@ -288,10 +286,6 @@ if __name__ == "__main__":
             command = ["script", "--return", "--quiet", "--command",
                 "su qserv -c 'bash /config/qserv-configure.sh'"]
             init_container['command'] = command
-            env = dict()
-            env['name'] = 'QSERV_MASTER'
-            env['value'] = config.get('spec', 'master_hostname')
-            init_container['env'] = [env]
             init_container['image'] = config.get('spec', 'image')
             init_container['imagePullPolicy'] = 'Always'
             init_container['name'] = 'init-run-dir'

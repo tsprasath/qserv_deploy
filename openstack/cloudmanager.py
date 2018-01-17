@@ -573,7 +573,7 @@ write_files:
   owner: "root"
   content: |
     # Enable netfilter on bridges
-    # Required for kubelet (v1.6.1) to start
+    # Required for weave (k8s v1.9.1) to start
     net.bridge.bridge-nf-call-iptables = 1
 
 - path: "/etc/systemd/system/docker.service.d/docker-opts.conf"
@@ -595,8 +595,6 @@ users:
 
 runcmd:
   - [/tmp/detect_end_cloud_config.sh]
-  # Required for Kubernetes v1.6.2 to work
-  - [sed, -i, 's|Environment="KUBELET_NETWORK_ARGS=|#Environment="KUBELET_NETWORK_ARGS=|', /etc/systemd/system/kubelet.service.d/10-kubeadm.conf]
   - [sed, -i, 's|Environment="KUBELET_CGROUP_ARGS=|#Environment="KUBELET_CGROUP_ARGS=|', /etc/systemd/system/kubelet.service.d/10-kubeadm.conf]
   # Data and log are stored on Openstack host
   - [mkdir, -p, /qserv/custom]

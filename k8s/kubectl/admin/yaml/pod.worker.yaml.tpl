@@ -5,6 +5,7 @@ metadata:
   labels:
     app: qserv
 spec:
+  dnsPolicy: ClusterFirstWithHostNet
   hostNetwork: true
   subdomain: qserv
   containers:
@@ -27,7 +28,7 @@ spec:
           add:
           - IPC_LOCK
       volumeMounts:
-      - name: config-worker-start
+      - name: config-xrootd-start
         mountPath: /config-start
   nodeSelector:
     kubernetes.io/hostname: <INI_HOST>
@@ -47,7 +48,7 @@ spec:
     - name: config-worker-sql
       configMap:
         name: config-worker-sql
-    - name: config-worker-start
+    - name: config-xrootd-start
       configMap:
-        name: config-worker-start
+        name: config-xrootd-start
   restartPolicy: Never

@@ -5,6 +5,7 @@ metadata:
   labels:
     app: qserv
 spec:
+  dnsPolicy: ClusterFirstWithHostNet
   hostNetwork: true
   subdomain: qserv
   containers:
@@ -17,16 +18,19 @@ spec:
         mountPath: /config-mariadb
       - name: config-mariadb-start
         mountPath: /config-start
-    - name: master
+    - name: master 
       image: "<INI_IMAGE>"
       imagePullPolicy: Always
       command: [<RESOURCE_START_MASTER>]
+      env:
+      - name: NODE_TYPE
+        value: master
       securityContext:
         capabilities:
           add:
           - IPC_LOCK
       volumeMounts:
-      - name: config-master-start
+      - name: config-xrootd-start
         mountPath: /config-start
     - command:
       - sh
@@ -57,9 +61,9 @@ spec:
     - name: config-master-sql
       configMap:
         name: config-master-sql
-    - name: config-master-start
+    - name: config-xrootd-start
       configMap:
-        name: config-master-start
+        name: config-xrootd-start
     - name: config-my-dot-cnf
       configMap:
         name: config-my-dot-cnf
