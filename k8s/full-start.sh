@@ -41,14 +41,6 @@ echo "Setup Kubernetes cluster and launch Qserv"
 # require sudo access on nodes
 "$DIR"/sysadmin/kube-destroy.sh
 "$DIR"/sysadmin/kube-create.sh
-"$DIR"/sysadmin/export-kubeconfig.sh
-
-# Hack for Openstack
-if [ $OPENSTACK = true ]; then
-    "$DIR/kubectl/ssh-tunnel.sh"
-    sed -i -- 's,server: https://.*\(:[0-9]*\),server: https://localhost\1,g' \
-        "$HOME"/.lsst/qserv-cluster/kubeconfig
-fi
 
 # require access to kubectl configuration
 "$DIR"/start.sh

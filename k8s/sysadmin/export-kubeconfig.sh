@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Export kubectl configuration 
+# Export kubectl configuration
 
 # @author Fabrice Jammes SLAC/IN2P3
 
@@ -43,7 +43,7 @@ fi
 case "$KUBECONFIG" in
     /*) ;;
     *) echo "expect absolute path" ; exit 2 ;;
-esac      
+esac
 
 # strip trailing slash
 KUBECONFIG=$(echo $KUBECONFIG | sed 's%\(.*[^/]\)/*%\1%')
@@ -51,3 +51,10 @@ KUBECONFIG=$(echo $KUBECONFIG | sed 's%\(.*[^/]\)/*%\1%')
 echo "WARN: require sudo access to $ORCHESTRATOR"
 ssh $SSH_CFG_OPT "$ORCHESTRATOR" 'sudo cat /etc/kubernetes/admin.conf' \
 	> "$KUBECONFIG"
+
+# Hack for Openstack (use ssh tunnel)
+if [ "$OPENSTACK" = true ]; then
+    "$DIR/ssh-tunnel.sh"
+    sed -i -- 's,server: https://.*\(:[0-9]*\),server: https://localhost\1,g' \
+        "$HOME"/.lsst/qserv-cluster/kubeconfig
+fi

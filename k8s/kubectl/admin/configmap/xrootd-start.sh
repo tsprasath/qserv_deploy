@@ -47,22 +47,37 @@ while true; do
     sleep 2
 done
 
-# Create client configuration
-mkdir -p "$HOME/.lsst"
-ln -sf /qserv/run/etc/qserv-client.conf "$HOME/.lsst/qserv.conf"
+# Wait for dns to be available
+while true; do
+    if nslookup master.qserv > /dev/null
+	then
+        echo "k8s dns is up"
+		break
+	else
+        echo "Wait for k8s dns"
+    fi
+	sleep 2
+done
 
-# Create directory for empty chunk files
-mkdir -p /qserv/data/qserv
+if [ "$NODE_TYPE" = "master" ]; then
+    # Create client configuration
+    mkdir -p "$HOME/.lsst"
+    ln -sf /qserv/run/etc/qserv-client.conf "$HOME/.lsst/qserv.conf"
 
-# Create symlink for data
-# FIXME: remove it by changing emptychunk file path
-# from /qserv/run/var/lib to /qserv/data/
-ln -sf /qserv/data /qserv/run/var/lib
+    # Create directory for empty chunk files
+    mkdir -p /qserv/data/qserv
+
+    # Create symlink for data
+    # FIXME: remove it by changing emptychunk file path
+    # from /qserv/run/var/lib to /qserv/data/
+    ln -sf /qserv/data /qserv/run/var/lib
+fi
 
 # Start qserv-wmgr
 #
 
 # Generate wmgr password
+# FIXME: replace with k8s secret
 echo "USER:CHANGEME" > $QSERV_RUN_DIR/etc/wmgr.secret
 
 $QSERV_RUN_DIR/etc/init.d/qserv-wmgr start || echo "ERROR: fail to start qserv-wmgr"
