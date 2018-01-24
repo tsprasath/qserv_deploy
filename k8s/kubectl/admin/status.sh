@@ -14,4 +14,4 @@ kubectl get pods \
 
 echo
 echo "PODS STATUS:"
-kubectl get pods -o wide -w
+kubectl get pods -o wide

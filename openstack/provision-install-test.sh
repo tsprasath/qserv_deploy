@@ -24,7 +24,7 @@ Usage: `basename $0` [options]
     -h          this message
     -c          update CentOS7/Docker snapshot
     -L          run S15 queries
-    -k          launch Qserv integration test using kubernetes 
+    -k          launch Qserv integration test using kubernetes
     -p          provision Qserv cluster on Openstack
     -s          launch Qserv integration test using shmux
                 -k has priority on -s
@@ -65,11 +65,11 @@ fi
 # Check if openstack connection parameters are available
 if [ -z "$OS_PROJECT_NAME" ]; then
     echo "ERROR: Openstack resource file not sourced"
-        exit 1
+    exit 1
 fi
 
 # Choose the configuration file which contains instance parameters
-CONF_FILE="${OS_PROJECT_NAME}.conf"
+CONF_FILE="${DIR}/${OS_PROJECT_NAME}.conf"
 
 if [ -n "$CREATE" ]; then
     echo "Create up to date snapshot image"
@@ -77,7 +77,7 @@ if [ -n "$CREATE" ]; then
 fi
 
 CONFIG_DIR="$HOME/.lsst/qserv-cluster"
-mkdir -p "$CONFIG_DIR" 
+mkdir -p "$CONFIG_DIR"
 if [ -n "$PROVISION" ]; then
     echo "Provision Qserv cluster on Openstack"
     "$DIR/provision-qserv.py" --cleanup \
@@ -92,6 +92,10 @@ if [ -n "$KUBERNETES" ]; then
 	K8S_DIR="$DIR/../k8s"
     ENV_FILE="$CONFIG_DIR/env.sh"
     cp "$K8S_DIR/env.example.sh" "$ENV_FILE"
+
+    if [ -n "$VERSION" ]; then
+        sed -i "s,VERSION=dev,VERSION=$VERSION," "$ENV_FILE"
+	fi
 
     if [ -n "$LARGE" ]; then
         sed -i "s,# HOST_DATA_DIR=/qserv/data,HOST_DATA_DIR=/mnt/qserv/data," \
@@ -126,20 +130,21 @@ elif [ -n "$SHMUX" ]; then
     fi
     cp "$DIR/ssh_config" ~/.ssh/config
 	if [ -z "$QSERV_DIR" ]; then
-	    echo "ERROR: undefined \$QSERV_DIR"
+        echo "ERROR: undefined \$QSERV_DIR"
 	fi
     cd $SQERV_DIR/admin/tools/docker/deployment/parallel
 
-    # Update env.sh
-    cp env.example.sh env.sh
+	echo "ERROR shmux version is no more supported and will be soon removed"
+	exit 1
+    cp env.example.sh "$ENV_FILE"
     . "$DIR/env-infrastructure.sh"
-    sed -i "s/# MASTER_FORMAT=\"lsst-qserv-master%02g\"/MASTER_FORMAT=\"${HOSTNAME_TPL}master-%g\"/" env.sh
-    sed -i "s/HOSTNAME_FORMAT=\"qserv%g.domain.org\"/HOSTNAME_FORMAT=\"${HOSTNAME_TPL}worker-%g\"/" env.sh
-    sed -i "s/MASTER_ID=0/MASTER_ID=1/" env.sh
-    sed -i "s/WORKER_LAST_ID=3/WORKER_LAST_ID=${WORKER_LAST_ID}/" env.sh
+    sed -i "s/# MASTER_FORMAT=\"lsst-qserv-master%02g\"/MASTER_FORMAT=\"${HOSTNAME_TPL}master-%g\"/" "$ENV_FILE"
+    sed -i "s/HOSTNAME_FORMAT=\"qserv%g.domain.org\"/HOSTNAME_FORMAT=\"${HOSTNAME_TPL}worker-%g\"/" "$ENV_FILE"
+    sed -i "s/MASTER_ID=0/MASTER_ID=1/" "$ENV_FILE"
+    sed -i "s/WORKER_LAST_ID=3/WORKER_LAST_ID=${WORKER_LAST_ID}/" "$ENV_FILE"
 
     if [ -n "$LARGE" ]; then
-        sed -i "s,# HOST_DATA_DIR=/qserv/data,HOST_DATA_DIR=/mnt/qserv/data," env.sh
+        sed -i "s,# HOST_DATA_DIR=/qserv/data,HOST_DATA_DIR=/mnt/qserv/data," "$ENV_FILE"
         ./run.sh
         ./run-large-scale-tests.sh
     else

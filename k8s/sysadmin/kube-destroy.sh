@@ -10,11 +10,7 @@ set -x
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 . "$DIR/../env-cluster.sh"
 
-
-docker run --rm \
-    --volume "$DIR"/kubectl/dot-kube/config:/root/.kube/config \
-	qserv/kubectl \
-    /root/admin/delete-nodes.sh
+"$DIR/../run-kubectl.sh" -C /root/admin/delete-nodes.sh
 
 ssh $SSH_CFG_OPT "$ORCHESTRATOR" "sudo -- kubeadm reset"
 

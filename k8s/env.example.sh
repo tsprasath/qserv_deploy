@@ -42,8 +42,7 @@ CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR:-$HOME/.lsst/qserv-cluster}"
 # - node hostnames
 . "$CLUSTER_CONFIG_DIR/env-infrastructure.sh"
 
-# Container images names
-MASTER_IMAGE="qserv/qserv:${VERSION}_master"
+# Container image name
 CONTAINER_IMAGE="qserv/qserv:${VERSION}"
 
 # Pods names

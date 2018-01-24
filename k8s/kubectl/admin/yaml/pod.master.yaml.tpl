@@ -28,6 +28,23 @@ spec:
       volumeMounts:
       - name: config-master-start
         mountPath: /config-start
+    - command:
+      - sh
+      - /config-start/start.sh
+      image: "<INI_IMAGE>"
+      imagePullPolicy: Always
+      name: myproxy
+      volumeMounts:
+      - mountPath: /config-start
+        name: config-myproxy-start
+      - mountPath: /config-etc
+        name: config-myproxy-etc
+      - mountPath: /qserv/run/tmp
+        name: tmp-volume
+      - mountPath: /qserv/data
+        name: data-volume
+      - mountPath: /qserv/run
+        name: run-volume
   nodeSelector:
     kubernetes.io/hostname: <INI_HOST>
   volumes:
@@ -46,6 +63,12 @@ spec:
     - name: config-my-dot-cnf
       configMap:
         name: config-my-dot-cnf
+    - name: config-myproxy-etc
+      configMap:
+        name: config-myproxy-etc
+    - name: config-myproxy-start
+      configMap:
+        name: config-myproxy-start
     - name: config-qserv-configure
       configMap:
         name: config-qserv-configure

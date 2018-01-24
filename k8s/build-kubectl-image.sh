@@ -9,12 +9,12 @@ set -e
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
-if [ -z "$TAG" ]; then
-	echo "ERROR: undefined variable \$TAG (use 'latest' or 'testing')"
+if [ -z "$VERSION" ]; then
+	echo "ERROR: undefined variable \$VERSION (use 'latest' or 'testing')"
 	exit 1
 fi
 
-IMAGE="qserv/kubectl:$TAG"
+IMAGE="qserv/kubectl:$VERSION"
 
 echo $DIR
 
