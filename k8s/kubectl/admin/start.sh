@@ -54,6 +54,9 @@ INI_FILE="${CFG_DIR}/pod.master.ini"
 echo "Create Qserv headless service"
 kubectl apply $CACHE_OPT -f "${CFG_DIR}/qserv-headless-service.yaml"
 
+echo "Create Qserv proxy service"
+kubectl apply $CACHE_OPT -f "${CFG_DIR}/myproxy-service.yaml"
+
 echo "Create kubernetes configmaps for Qserv"
 kubectl delete configmap --ignore-not-found=true config-mariadb-configure
 kubectl create configmap --from-file="$CONFIGMAP_DIR/mariadb-configure.sh" config-mariadb-configure

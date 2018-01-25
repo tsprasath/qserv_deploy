@@ -36,7 +36,6 @@ if [ $# -ne 0 ] ; then
     exit 2
 fi
 
-"$DIR"/build-kubectl-image.sh
 echo "Setup Kubernetes cluster and launch Qserv"
 # require sudo access on nodes
 "$DIR"/sysadmin/kube-destroy.sh

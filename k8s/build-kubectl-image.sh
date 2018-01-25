@@ -9,12 +9,12 @@ set -e
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
-if [ -z "$VERSION" ]; then
-	echo "ERROR: undefined variable \$VERSION (use 'latest' or 'testing')"
+if [ -z "$DEPLOY_VERSION" ]; then
+	echo "ERROR: undefined variable \$DEPLOY_VERSION (use 'dev' or 'testing')"
 	exit 1
 fi
 
-IMAGE="qserv/kubectl:$VERSION"
+IMAGE="qserv/kubectl:$DEPLOY_VERSION"
 
 echo $DIR
 

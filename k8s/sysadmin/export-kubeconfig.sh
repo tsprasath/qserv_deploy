@@ -58,3 +58,4 @@ if [ "$OPENSTACK" = true ]; then
     sed -i -- 's,server: https://.*\(:[0-9]*\),server: https://localhost\1,g' \
         "$HOME"/.lsst/qserv-cluster/kubeconfig
 fi
+echo "SUCCESS: $KUBECONFIG created"

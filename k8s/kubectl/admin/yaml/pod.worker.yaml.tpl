@@ -5,8 +5,6 @@ metadata:
   labels:
     app: qserv
 spec:
-  dnsPolicy: ClusterFirstWithHostNet
-  hostNetwork: true
   subdomain: qserv
   containers:
     - name: mariadb

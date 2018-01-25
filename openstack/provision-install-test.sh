@@ -93,8 +93,8 @@ if [ -n "$KUBERNETES" ]; then
     ENV_FILE="$CONFIG_DIR/env.sh"
     cp "$K8S_DIR/env.example.sh" "$ENV_FILE"
 
-    if [ -n "$VERSION" ]; then
-        sed -i "s,VERSION=dev,VERSION=$VERSION," "$ENV_FILE"
+    if [ -n "$DEPLOY_VERSION" ]; then
+        sed -i "s,DEPLOY_VERSION=dev,DEPLOY_VERSION=$DEPLOY_VERSION," "$ENV_FILE"
 	fi
 
     if [ -n "$LARGE" ]; then

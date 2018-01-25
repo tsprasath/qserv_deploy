@@ -10,7 +10,8 @@ set -x
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 . "$DIR/../env-cluster.sh"
 
-"$DIR/../run-kubectl.sh" -C /root/admin/delete-nodes.sh
+"$DIR/../run-kubectl.sh" -C /root/admin/delete-nodes.sh || \
+    echo "WARN: unable to cleanly delete nodes"
 
 ssh $SSH_CFG_OPT "$ORCHESTRATOR" "sudo -- kubeadm reset"
 

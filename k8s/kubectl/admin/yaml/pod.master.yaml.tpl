@@ -4,9 +4,8 @@ metadata:
   name: <INI_POD_NAME>
   labels:
     app: qserv
+    node: master
 spec:
-  dnsPolicy: ClusterFirstWithHostNet
-  hostNetwork: true
   subdomain: qserv
   containers:
     - name: mariadb

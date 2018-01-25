@@ -10,8 +10,9 @@ set -x
 # Directory owner
 USER=qserv
 
-DIR=$(cd "$(dirname "$0")"; pwd -P)
-. "$DIR/../env-cluster.sh"
+CLUSTER_CONFIG_DIR="$HOME/.lsst/qserv-cluster"
+# GNU parallel ssh configuration
+PARALLEL_SSH_CFG="$CLUSTER_CONFIG_DIR/sshloginfile"
 
 usage() {
     cat << EOD
@@ -59,10 +60,7 @@ if [ "$CONT" != "y" ]; then
     exit 0
 fi
 
-for node in $MASTER $WORKERS
-do
-    echo "Empty $TARGET_DIR on $node"
-	ssh $SSH_CFG_OPT "$node" "sudo -u $USER -- \
-        rm -rf $TARGET_DIR/*"
-done
+parallel --nonall --tag --slf "$PARALLEL_SSH_CFG" \
+    "sudo -- rm -rf $TARGET_DIR && \
+     echo $TARGER_DIR removed on \$(hostname)"
 

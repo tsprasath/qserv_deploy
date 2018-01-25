@@ -7,8 +7,6 @@
 NODES=$(kubectl get nodes -o go-template --template \
     '{{range .items}}{{.metadata.name}} {{end}}')
 
-for node in $NODES
-do
-    kubectl drain "$node" --delete-local-data --force --ignore-daemonsets
-    kubectl delete node "$node"
-done
+parallel "kubectl drain '{}' --delete-local-data --force --ignore-daemonsets && \
+    kubectl delete node '{}'" ::: $NODES
+

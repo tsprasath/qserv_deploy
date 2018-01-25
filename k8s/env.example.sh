@@ -6,6 +6,8 @@
 # example: tickets_DM-7139, or dev
 VERSION=dev
 MARIADB_VERSION=10.1.25
+# Version of the deplyment tool to use
+DEPLOY_VERSION=dev
 
 # `docker run` settings
 # =====================

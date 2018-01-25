@@ -20,7 +20,7 @@ elif [ -x "$CLUSTER_CONFIG_DIR_DEFAULT_2" ]; then
 fi
 echo $CLUSTER_CONFIG_DIR
 
-# Load VERSION variable (i.e. version of qserv/qserv and qserv/kubectl to use)
+# Load VERSION variable (i.e. version of qserv/qserv to use)
 . "$CLUSTER_CONFIG_DIR"/env.sh
 
 usage() {
@@ -79,7 +79,7 @@ fi
 # Launch container
 #
 # Use host network to easily publish k8s dashboard
-IMAGE="qserv/kubectl:$VERSION"
+IMAGE="qserv/kubectl:$DEPLOY_VERSION"
 docker pull "$IMAGE"
 docker run $BASH_OPTS --net=host \
     --rm \
