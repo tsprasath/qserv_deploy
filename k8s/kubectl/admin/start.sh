@@ -77,7 +77,7 @@ kubectl delete configmap --ignore-not-found=true config-worker-sql
 kubectl create configmap --from-file="$CONFIGMAP_DIR/worker/sql" config-worker-sql
 
 kubectl delete configmap --ignore-not-found=true config-xrootd-start
-kubectl create configmap --from-file="$CONFIGMAP_DIR/xrootd-start.sh" config-xrootd-start
+kubectl create configmap --from-file="$CONFIGMAP_DIR/xrootd/start.sh" config-xrootd-start
 
 echo "Create kubernetes pod for Qserv master"
 cat << EOF > "$INI_FILE"

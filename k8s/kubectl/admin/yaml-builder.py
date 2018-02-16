@@ -157,7 +157,7 @@ if __name__ == "__main__":
             container = yaml_data['spec']['containers'][container_id]
             # Use 'script' to create terminal for su
             command = ["script", "--return", "--quiet", "--command",
-                "su qserv -c 'sh /config-start/xrootd-start.sh'"]
+                "su qserv -c 'sh /config-start/start.sh'"]
             # Uncomment line below for debugging purpose
             # command = ["tail", "-f", "/dev/null"]
             container['command'] = command
@@ -178,7 +178,7 @@ if __name__ == "__main__":
             yaml_data['spec']['containers'][container_id]['image'] = config.get('spec', 'image')
             # Use 'script' to create terminal for su
             command = ["script", "--return", "--quiet", "--command",
-                "su qserv -c 'sh /config-start/xrootd-start.sh'"]
+                "su qserv -c 'sh /config-start/start.sh'"]
             yaml_data['spec']['containers'][container_id]['command'] = command
 
         # Configure mariadb
