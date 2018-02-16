@@ -250,6 +250,8 @@ if __name__ == "__main__":
             init_container['env'] = []
             init_container['env'].append({'name': 'NODE_TYPE',
                 'value': 'master'})
+            init_container['env'].append({'name': 'QSERV_MASTER',
+                'value': config.get('spec', 'master_hostname')})
             init_container['image'] = config.get('spec', 'image')
             init_container['imagePullPolicy'] = 'Always'
             init_container['name'] = 'init-run-dir'
@@ -286,6 +288,10 @@ if __name__ == "__main__":
             command = ["script", "--return", "--quiet", "--command",
                 "su qserv -c 'bash /config/qserv-configure.sh'"]
             init_container['command'] = command
+            env = dict()
+            env['name'] = 'QSERV_MASTER'
+            env['value'] = config.get('spec', 'master_hostname')
+            init_container['env'] = [env]
             init_container['image'] = config.get('spec', 'image')
             init_container['imagePullPolicy'] = 'Always'
             init_container['name'] = 'init-run-dir'

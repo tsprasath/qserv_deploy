@@ -17,7 +17,7 @@ i=1
 for node in $WORKERS;
 do
     CSS_INFO="${CSS_INFO}CREATE NODE worker${i} type=worker port=5012 \
-host=worker-${i}.qserv; "
+host=${node}; "
     i=$((i+1))
 done
 

@@ -51,12 +51,6 @@ YAML_MASTER_TPL="${CFG_DIR}/pod.master.yaml.tpl"
 YAML_FILE="${CFG_DIR}/master.yaml"
 INI_FILE="${CFG_DIR}/pod.master.ini"
 
-echo "Create Qserv headless service"
-kubectl apply $CACHE_OPT -f "${CFG_DIR}/qserv-headless-service.yaml"
-
-echo "Create Qserv proxy service"
-kubectl apply $CACHE_OPT -f "${CFG_DIR}/myproxy-service.yaml"
-
 echo "Create kubernetes configmaps for Qserv"
 kubectl delete configmap --ignore-not-found=true config-mariadb-configure
 kubectl create configmap --from-file="$CONFIGMAP_DIR/mariadb-configure.sh" config-mariadb-configure
@@ -94,12 +88,13 @@ host_tmp_dir: $HOST_TMP_DIR
 host: $MASTER
 image: $CONTAINER_IMAGE
 image_mariadb: qserv/mariadb_scisql:$MARIADB_VERSION
+master_hostname: $MASTER
 pod_name: master
 EOF
 
 "$DIR"/yaml-builder.py -i "$INI_FILE" -r "$RESOURCE_DIR" -t "$YAML_MASTER_TPL" -o "$YAML_FILE"
 
-kubectl create $CACHE_OPT -f "$YAML_FILE"
+kubectl apply $CACHE_OPT -f "$YAML_FILE"
 
 YAML_WORKER_TPL="${CFG_DIR}/pod.worker.yaml.tpl"
 j=1
@@ -115,6 +110,7 @@ host_tmp_dir: $HOST_TMP_DIR
 host: $host
 image: $CONTAINER_IMAGE
 image_mariadb: qserv/mariadb_scisql:$MARIADB_VERSION
+master_hostname: $MASTER
 mysql_root_password: CHANGEME
 pod_name: worker-$j
 EOF

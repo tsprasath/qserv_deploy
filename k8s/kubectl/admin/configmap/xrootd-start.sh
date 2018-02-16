@@ -47,18 +47,6 @@ while true; do
     sleep 2
 done
 
-# Wait for dns to be available
-while true; do
-    if nslookup master.qserv > /dev/null
-	then
-        echo "k8s dns is up"
-		break
-	else
-        echo "Wait for k8s dns"
-    fi
-	sleep 2
-done
-
 if [ "$NODE_TYPE" = "master" ]; then
     # Create client configuration
     mkdir -p "$HOME/.lsst"
