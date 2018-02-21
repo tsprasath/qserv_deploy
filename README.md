@@ -14,7 +14,7 @@ Status](https://travis-ci.org/lsst/qserv_deploy.svg?branch=master)](https://trav
    ./run-kubectl.sh
 ```
 
-Then, in :file:`~/.kube/env.sh`, set your container configuration (qserv images, attached volumes, ...):
+Then, in :file:`~/.lsst/qserv-cluster/env.sh`, set your container configuration (qserv images, attached volumes, ...):
 
 ```
    # Start Qserv (pods and unix services)
