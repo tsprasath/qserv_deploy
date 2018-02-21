@@ -8,7 +8,7 @@ Status](https://travis-ci.org/lsst/qserv_deploy.svg?branch=master)](https://trav
 # Run Qserv on Kubernetes
 
 ```shell
-   git clone git@github.com:lsst/qserv_deploy.git
+   git clone https://github.com/lsst/qserv_deploy.git
    cd qserv_deploy/k8s
    # Open a shell in a container providing kubernetes client
    ./run-kubectl.sh
