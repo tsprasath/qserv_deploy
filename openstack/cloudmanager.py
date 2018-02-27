@@ -31,10 +31,11 @@ import warnings
 # ----------------------------
 
 from cinderclient import client as cinder_client
+import glanceclient
 from keystoneauth1 import loading
 from keystoneauth1 import session
+from neutronclient.v2_0 import client as neutron_client
 from novaclient import client
-import glanceclient
 import novaclient.exceptions
 
 # ---------------------------------
@@ -163,6 +164,7 @@ class CloudManager(object):
                                            session=self._session)
         self._glance = glanceclient.Client(_OPENSTACK_API_VERSION,
                                            session=self._session)
+        self._neutron = neutron_client.Client(session=self._session)
 
         with open(config_file_name, 'r') as config_file:
             config.readfp(config_file)
@@ -425,26 +427,18 @@ class CloudManager(object):
         """
         Return an available floating ip address
         """
-        floating_ips = self.nova.floating_ips.list()
-        floating_ip = None
-        floating_ip_pool = self.nova.floating_ip_pools.list()[0].name
+        floating_ips = self._neutron.list_floatingips()
+        logging.debug("Available floating ips: %s", floating_ips)
 
         # Check for available public ip address in project
-        for ip in floating_ips:
-            if ip.instance_id is None:
+        for ip in floating_ips['floatingips']:
+            logging.debug("floating ip: %s", ip)
+            if ip['fixed_ip_address'] is None:
                 floating_ip = ip
                 logging.debug('Available floating ip found %s', floating_ip)
                 break
-
-        # Check for available public ip address in ext-net pool
-        if floating_ip is None:
-            try:
-                logging.debug("Use floating ip pool: %s", floating_ip_pool)
-                floating_ip = self.nova.floating_ips.create(floating_ip_pool)
-            except novaclient.exceptions.Forbidden as exc:
-                logging.fatal("Unable to retrieve public IP: %s", exc)
-                sys.exit(1)
-
+        if floating_ip == None:
+            logging.fatal("No available floating ip")
         return floating_ip
 
     def print_ssh_config(self, instances, floating_ip):
