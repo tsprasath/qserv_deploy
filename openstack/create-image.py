@@ -126,12 +126,12 @@ if __name__ == "__main__":
 
         userdata_snapshot = get_cloudconfig()
 
-        previous_snapshot = cloudManager.nova_snapshot_find()
+        previous_snapshot = cloudManager.glance_snapshot_find()
 
         if args.cleanup:
             if previous_snapshot is not None:
                 logging.debug("Removing previous snapshot: %s", cloudManager.snapshot_name)
-                cloudManager.nova_snapshot_delete(previous_snapshot)
+                cloudManager.glance_snapshot_delete(previous_snapshot)
         elif previous_snapshot is not None:
             logging.critical("Destination snapshot: %s already exist", cloudManager.snapshot_name)
             sys.exit(1)

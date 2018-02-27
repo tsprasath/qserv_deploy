@@ -161,6 +161,8 @@ class CloudManager(object):
                                   session=self._session)
         self.cinder = cinder_client.Client(_OPENSTACK_API_VERSION,
                                            session=self._session)
+        self._glance = glanceclient.Client(_OPENSTACK_API_VERSION,
+                                           session=self._session)
 
         with open(config_file_name, 'r') as config_file:
             config.readfp(config_file)
@@ -176,9 +178,8 @@ class CloudManager(object):
             self.snapshot_name = config.get('server', 'snapshot')
         else:
             image_name = config.get('server', 'snapshot')
-
         try:
-            self.image = self.nova.images.find(name=image_name)
+            self.image = self._glance_image_find(name=image_name)
         except novaclient.exceptions.NoUniqueMatch:
             logging.critical("Image %s not unique", image_name)
             sys.exit(1)
@@ -271,14 +272,31 @@ class CloudManager(object):
             status = self.nova.images.get(qserv_image).status
         logging.info("SUCCESS: Qserv image '%s' is active", self.snapshot_name)
 
-    def nova_snapshot_find(self):
+    def _glance_image_find(self, name):
         """
-        Returns and Openstack image named self.snapshot_name.
+        Returns an Openstack image descriptor
+        @param name of the image to find
+        """
+        count = 0
+        for img in self._glance.images.list():
+            if img['name'] == name:
+                image = img
+                count += 1
+        if count == 0:
+            raise novaclient.exceptions.NotFound("Image "+name+" not found")
+        elif count > 1:
+            raise novaclient.exceptions.NoUniqueMatch("Image "+name+" not"
+                                                      "unique, cleanup required")
+        return image
+
+    def glance_snapshot_find(self):
+        """
+        Returns an Openstack image named self.snapshot_name.
         Exit with error code if image is not unique.
         @throw novaclient.exceptions.NoUniqueMatch if image is not unique.
         """
         try:
-            snapshot = self.nova.images.find(name=self.snapshot_name)
+            snapshot = self._glance_image_find(name=self.snapshot_name)
         except novaclient.exceptions.NotFound:
             snapshot = None
         except novaclient.exceptions.NoUniqueMatch:
@@ -287,14 +305,12 @@ class CloudManager(object):
             sys.exit(1)
         return snapshot
 
-    def nova_snapshot_delete(self, snapshot):
+    def glance_snapshot_delete(self, snapshot):
         """
         Delete an Openstack image from Glance
         :param snapshot: image to delete
         """
-        glance = glanceclient.Client(_OPENSTACK_API_VERSION,
-                                     session=self._session)
-        glance.images.delete(snapshot.id)
+        self._glance.images.delete(snapshot.id)
 
     def _build_instance_name(self, instance_id):
         """
@@ -369,8 +385,10 @@ class CloudManager(object):
         """
         check_word = "---SYSTEM READY FOR SNAPSHOT---"
         found = None
+        self.wait_active(instance)
         while not found:
             time.sleep(5)
+            logging.debug("instance: %s", instance.id)
             output = instance.get_console_output()
             logging.debug("console output: %s", output)
             logging.debug("instance: %s", instance)
