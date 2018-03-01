@@ -171,6 +171,13 @@ if __name__ == "__main__":
             container = yaml_data['spec']['containers'][container_id]
             container['image'] = config.get('spec', 'image')
 
+        # Configure wmgr
+        #
+        container_id = _get_container_id('wmgr')
+        if container_id is not None:
+            container = yaml_data['spec']['containers'][container_id]
+            container['image'] = config.get('spec', 'image')
+
         # Configure worker
         #
         container_id = _get_container_id('worker')

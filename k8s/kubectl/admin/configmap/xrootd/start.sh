@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Start cmsd xrootd and qserv-wmgr inside pod
+# Start cmsd and xrootd inside pod
 
 # @author  Fabrice Jammes, IN2P3/SLAC
 
@@ -48,10 +48,6 @@ while true; do
 done
 
 if [ "$NODE_TYPE" = "master" ]; then
-    # Create client configuration
-    mkdir -p "$HOME/.lsst"
-    ln -sf /qserv/run/etc/qserv-client.conf "$HOME/.lsst/qserv.conf"
-
     # Create directory for empty chunk files
     mkdir -p /qserv/data/qserv
 
@@ -61,26 +57,12 @@ if [ "$NODE_TYPE" = "master" ]; then
     ln -sf /qserv/data /qserv/run/var/lib
 fi
 
-# Start qserv-wmgr
-#
-
-# Generate wmgr password
-# FIXME: replace with k8s secret
-echo "USER:CHANGEME" > $QSERV_RUN_DIR/etc/wmgr.secret
-
-$QSERV_RUN_DIR/etc/init.d/qserv-wmgr start || echo "ERROR: fail to start qserv-wmgr"
-
 # Start xrootd
 #
 $QSERV_RUN_DIR/etc/init.d/xrootd start || echo "ERROR: fail to start xrootd"
 
 # TODO: Implement container restart on xrootd/cmsd process crash (see DM-11128)
 while /bin/true; do
-    if ! "$QSERV_RUN_DIR"/etc/init.d/qserv-wmgr status > /dev/null
-    then
-        echo "ERROR: qserv-wmgr is not running, exiting"
-        exit -1
-    fi
     if ! "$QSERV_RUN_DIR"/etc/init.d/xrootd status > /dev/null
     then
         echo "ERROR: xrootd is not running"
