@@ -166,7 +166,7 @@ if __name__ == "__main__":
 
         # Configure mysql-proxy
         #
-        container_id = _get_container_id('myproxy')
+        container_id = _get_container_id('proxy')
         if container_id is not None:
             container = yaml_data['spec']['containers'][container_id]
             container['image'] = config.get('spec', 'image')

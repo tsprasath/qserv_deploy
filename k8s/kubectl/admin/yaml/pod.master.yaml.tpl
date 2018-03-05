@@ -33,7 +33,7 @@ spec:
       volumeMounts:
       - name: config-xrootd-start
         mountPath: /config-start
-    - name: myproxy
+    - name: proxy
       command:
       - sh
       - /config-start/start.sh
@@ -43,9 +43,9 @@ spec:
       - mountPath: /home/qserv/.lsst
         name: config-dot-lsst
       - mountPath: /config-start
-        name: config-myproxy-start
+        name: config-proxy-start
       - mountPath: /config-etc
-        name: config-myproxy-etc
+        name: config-proxy-etc
       - mountPath: /qserv/run/tmp
         name: tmp-volume
       - mountPath: /qserv/data
@@ -98,12 +98,12 @@ spec:
     - name: config-my-dot-cnf
       configMap:
         name: config-my-dot-cnf
-    - name: config-myproxy-etc
+    - name: config-proxy-etc
       configMap:
-        name: config-myproxy-etc
-    - name: config-myproxy-start
+        name: config-proxy-etc
+    - name: config-proxy-start
       configMap:
-        name: config-myproxy-start
+        name: config-proxy-start
     - name: config-qserv-configure
       configMap:
         name: config-qserv-configure
