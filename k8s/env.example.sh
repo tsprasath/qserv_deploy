@@ -1,6 +1,7 @@
+# Description: allow to customize pods execution
+#
 # Configuration file copied to orchestration node, in $ORCHESTRATION_DIR
 # and then sourced by Kubernetes ochestration node scripts
-# Allow to customize pods execution
 
 # VERSION can be a git ticket branch but with _ instead of /
 # example: tickets_DM-7139, or dev
@@ -35,9 +36,7 @@ HOST_TMP_DIR=/qserv/tmp
 # Advanced configuration
 # ======================
 
-# Directory containing infrastructure specification
-# (k8s configuration files, orchestration parameters)
-CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR:-$HOME/.lsst/qserv-cluster}"
+# CLUSTER_CONFIG_DIR is a global variable
 
 # FIXME: infrastructure should be abstracted from k8s
 # Parameters related to infrastructure,used to place containers:

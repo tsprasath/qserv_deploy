@@ -85,7 +85,7 @@ if [ -n "$PROVISION" ]; then
         -vv
 	ln -f "$DIR/ssh_config" "$CONFIG_DIR"
 	ln -f "$DIR/env-infrastructure.sh" "$CONFIG_DIR"
-    "$DIR/../k8s/create-gnuparallel-slf.sh"
+    "$DIR/../k8s/sysadmin/create-gnuparallel-slf.sh"
 fi
 
 if [ -n "$KUBERNETES" ]; then

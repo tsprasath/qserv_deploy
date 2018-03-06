@@ -19,7 +19,7 @@ ssh $SSH_CFG_OPT "$ORCHESTRATOR" "sudo -- kubeadm init $SSH_TUNNEL_OPT --token '
 
 "$DIR"/export-kubeconfig.sh
 
-SHARED_CREDS_DIR="/qserv/kubernetes/"
+SHARED_CREDS_DIR="/qserv/kubernetes/lower"
 # CC-IN2P3: k8s credentials are stored in shared directory 
 if [ -d "$SHARED_CREDS_DIR" ]; then
     cp -f "$HOME/.lsst/qserv-cluster/kubeconfig" "$SHARED_CREDS_DIR"

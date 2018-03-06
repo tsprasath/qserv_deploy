@@ -1,12 +1,9 @@
 # Directory containing infrastructure specification
 # (ssh credentials, machine names)
-CLUSTER_CONFIG_DIR="$HOME/.lsst/qserv-cluster"
+CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR:-$HOME/.lsst/qserv-cluster}"
 
 # ssh credentials, optional
 SSH_CFG="$CLUSTER_CONFIG_DIR/ssh_config"
-
-# GNU parallel ssh configuration
-PARALLEL_SSH_CFG="$CLUSTER_CONFIG_DIR/sshloginfile"
 
 # ssh option for using configuration file
 if [ -r "$SSH_CFG" ]; then
@@ -18,3 +15,7 @@ fi
 # Machine names
 ENV_INFRASTRUCTURE_FILE="$CLUSTER_CONFIG_DIR/env-infrastructure.sh"
 . "$ENV_INFRASTRUCTURE_FILE"
+
+# GNU parallel ssh configuration
+PARALLEL_SSH_CFG="$CLUSTER_CONFIG_DIR/sshloginfile"
+

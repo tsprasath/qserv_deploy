@@ -10,7 +10,7 @@ set -x
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
 # IN2P3
-CLUSTER_CONFIG_DIR_DEFAULT_1="/qserv/kubernetes"
+CLUSTER_CONFIG_DIR_DEFAULT_1="/qserv/kubernetes/lower"
 # Openstack
 CLUSTER_CONFIG_DIR_DEFAULT_2="$HOME/.lsst/qserv-cluster"
 if [ -x "$CLUSTER_CONFIG_DIR_DEFAULT_1" ]; then
@@ -19,9 +19,6 @@ elif [ -x "$CLUSTER_CONFIG_DIR_DEFAULT_2" ]; then
     CLUSTER_CONFIG_DIR="$CLUSTER_CONFIG_DIR_DEFAULT_2"
 fi
 echo $CLUSTER_CONFIG_DIR
-
-# Load VERSION variable (i.e. version of qserv/qserv to use)
-. "$CLUSTER_CONFIG_DIR"/env.sh
 
 usage() {
     cat << EOD
@@ -69,6 +66,10 @@ if [ ! -r "$CLUSTER_CONFIG_DIR" ]; then
     echo "ERROR: incorrect CLUSTER_CONFIG_DIR file: $CLUSTER_CONFIG_DIR"
     exit 2
 fi
+
+# Load VERSION variable (i.e. version of qserv/qserv to use)
+. "$CLUSTER_CONFIG_DIR"/env.sh
+
 
 if [ -z "${CMD}" ]
 then
