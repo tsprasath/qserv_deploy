@@ -17,12 +17,12 @@ TOKEN=$(ssh $SSH_CFG_OPT "$ORCHESTRATOR" "sudo -- kubeadm token generate")
 SSH_TUNNEL_OPT="--apiserver-cert-extra-sans=localhost"
 ssh $SSH_CFG_OPT "$ORCHESTRATOR" "sudo -- kubeadm init $SSH_TUNNEL_OPT --token '$TOKEN'"
 
+# TODO make it cleaner
 "$DIR"/export-kubeconfig.sh
 
-SHARED_CREDS_DIR="/qserv/kubernetes/lower"
 # CC-IN2P3: k8s credentials are stored in shared directory 
-if [ -d "$SHARED_CREDS_DIR" ]; then
-    cp -f "$HOME/.lsst/qserv-cluster/kubeconfig" "$SHARED_CREDS_DIR"
+if [ -d "$CLUSTER_CONFIG_DIR" ]; then
+    cp -f "$HOME/.lsst/qserv-cluster/kubeconfig" "$CLUSTER_CONFIG_DIR"
 fi
 
 "$DIR/../run-kubectl.sh" -C /root/admin/install-weave.sh

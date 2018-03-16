@@ -13,12 +13,6 @@ DEPLOY_VERSION=dev
 # `docker run` settings
 # =====================
 
-# Customized configuration templates directory location
-# on docker host, optional
-# See <qserv-src-dir>/doc/source/HOW-TO/docker-custom-configuration.rst
-# for additional information
-HOST_CUSTOM_DIR=/qserv/custom
-
 # Data directory location on docker host
 # HOST_DATA_DIR=/qserv/data
 
