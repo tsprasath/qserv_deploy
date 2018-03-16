@@ -30,6 +30,31 @@ spec:
       volumeMounts:
       - name: config-xrootd-start
         mountPath: /config-start
+    - name: wmgr
+      command:
+        - sh
+        - /config-start/start.sh
+      env:
+        - name: QSERV_MASTER
+          valueFrom:
+            configMapKeyRef:
+              name: config-wmgr-etc
+              key: qserv_master
+      image: "<INI_IMAGE>"
+      imagePullPolicy: Always
+      volumeMounts:
+      - mountPath: /config-start
+        name: config-wmgr-start
+      - mountPath: /config-etc
+        name: config-wmgr-etc
+      - mountPath: /qserv/run/tmp
+        name: tmp-volume
+      - mountPath: /qserv/data
+        name: data-volume
+      - mountPath: /qserv/run
+        name: run-volume
+      - mountPath: /secret
+        name: secret-wmgr
   nodeSelector:
     kubernetes.io/hostname: <INI_HOST>
   volumes:
@@ -51,4 +76,13 @@ spec:
     - name: config-xrootd-start
       configMap:
         name: config-xrootd-start
+    - name: config-wmgr-etc
+      configMap:
+        name: config-wmgr-etc
+    - name: config-wmgr-start
+      configMap:
+        name: config-wmgr-start
+    - name: secret-wmgr
+      secret:
+        secretName: secret-wmgr
   restartPolicy: Never
