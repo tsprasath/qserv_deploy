@@ -31,6 +31,4 @@ check_writable \${NAME} "QSERV_RUN_DIR"
 # Disabling buffering in python in order to enable "real-time" logging.
 export PYTHONUNBUFFERED=1
 
-# Create temporary file directory, used for data loading
-mkdir -p /qserv/data/tmp
 \${PYTHON} qservWmgr.py -c ${CONFIG} -v"

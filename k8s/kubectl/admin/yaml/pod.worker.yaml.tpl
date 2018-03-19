@@ -23,11 +23,19 @@ spec:
       image: "<INI_IMAGE>"
       imagePullPolicy: Always
       command: [<RESOURCE_START_WORKER>]
+      env:
+        - name: QSERV_MASTER
+          valueFrom:
+            configMapKeyRef:
+              name: config-master
+              key: qserv_master
       securityContext:
         capabilities:
           add:
           - IPC_LOCK
       volumeMounts:
+      - name: config-xrootd-etc
+        mountPath: /config-etc
       - name: config-xrootd-start
         mountPath: /config-start
     - name: wmgr
@@ -38,7 +46,7 @@ spec:
         - name: QSERV_MASTER
           valueFrom:
             configMapKeyRef:
-              name: config-wmgr-etc
+              name: config-master
               key: qserv_master
       image: "<INI_IMAGE>"
       imagePullPolicy: Always
@@ -64,6 +72,9 @@ spec:
     - name: config-mariadb-start
       configMap:
         name: config-mariadb-start
+    - name: config-master
+      configMap:
+        name: config-master
     - name: config-my-dot-cnf
       configMap:
         name: config-my-dot-cnf
@@ -73,6 +84,9 @@ spec:
     - name: config-worker-sql
       configMap:
         name: config-worker-sql
+    - name: config-xrootd-etc
+      configMap:
+        name: config-xrootd-etc
     - name: config-xrootd-start
       configMap:
         name: config-xrootd-start

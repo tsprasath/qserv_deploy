@@ -26,11 +26,18 @@ spec:
       env:
       - name: NODE_TYPE
         value: master
+      - name: QSERV_MASTER
+        valueFrom:
+          configMapKeyRef:
+            name: config-master
+            key: qserv_master
       securityContext:
         capabilities:
           add:
           - IPC_LOCK
       volumeMounts:
+      - name: config-xrootd-etc
+        mountPath: /config-etc
       - name: config-xrootd-start
         mountPath: /config-start
     - name: proxy
@@ -62,7 +69,7 @@ spec:
         - name: QSERV_MASTER
           valueFrom:
             configMapKeyRef:
-              name: config-wmgr-etc
+              name: config-master
               key: qserv_master
       image: "<INI_IMAGE>"
       imagePullPolicy: Always
@@ -92,9 +99,15 @@ spec:
     - name: config-master-sql
       configMap:
         name: config-master-sql
+    - name: config-xrootd-etc
+      configMap:
+        name: config-xrootd-etc
     - name: config-xrootd-start
       configMap:
         name: config-xrootd-start
+    - name: config-master
+      configMap:
+        name: config-master
     - name: config-my-dot-cnf
       configMap:
         name: config-my-dot-cnf

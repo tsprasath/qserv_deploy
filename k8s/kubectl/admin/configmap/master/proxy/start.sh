@@ -30,6 +30,15 @@ PROXY_USER=qserv
 check_writable ${NAME} "QSERV_RUN_DIR"
 check_readable ${NAME} "LUA_DIR"
 check_readable ${NAME} "QSERV_DIR"
+    
+# Create directory for empty chunk files
+# TODO: this should be handled by czar in order to have
+# EMPTYCHUNK_PATH parameter defined in one unique location
+EMPTYCHUNK_PATH="/qserv/data/qserv"
+if [ ! -d "$EMPTYCHUNK_PATH" ]; then
+    mkdir "$EMPTYCHUNK_PATH" 
+    chown -R "$PROXY_USER":"$PROXY_USER" "$EMPTYCHUNK_PATH"
+fi
 
 # mysql-proxy requires my-proxy.cnf to have
 # permissions 660 to start, but configmap file
