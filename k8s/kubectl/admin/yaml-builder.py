@@ -155,12 +155,12 @@ if __name__ == "__main__":
         container_id = _get_container_id('master')
         if container_id is not None:
             container = yaml_data['spec']['containers'][container_id]
-            # Use 'script' to create terminal for su
-            command = ["script", "--return", "--quiet", "--command",
-                "su qserv -c 'sh /config-start/start.sh'"]
+            command = ["/bin/su"]
+            _args = ["qserv", "-c", "sh /config-start/start.sh"]
             # Uncomment line below for debugging purpose
             # command = ["tail", "-f", "/dev/null"]
             container['command'] = command
+            container['args'] = _args
             container['image'] = config.get('spec', 'image')
             yaml_data['spec']['containers'][container_id] = container
 
@@ -184,9 +184,10 @@ if __name__ == "__main__":
         if container_id is not None:
             yaml_data['spec']['containers'][container_id]['image'] = config.get('spec', 'image')
             # Use 'script' to create terminal for su
-            command = ["script", "--return", "--quiet", "--command",
-                "su qserv -c 'sh /config-start/start.sh'"]
+            command = ["/bin/su"]
+            _args = ["qserv", "-c", "sh /config-start/start.sh"]
             yaml_data['spec']['containers'][container_id]['command'] = command
+            yaml_data['spec']['containers'][container_id]['args'] = _args
 
         # Configure mariadb
         #
@@ -238,8 +239,6 @@ if __name__ == "__main__":
         run_volume_name = 'run-volume'
         run_mount_path = '/qserv/run'
         _add_emptydir_volume(run_volume_name)
-        _mount_volume('worker', run_mount_path, run_volume_name)
-        _mount_volume('master', run_mount_path, run_volume_name)
 
         # initContainer
         #
@@ -287,27 +286,6 @@ if __name__ == "__main__":
             yaml_data['spec']['initContainers'].append(init_container)
 
         if _get_container_id('worker') is not None:
-
-            # initContainer: configure qserv-run-dir using qserv image
-            #
-            init_container = dict()
-
-            command = ["script", "--return", "--quiet", "--command",
-                "su qserv -c 'bash /config/qserv-configure.sh'"]
-            init_container['command'] = command
-            env = dict()
-            env['name'] = 'QSERV_MASTER'
-            env['value'] = config.get('spec', 'master_hostname')
-            init_container['env'] = [env]
-            init_container['image'] = config.get('spec', 'image')
-            init_container['imagePullPolicy'] = 'Always'
-            init_container['name'] = 'init-run-dir'
-            init_container['volumeMounts'] = []
-            init_container['volumeMounts'].append({'mountPath': run_mount_path,
-                'name': run_volume_name})
-            init_container['volumeMounts'].append({'mountPath':
-                "/config/", 'name': 'config-qserv-configure'})
-            yaml_data['spec']['initContainers'].append(init_container)
 
             # initContainer: configure qserv-data-dir using mariadb image
             #

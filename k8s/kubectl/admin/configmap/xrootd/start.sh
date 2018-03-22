@@ -8,18 +8,31 @@
 set -e
 set -x
 
-
 # Source pathes to eups packages
 . /qserv/run/etc/sysconfig/qserv
 
-MARIADB_CFG_LOCK="/qserv/data/mariadb-cfg.lock"
+CONFIG_DIR="/config-etc"
+XROOTD_CONFIG="$CONFIG_DIR/xrootd.cf"
+XRDSSI_CONFIG="$CONFIG_DIR/xrdssi.cf"
+DATA_DIR="/qserv/data"
+MARIADB_LOCK="$DATA_DIR/mariadb-cfg.lock"
+MYSQLD_DATA_DIR="$DATA_DIR/mysql"
+MYSQLD_SOCKET="$MYSQLD_DATA_DIR/mysql.sock"
+
+# Required by xrdssi plugin to choose which type
+# of queries to launch against metadata
+if [ "$(hostname)" = "$QSERV_MASTER" ]; then
+    INSTANCE_NAME='master'
+else
+    INSTANCE_NAME='worker'
+fi
 
 # Wait for mysql to be configured and started
 while true; do
-    if mysql --socket "$MYSQLD_SOCK" --user="$MYSQLD_USER_QSERV"  --skip-column-names \
+    if mysql --socket "$MYSQLD_SOCKET" --user="$MYSQLD_USER_QSERV"  --skip-column-names \
         -e "SELECT CONCAT('Mariadb is up: ', version())"
     then
-        if [ -f $MARIADB_CFG_LOCK ]
+        if [ -f $MARIADB_LOCK ]
         then
             echo "Wait for MySQL to be configured"
         else
@@ -31,11 +44,26 @@ while true; do
     sleep 2
 done
 
-# Start xrootd
+# Start cmsd and xrootd
 #
-CONFIG_DIR="/config-etc"
-XROOTD_CONFIG="$CONFIG_DIR/xrootd.cf"
-XRDSSI_CONFIG="$CONFIG_DIR/xrdssi.cf"
+PROCESSES="cmsd xrootd"
 
-cmsd -c "$XROOTD_CONFIG" -l @libXrdSsiLog.so -n "$NODE_TYPE" -I v4 -+xrdssi "$XRDSSI_CONFIG" &
-xrootd -c  "$XROOTD_CONFIG" -l @libXrdSsiLog.so -n "$NODE_TYPE" -I v4 -+xrdssi "$XRDSSI_CONFIG"
+for p in $PROCESSES;
+do
+    "${p}" -c "$XROOTD_CONFIG" -l @libXrdSsiLog.so -n "$INSTANCE_NAME" -I v4 -+xrdssi "$XRDSSI_CONFIG" &
+done
+
+PERIOD_SECONDS=5
+while true;
+do
+    for p in $PROCESSES;
+    do
+        if ! pidof "$p"; then
+            echo "ERROR: ${p} not running, exiting"
+            exit 1
+        else
+            echo "$p is running"
+        fi
+    done
+    sleep "$PERIOD_SECONDS"
+done

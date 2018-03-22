@@ -24,8 +24,6 @@ spec:
       imagePullPolicy: Always
       command: [<RESOURCE_START_MASTER>]
       env:
-      - name: NODE_TYPE
-        value: master
       - name: QSERV_MASTER
         valueFrom:
           configMapKeyRef:
