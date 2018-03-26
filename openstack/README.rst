@@ -15,12 +15,15 @@ Pre-requisite
    pip install --upgrade --force pbr
 
    # Install the OpenStack client
-   sudo pip install python-openstackclient
+   sudo pip install python-novaclient==6.0.2
+   sudo pip install python-openstackclient==2.1.0
+
+   # Install docker and gnu-parallel
+   sudo apt-get install docker parallel
 
 * Download Openstack RC file: http://docs.openstack.org/user-guide/common/cli_set_environment_variables_using_openstack_rc.html
 
-* Install shmux to run multi node tests
-   see http://web.taranis.org/shmux/
+* Add your user to docker group
 
 
 Provision Qserv & run multinode tests
