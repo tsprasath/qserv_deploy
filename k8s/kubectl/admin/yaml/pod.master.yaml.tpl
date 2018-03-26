@@ -19,7 +19,7 @@ spec:
         mountPath: /config-mariadb
       - name: config-mariadb-start
         mountPath: /config-start
-    - name: master
+    - name: xrootd
       image: "<INI_IMAGE>"
       imagePullPolicy: Always
       command: [<RESOURCE_START_MASTER>]

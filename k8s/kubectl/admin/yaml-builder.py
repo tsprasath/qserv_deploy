@@ -72,6 +72,9 @@ def _get_container_id(container_name):
             return i
     return None
 
+def _is_master():
+    labels = yaml_data['metadata']['labels']
+    return labels.get('node') == 'master'
 
 def _mount_volume(container_name, container_dir, volume_name):
     """
@@ -150,9 +153,9 @@ if __name__ == "__main__":
         yaml_data['metadata']['name'] = config.get('spec', 'pod_name')
         yaml_data['spec']['hostname'] = config.get('spec', 'pod_name')
 
-        # Configure master
+        # Configure xrootd
         #
-        container_id = _get_container_id('master')
+        container_id = _get_container_id('xrootd')
         if container_id is not None:
             container = yaml_data['spec']['containers'][container_id]
             command = ["/bin/su"]
@@ -178,17 +181,6 @@ if __name__ == "__main__":
             container = yaml_data['spec']['containers'][container_id]
             container['image'] = config.get('spec', 'image')
 
-        # Configure worker
-        #
-        container_id = _get_container_id('worker')
-        if container_id is not None:
-            yaml_data['spec']['containers'][container_id]['image'] = config.get('spec', 'image')
-            # Use 'script' to create terminal for su
-            command = ["/bin/su"]
-            _args = ["qserv", "-c", "sh /config-start/start.sh"]
-            yaml_data['spec']['containers'][container_id]['command'] = command
-            yaml_data['spec']['containers'][container_id]['args'] = _args
-
         # Configure mariadb
         #
         container_id = _get_container_id('mariadb')
@@ -205,9 +197,8 @@ if __name__ == "__main__":
             volume_name = 'log-volume'
             mount_path = '/qserv/run/var/log'
             _add_volume(config.get('spec', 'host_log_dir'), volume_name)
-            _mount_volume('master', mount_path, volume_name)
             _mount_volume('mariadb', mount_path, volume_name)
-            _mount_volume('worker', mount_path, volume_name)
+            _mount_volume('xrootd', mount_path, volume_name)
 
         # Attach tmp-dir to containers
         #
@@ -215,9 +206,8 @@ if __name__ == "__main__":
             volume_name = 'tmp-volume'
             mount_path = '/qserv/run/tmp'
             _add_volume(config.get('spec', 'host_tmp_dir'), volume_name)
-            _mount_volume('master', mount_path, volume_name)
             _mount_volume('mariadb', mount_path, volume_name)
-            _mount_volume('worker', mount_path, volume_name)
+            _mount_volume('xrootd', mount_path, volume_name)
 
         # Attach data-dir to containers
         #
@@ -229,12 +219,10 @@ if __name__ == "__main__":
             _add_emptydir_volume(data_volume_name)
 
         _mount_volume('mariadb', data_mount_path, data_volume_name)
-        _mount_volume('master', data_mount_path, data_volume_name)
         # xrootd mmap/mlock *.MYD files and need to access mysql.sock
-        # qserv-wmgr require access to mysql.sock
-        _mount_volume('worker', data_mount_path, data_volume_name)
+        _mount_volume('xrootd', data_mount_path, data_volume_name)
 
-        # Attach qserv-run-dir to master and worker container
+        # Create qserv-run-dir volume
         #
         run_volume_name = 'run-volume'
         run_mount_path = '/qserv/run'
@@ -245,7 +233,7 @@ if __name__ == "__main__":
         yaml_data['spec']['initContainers'] = []
         run_volume_name = 'run-volume'
         run_mount_path = '/qserv/run'
-        if _get_container_id('master') is not None:
+        if _is_master():
 
             # initContainer: configure qserv-run-dir using qserv image
             #
@@ -285,7 +273,7 @@ if __name__ == "__main__":
                 "/config-sql", 'name': 'config-master-sql'})
             yaml_data['spec']['initContainers'].append(init_container)
 
-        if _get_container_id('worker') is not None:
+        else:
 
             # initContainer: configure qserv-data-dir using mariadb image
             #

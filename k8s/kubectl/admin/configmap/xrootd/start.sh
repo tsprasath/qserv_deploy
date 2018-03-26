@@ -56,14 +56,12 @@ done
 PERIOD_SECONDS=5
 while true;
 do
+    sleep "$PERIOD_SECONDS"
     for p in $PROCESSES;
     do
         if ! pidof "$p"; then
             echo "ERROR: ${p} not running, exiting"
             exit 1
-        else
-            echo "$p is running"
         fi
     done
-    sleep "$PERIOD_SECONDS"
 done
