@@ -36,8 +36,8 @@ Provision Qserv & run multinode tests
    SRC_DIR=${HOME}/src
    mkdir ${SRC_DIR}
    cd ${SRC_DIR}
-   git clone https://github.com/lsst/qserv.git
-   cd qserv/admin/tools/provision
+   git clone https://github.com/lsst/qserv_deploy.git
+   cd qserv_deploy/openstack
 
    # Source Openstack RC file
    # This is an example for NCSA
