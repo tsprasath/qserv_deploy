@@ -19,5 +19,4 @@ before_install:
 script:
   - ./k8s/kubectl/admin/start.sh
   - ./k8s/kubectl/admin/wait-pods-start.sh
-  - ./k8s/kubectl/admin/wait-qserv-start.sh
   - ./k8s/kubectl/admin/run-multinode-tests.sh

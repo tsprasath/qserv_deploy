@@ -16,7 +16,6 @@ for node in $MASTER $WORKERS
 do
     ssh -t $SSH_CFG_OPT "$node" 'sudo service docker restart'
     ssh $SSH_CFG_OPT "$ORCHESTRATOR" "$ORCHESTRATION_DIR/wait-pods-start.sh"
-    ssh $SSH_CFG_OPT "$ORCHESTRATOR" "$ORCHESTRATION_DIR/wait-qserv-start.sh"
     "$DIR/run-query.sh"
 done
 done

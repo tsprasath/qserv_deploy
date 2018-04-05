@@ -1,0 +1,21 @@
+# Run a command using su in a container
+# Run with kubectl apply -f <file.yaml>
+apiVersion: v1
+kind: Pod
+metadata:
+  name: qserv-su
+  namespace: default
+  labels:
+    app: qserv
+spec:
+  hostname: busybox
+  subdomain: qserv
+  containers:
+  - image: qserv/qserv:dev 
+    command: ["/bin/su"]
+    args: ["qserv", "-c", "ls /"]
+    #command: ["tail"]
+    #args: ["-f", "/dev/null"]
+    imagePullPolicy: IfNotPresent
+    name: su 
+  restartPolicy: Never 

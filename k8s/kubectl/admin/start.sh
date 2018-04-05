@@ -53,6 +53,9 @@ INI_FILE="${CFG_DIR}/pod.master.ini"
 
 echo "Create kubernetes configmaps for Qserv"
 
+kubectl delete configmap --ignore-not-found=true config-master
+kubectl create configmap config-master --from-literal=qserv_master="$MASTER"
+
 kubectl delete configmap --ignore-not-found=true config-dot-lsst
 kubectl create configmap --from-file="$CONFIGMAP_DIR/dot-lsst" config-dot-lsst
 
@@ -78,9 +81,7 @@ kubectl delete configmap --ignore-not-found=true config-qserv-configure
 kubectl create configmap --from-file="$CONFIGMAP_DIR/qserv-configure.sh" config-qserv-configure
 
 kubectl delete configmap --ignore-not-found=true config-wmgr-etc
-kubectl create configmap config-wmgr-etc \
-        --from-file="$CONFIGMAP_DIR/wmgr/etc" \
-        --from-literal=qserv_master="$MASTER"
+kubectl create configmap --from-file="$CONFIGMAP_DIR/wmgr/etc" config-wmgr-etc 
 
 kubectl delete configmap --ignore-not-found=true config-wmgr-start
 kubectl create configmap --from-file="$CONFIGMAP_DIR/wmgr/start.sh" config-wmgr-start
@@ -90,6 +91,9 @@ kubectl create configmap --from-file="$CONFIGMAP_DIR/worker/sql" config-worker-s
 
 kubectl delete configmap --ignore-not-found=true config-xrootd-start
 kubectl create configmap --from-file="$CONFIGMAP_DIR/xrootd/start.sh" config-xrootd-start
+
+kubectl delete configmap --ignore-not-found=true config-xrootd-etc
+kubectl create configmap --from-file="$CONFIGMAP_DIR/xrootd/etc" config-xrootd-etc
 
 echo "Create kubernetes secrets for Qserv"
 kubectl delete secret --ignore-not-found=true secret-wmgr

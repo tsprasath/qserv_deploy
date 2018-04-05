@@ -31,6 +31,15 @@ check_writable ${NAME} "QSERV_RUN_DIR"
 check_readable ${NAME} "LUA_DIR"
 check_readable ${NAME} "QSERV_DIR"
 
+# Create directory for empty chunk files
+# TODO: this should be handled by czar in order to have
+# EMPTYCHUNK_PATH parameter defined in one unique location
+EMPTYCHUNK_PATH="/qserv/data/qserv"
+if [ ! -d "$EMPTYCHUNK_PATH" ]; then
+    mkdir "$EMPTYCHUNK_PATH"
+    chown -R "$PROXY_USER":"$PROXY_USER" "$EMPTYCHUNK_PATH"
+fi
+
 # mysql-proxy requires my-proxy.cnf to have
 # permissions 660 to start, but configmap file
 # is a symlink.
@@ -39,8 +48,8 @@ MYPROXY_CONF_IN="/config-etc/my-proxy.cnf"
 # FIXME: copy to /etc when write access is enabled
 MYPROXY_CONF="/tmp/my-proxy.cnf"
 if [ -e "$MYPROXY_CONF_IN" ]; then
-    cp "$MYPROXY_CONF_IN" "$MYPROXY_CONF" 
-    chmod 660 "$MYPROXY_CONF"  
+    cp "$MYPROXY_CONF_IN" "$MYPROXY_CONF"
+    chmod 660 "$MYPROXY_CONF"
 else
     log_failure_msg "Unable to find mysql-proxy configuration file"
     exit 1
