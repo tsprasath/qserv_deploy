@@ -16,14 +16,17 @@ spec:
       command: [<RESOURCE_START_MARIADB>]
       livenessProbe:
         tcpSocket:
-          port: 13306
+          port: mariadb-port
         initialDelaySeconds: 15
         periodSeconds: 20
       readinessProbe:
         tcpSocket:
-          port: 13306
+          port: mariadb-port
         initialDelaySeconds: 5
         periodSeconds: 10
+      ports:
+      - name: mariadb-port
+        containerPort: 13306
       volumeMounts:
       - name: config-my-dot-cnf
         mountPath: /config-mariadb
@@ -56,14 +59,17 @@ spec:
       imagePullPolicy: Always
       livenessProbe:
         tcpSocket:
-          port: 4040
+          port: proxy-port
         initialDelaySeconds: 15
         periodSeconds: 20
       readinessProbe:
         tcpSocket:
-          port: 4040
+          port: proxy-port
         initialDelaySeconds: 5
         periodSeconds: 10
+      ports:
+      - name: proxy-port
+        containerPort: 4040
       volumeMounts:
       - mountPath: /home/qserv/.lsst
         name: config-dot-lsst

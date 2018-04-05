@@ -16,14 +16,17 @@ spec:
       command: [<RESOURCE_START_MARIADB>]
       livenessProbe:
         tcpSocket:
-          port: 13306
+          port: mariadb-port
         initialDelaySeconds: 15
         periodSeconds: 20
       readinessProbe:
         tcpSocket:
-          port: 13306
+          port: mariadb-port
         initialDelaySeconds: 5
         periodSeconds: 10
+      ports:
+      - name: mariadb-port
+        containerPort: 13306
       volumeMounts:
       - name: config-my-dot-cnf
         mountPath: /config-mariadb
@@ -62,14 +65,17 @@ spec:
       imagePullPolicy: Always
       livenessProbe:
         tcpSocket:
-          port: 5012
+          port: wmgr-port
         initialDelaySeconds: 15
         periodSeconds: 20
       readinessProbe:
         tcpSocket:
-          port: 5012
+          port: wmgr-port
         initialDelaySeconds: 5
         periodSeconds: 10
+      ports:
+      - name: wmgr-port
+        containerPort: 5012
       volumeMounts:
       - mountPath: /config-start
         name: config-wmgr-start
