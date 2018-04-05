@@ -14,6 +14,16 @@ spec:
       imagePullPolicy: Always
     # command: ["tail","-f", "/dev/null"]
       command: [<RESOURCE_START_MARIADB>]
+      livenessProbe:
+        tcpSocket:
+          port: 13306
+        initialDelaySeconds: 15
+        periodSeconds: 20
+      readinessProbe:
+        tcpSocket:
+          port: 13306
+        initialDelaySeconds: 5
+        periodSeconds: 10
       volumeMounts:
       - name: config-my-dot-cnf
         mountPath: /config-mariadb

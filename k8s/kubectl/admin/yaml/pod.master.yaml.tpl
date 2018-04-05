@@ -14,6 +14,16 @@ spec:
       image: "<INI_IMAGE>"
       imagePullPolicy: Always
       command: [<RESOURCE_START_MARIADB>]
+      livenessProbe:
+        tcpSocket:
+          port: 13306
+        initialDelaySeconds: 15
+        periodSeconds: 20
+      readinessProbe:
+        tcpSocket:
+          port: 13306
+        initialDelaySeconds: 5
+        periodSeconds: 10
       volumeMounts:
       - name: config-my-dot-cnf
         mountPath: /config-mariadb
@@ -71,6 +81,16 @@ spec:
               key: qserv_master
       image: "<INI_IMAGE>"
       imagePullPolicy: Always
+      livenessProbe:
+        tcpSocket:
+          port: 5012
+        initialDelaySeconds: 15
+        periodSeconds: 20
+      readinessProbe:
+        tcpSocket:
+          port: 5012
+        initialDelaySeconds: 5
+        periodSeconds: 10
       volumeMounts:
       - mountPath: /config-start
         name: config-wmgr-start
@@ -127,4 +147,4 @@ spec:
     - name: secret-wmgr
       secret:
         secretName: secret-wmgr
-  restartPolicy: Never
+  restartPolicy: Always
