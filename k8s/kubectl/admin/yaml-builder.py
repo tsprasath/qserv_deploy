@@ -222,39 +222,10 @@ if __name__ == "__main__":
         # xrootd mmap/mlock *.MYD files and need to access mysql.sock
         _mount_volume('xrootd', data_mount_path, data_volume_name)
 
-        # Create qserv-run-dir volume
-        #
-        run_volume_name = 'run-volume'
-        run_mount_path = '/qserv/run'
-        _add_emptydir_volume(run_volume_name)
-
         # initContainer
         #
         yaml_data['spec']['initContainers'] = []
-        run_volume_name = 'run-volume'
-        run_mount_path = '/qserv/run'
         if _is_master():
-
-            # initContainer: configure qserv-run-dir using qserv image
-            #
-            init_container = dict()
-            command = ["script", "--return", "--quiet", "--command",
-                "su qserv -c 'bash /config/qserv-configure.sh'"]
-            init_container['command'] = command
-            init_container['env'] = []
-            init_container['env'].append({'name': 'NODE_TYPE',
-                'value': 'master'})
-            init_container['env'].append({'name': 'QSERV_MASTER',
-                'value': config.get('spec', 'master_hostname')})
-            init_container['image'] = config.get('spec', 'image')
-            init_container['imagePullPolicy'] = 'Always'
-            init_container['name'] = 'init-run-dir'
-            init_container['volumeMounts'] = []
-            init_container['volumeMounts'].append({'mountPath': run_mount_path,
-                'name': run_volume_name})
-            init_container['volumeMounts'].append({'mountPath':
-                "/config/", 'name': 'config-qserv-configure'})
-            yaml_data['spec']['initContainers'].append(init_container)
 
             # initContainer: configure qserv-data-dir using mariadb image
             #

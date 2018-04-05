@@ -55,8 +55,6 @@ spec:
         name: tmp-volume
       - mountPath: /qserv/data
         name: data-volume
-      - mountPath: /qserv/run
-        name: run-volume
       - mountPath: /secret
         name: secret-wmgr
     - name: wmgr
