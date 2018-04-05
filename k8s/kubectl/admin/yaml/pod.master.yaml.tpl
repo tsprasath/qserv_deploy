@@ -54,6 +54,16 @@ spec:
       - /config-start/start.sh
       image: "<INI_IMAGE>"
       imagePullPolicy: Always
+      livenessProbe:
+        tcpSocket:
+          port: 4040
+        initialDelaySeconds: 15
+        periodSeconds: 20
+      readinessProbe:
+        tcpSocket:
+          port: 4040
+        initialDelaySeconds: 5
+        periodSeconds: 10
       volumeMounts:
       - mountPath: /home/qserv/.lsst
         name: config-dot-lsst
