@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Start cmsd and xrootd inside pod
-# Launch be qserv user
+# Launch as qserv user
 
 # @author  Fabrice Jammes, IN2P3/SLAC
 

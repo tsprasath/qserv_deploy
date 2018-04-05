@@ -1,14 +1,8 @@
 # Unified configuration for xrootd/cmsd for both manager and server instances
 # "if"-block separates manager-only and server-only configuration.
 
-###################################################################################
-# NOTE : mono-node support requires to comment out some configuration directives
-#        and do not start cmsd. Mono-node uses server mode.
-###################################################################################
-
-if defined ?~QSERV_MASTER
-     set master = $QSERV_MASTER
-fi
+# QSERV_MASTER env var must be defined inside container
+set master = $QSERV_MASTER
 
 ############################
 # if: manager node

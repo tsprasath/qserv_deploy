@@ -12,4 +12,3 @@ DIR=$(cd "$(dirname "$0")"; pwd -P)
 
 "$DIR"/run-kubectl.sh -C "/root/admin/start.sh"
 "$DIR"/run-kubectl.sh -C "/root/admin/wait-pods-start.sh"
-"$DIR"/run-kubectl.sh -C "/root/admin/wait-qserv-start.sh"
