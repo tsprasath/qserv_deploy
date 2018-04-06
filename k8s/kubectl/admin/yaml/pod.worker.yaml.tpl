@@ -123,4 +123,4 @@ spec:
     - name: secret-wmgr
       secret:
         secretName: secret-wmgr
-  restartPolicy: Always
+  restartPolicy: Never
