@@ -6,6 +6,7 @@ and provisioning
 
 @author  Oualid Achbal, IN2P3
 @author  Fabrice Jammes, IN2P3
+@author  Benjamin Roziere, IN2P3
 
 """
 
@@ -36,6 +37,7 @@ from keystoneauth1 import session
 from novaclient import client
 import glanceclient
 import novaclient.exceptions
+import shade
 
 # ---------------------------------
 # Local non-exported definitions --
@@ -137,6 +139,9 @@ class CloudManager(object):
         """
 
         logging.debug("Use configuration file: %s", config_file_name)
+	
+	shade.simple_logging(debug=True)
+	self.cloud = shade.openstack_cloud()
 
         self._creds = _get_nova_creds()
         logging.debug("Openstack user: %s", self._creds['username'])

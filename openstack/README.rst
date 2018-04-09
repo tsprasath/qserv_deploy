@@ -15,6 +15,7 @@ Pre-requisite
    pip install --upgrade --force pbr
 
    # Install the OpenStack client
+   sudo pip install shade==1.27.1
    sudo pip install python-novaclient==6.0.2
    sudo pip install python-openstackclient==2.1.0
 
