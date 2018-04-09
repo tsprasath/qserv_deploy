@@ -14,6 +14,19 @@ spec:
       imagePullPolicy: Always
     # command: ["tail","-f", "/dev/null"]
       command: [<RESOURCE_START_MARIADB>]
+      livenessProbe:
+        tcpSocket:
+          port: mariadb-port
+        initialDelaySeconds: 15
+        periodSeconds: 20
+      readinessProbe:
+        tcpSocket:
+          port: mariadb-port
+        initialDelaySeconds: 5
+        periodSeconds: 10
+      ports:
+      - name: mariadb-port
+        containerPort: 13306
       volumeMounts:
       - name: config-my-dot-cnf
         mountPath: /config-mariadb
@@ -50,6 +63,19 @@ spec:
               key: qserv_master
       image: "<INI_IMAGE>"
       imagePullPolicy: Always
+      livenessProbe:
+        tcpSocket:
+          port: wmgr-port
+        initialDelaySeconds: 15
+        periodSeconds: 20
+      readinessProbe:
+        tcpSocket:
+          port: wmgr-port
+        initialDelaySeconds: 5
+        periodSeconds: 10
+      ports:
+      - name: wmgr-port
+        containerPort: 5012
       volumeMounts:
       - mountPath: /config-start
         name: config-wmgr-start
