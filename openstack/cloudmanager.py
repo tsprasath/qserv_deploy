@@ -140,7 +140,7 @@ class CloudManager(object):
 
         logging.debug("Use configuration file: %s", config_file_name)
 	
-	shade.simple_logging(debug=True)
+	shade.simple_logging(debug=False)
 	self.cloud = shade.openstack_cloud()
 
         self._creds = _get_nova_creds()
@@ -327,27 +327,31 @@ class CloudManager(object):
 
         if not flavor:
             flavor = self.flavor
-
+	
         # Launch an instance from an image
-        instance = self.nova.servers.create(name=instance_name,
-                                            image=self.image,
-                                            flavor=flavor,
-                                            userdata=userdata,
-                                            key_name=self.key,
-                                            nics=self.nics)
+        try:
+            instance = self.cloud.create_server(name=instance_name,
+               	                            image=self.image,
+	                                          flavor=flavor,
+        	                                  userdata=userdata,
+               	                            key_name=self.key,
+                       	                    nics=self.nics)
+        except shade.OpenStackCloudException as exception:
+            logging.critical("Error while creating the instance %s: %s", instance_name, exception)
+            sys.exit(1)
+        
         return instance
 
     def wait_active(self, instance):
         """
         Wait for an instance to have 'ACTIVE' status
         """
-        # Poll at 5 second intervals, until the status is 'ACTIVE'
-        status = instance.status
-        while status != 'ACTIVE':
-            time.sleep(5)
-            instance.get()
-            status = instance.status
-        logging.info("Instance %s is %s", instance.name, status)
+        logging.debug("Waiting for instance %s to be ACTIVE", instance.name)
+
+        self.cloud.wait_for_server(instance, auto_ip=False)
+	server = self.cloud.get_server(instance.id)
+
+        logging.info("Instance %s is %s", instance.name, server.status)
 
     def nova_create_server_volume(self, instance_id, data_volume_name):
         """
@@ -376,7 +380,7 @@ class CloudManager(object):
         found = None
         while not found:
             time.sleep(5)
-            output = instance.get_console_output()
+            output = self.cloud.get_server_console(instance)
             logging.debug("console output: %s", output)
             logging.debug("instance: %s", instance)
             found = re.search(check_word, output)
@@ -407,6 +411,25 @@ class CloudManager(object):
 
         with open(os.path.expanduser(self.key_filename + ".pub")) as fpubkey:
             self.nova.keypairs.create(name=self.key, public_key=fpubkey.read())
+
+    def _get_instance_fixed_ip(self, instance, network=None):
+        """
+        Returns the fixed (local) ip address of the instance
+        """
+        server = self.cloud.get_server(instance.id)
+        
+        return server.private_v4
+ 
+    def attach_floating_ip(self, instance):
+        """
+        Attach a floating ip address to the instance
+        """
+        logging.debug("Waiting for floating_ip to be attached to %s", instance.name)
+        floating_ip = self.cloud.add_auto_ip(instance, wait=True)
+        logging.info("Attached floating ip %s to instance %s", floating_ip, instance.name)
+        
+        return floating_ip
+
 
     def get_floating_ip(self):
         """
@@ -459,10 +482,10 @@ Host *
     ServerAliveCountMax 2
 '''
         for instance in instances:
-            fixed_ip = instance.networks[self.network_name][0]
+            fixed_ip = self._get_instance_fixed_ip(instance)
             ssh_config += ssh_config_tpl.format(host=instance.name,
                                                 fixed_ip=fixed_ip,
-                                                floating_ip=floating_ip.ip,
+                                                floating_ip=floating_ip,
                                                 key_filename=self.key_filename,
                                                 ssh_opts=ssh_opts)
         logging.debug("Create SSH client config ")
@@ -505,7 +528,7 @@ Host *
         hostfile = ""
         for instance in instances:
             # Collect IP adresses
-            fixed_ip = instance.networks[self.network_name][0]
+            fixed_ip = self._get_instance_fixed_ip(instance)
             hostfile += hostfile_tpl.format(host=instance.name, ip=fixed_ip)
 
         for instance in instances:
