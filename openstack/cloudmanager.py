@@ -35,7 +35,6 @@ from cinderclient import client as cinder_client
 from keystoneauth1 import loading
 from keystoneauth1 import session
 from novaclient import client
-import glanceclient
 import novaclient.exceptions
 import shade
 
@@ -297,9 +296,16 @@ class CloudManager(object):
         Delete an Openstack image from Glance
         :param snapshot: image to delete
         """
-        glance = glanceclient.Client(_OPENSTACK_API_VERSION,
-                                     session=self._session)
-        glance.images.delete(snapshot.id)
+        try:
+          deleted = self.cloud.delete_image(snapshot.id)
+
+          if deleted:
+            logging.info("Snapshot %s deleted", snapshot.name)
+          else:
+            logging.info("Snapshot %s not found", snapshot.name)
+
+        except shade.OpenStackCloudException:
+          logging.critical("Unable to delete %s snapshot, manual cleanup required", snapshot.name)
 
     def _build_instance_name(self, instance_id):
         """
@@ -353,24 +359,20 @@ class CloudManager(object):
 
         logging.info("Instance %s is %s", instance.name, server.status)
 
-    def nova_create_server_volume(self, instance_id, data_volume_name):
+    def nova_create_server_volume(self, instance, data_volume_name):
         """
         Attach a volume to a server, in /dev/vdb
-        @param instance_id: openstack server instance id
+        @param instance: openstack server instance object
         @param data_volume_name: name of data volume to attach
         """
-        data_volumes = self.cinder.volumes.list(search_opts={'name':
-                                                             data_volume_name})
-        if (not len(data_volumes) == 1):
-            msg = "Cinder data volume not found "
-            "(volumes found: {})".format(data_volumes)
+        data_volume = self.cloud.get_volume(data_volume_name)
+
+        if data_volume is None:
+            msg = "Data volume %s not found".format(data_volume_name)
             raise ValueError(msg)
-
-        data_volume_id = data_volumes[0].id
-
-        logging.debug("Volumes: %s", data_volumes)
-        self.nova.volumes.create_server_volume(instance_id,
-                                               data_volume_id, '/dev/vdb')
+        
+        logging.debug("Attaching volume %s to instance %s", data_volume_name, instance.name)
+        self.cloud.attach_volume(instance, data_volume, device='/dev/vdb')
 
     def detect_end_cloud_config(self, instance):
         """
