@@ -30,23 +30,11 @@ import warnings
 # ----------------------------
 # Imports for other modules --
 # ----------------------------
-
 import shade
 
 # ---------------------------------
 # Local non-exported definitions --
 # ---------------------------------
-
-def _get_nova_creds():
-    """
-    Extract the login information from the environment
-    """
-    creds = {}
-    creds['username'] = os.environ['OS_USERNAME']
-    creds['password'] = os.environ['OS_PASSWORD']
-    creds['auth_url'] = os.environ['OS_AUTH_URL']
-    creds['project_id'] = os.environ['OS_TENANT_ID']
-    return creds
 
 # -----------------------
 # Exported definitions --
@@ -87,11 +75,11 @@ def config_logger(verbose, verboseAll):
     if not verboseAll:
         # suppress INFO/DEBUG regular messages from other loggers
         # Disable dependencies loggers and warnings
-        for logger_name in ["keystoneauth", "requests",
+        for logger_name in ["shade", "keystoneauth", "requests",
                             "stevedore", "urllib3"]:
             logging.getLogger(logger_name).setLevel(logging.ERROR)
         warnings.filterwarnings("ignore")
-
+    
     logger = logging.getLogger()
 
     # create console handler and set level to debug
@@ -130,13 +118,12 @@ class CloudManager(object):
 
         logging.debug("Use configuration file: %s", config_file_name)
 	
-	shade.simple_logging(debug=False)
 	self.cloud = shade.openstack_cloud()
-
-        self._creds = _get_nova_creds()
+        
+        self._creds = self.cloud.auth
         logging.debug("Openstack user: %s", self._creds['username'])
         self._safe_username = self._creds['username'].replace('.', '')
-
+        
         default_instance_prefix = "{0}-qserv-".format(self._safe_username)
 
         config = configparser.RawConfigParser(

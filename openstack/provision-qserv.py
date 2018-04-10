@@ -135,7 +135,7 @@ ORCHESTRATOR="${{HOSTNAME_TPL}}{orch_node_suffix}-1"
             cloudManager.nova_create_server_volume(instance, vol_name)
         cloudManager.mount_volume(qserv_instances)
 
-    logging.debug("SUCCESS: Qserv Openstack cluster is up")
+    logging.info("SUCCESS: Qserv Openstack cluster is up")
 
 
 if __name__ == "__main__":
