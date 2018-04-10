@@ -394,11 +394,11 @@ class CloudManager(object):
         """
         if not self._hostname_tpl:
             raise ValueError("Instance prefix is empty")
-        for server in self.nova.servers.list():
+        for server in self.cloud.list_servers():
             # server_name must be ascii
             if server.name.startswith(self._hostname_tpl):
                 logging.debug("Cleanup existing instance %s", server.name)
-                server.delete()
+                self.cloud.delete_server(server.id)
 
     def _manage_ssh_key(self):
         """
@@ -435,6 +435,8 @@ class CloudManager(object):
         """
         Return an available floating ip address
         """
+	logging.warn("cloudmanager#get_floating_ip() is deprecated. Use attach_floating_ip() instead!")
+
         floating_ips = self.nova.floating_ips.list()
         floating_ip = None
         floating_ip_pool = self.nova.floating_ip_pools.list()[0].name
