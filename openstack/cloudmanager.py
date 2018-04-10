@@ -31,17 +31,11 @@ import warnings
 # Imports for other modules --
 # ----------------------------
 
-from keystoneauth1 import loading
-from keystoneauth1 import session
 import shade
 
 # ---------------------------------
 # Local non-exported definitions --
 # ---------------------------------
-
-_OPENSTACK_API_VERSION = '2'
-_OPENSTACK_VERIFY_SSL = False
-
 
 def _get_nova_creds():
     """
@@ -156,9 +150,7 @@ class CloudManager(object):
              'nb_worker': 3,
              'nb_orchestrator': 1,
              'format': None})
-
-        self._session = self._create_keystone_session()
-        
+                
         with open(config_file_name, 'r') as config_file:
             config.readfp(config_file)
 
@@ -230,16 +222,6 @@ class CloudManager(object):
         start with returned string
         """
         return self._hostname_tpl
-
-    def _create_keystone_session(self):
-        """
-        Return a keystone session used to
-        connect to other Openstack services
-        """
-        loader = loading.get_plugin_loader('password')
-        auth = loader.load_from_options(**self._creds)
-        sess = session.Session(auth=auth, verify=_OPENSTACK_VERIFY_SSL)
-        return sess
 
     def get_safe_username(self):
         """
