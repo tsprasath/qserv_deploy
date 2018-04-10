@@ -31,11 +31,8 @@ import warnings
 # Imports for other modules --
 # ----------------------------
 
-from cinderclient import client as cinder_client
 from keystoneauth1 import loading
 from keystoneauth1 import session
-from novaclient import client
-import novaclient.exceptions
 import shade
 
 # ---------------------------------
@@ -96,7 +93,7 @@ def config_logger(verbose, verboseAll):
     if not verboseAll:
         # suppress INFO/DEBUG regular messages from other loggers
         # Disable dependencies loggers and warnings
-        for logger_name in ["keystoneauth", "novaclient", "requests",
+        for logger_name in ["keystoneauth", "requests",
                             "stevedore", "urllib3"]:
             logging.getLogger(logger_name).setLevel(logging.ERROR)
         warnings.filterwarnings("ignore")
@@ -161,11 +158,7 @@ class CloudManager(object):
              'format': None})
 
         self._session = self._create_keystone_session()
-        self.nova = client.Client(_OPENSTACK_API_VERSION,
-                                  session=self._session)
-        self.cinder = cinder_client.Client(_OPENSTACK_API_VERSION,
-                                           session=self._session)
-
+        
         with open(config_file_name, 'r') as config_file:
             config.readfp(config_file)
 
@@ -181,21 +174,18 @@ class CloudManager(object):
         else:
             image_name = config.get('server', 'snapshot')
 
-        try:
-            self.image = self.nova.images.find(name=image_name)
-        except novaclient.exceptions.NoUniqueMatch:
-            logging.critical("Image %s not unique", image_name)
-            sys.exit(1)
-        except novaclient.exceptions.NotFound:
+        
+        self.image = self.cloud.get_image(image_name)
+        if self.image is None:
             logging.critical("Image %s do not exist. Create it first",
                              image_name)
             sys.exit(1)
 
         flavor_name = config.get('server', 'flavor')
-        self.flavor = self.nova.flavors.find(name=flavor_name)
+        self.flavor = self.cloud.get_flavor(flavor_name)
 
         snapshot_flavor_name = config.get('server', 'snapshot_flavor')
-        self.snapshot_flavor = self.nova.flavors.find(name=snapshot_flavor_name)
+        self.snapshot_flavor = self.cloud.get_flavor(snapshot_flavor_name)
 
         self.network_name = config.get('server', 'network')
         if config.get('server', 'net-id'):
@@ -260,35 +250,25 @@ class CloudManager(object):
 
     def nova_snapshot_create(self, instance):
         """
-        Shutdown instance and snapshot it to an image named self.snapshot_name
+        Shutdown instance if needed and snapshot it to an image named self.snapshot_name
         """
-        instance.stop()
-        while instance.status != 'SHUTOFF':
-            time.sleep(5)
-            instance.get()
-
         logging.info("Creating Qserv snapshot '%s'", self.snapshot_name)
-        qserv_image = instance.create_image(self.snapshot_name)
-        status = None
-        while status != 'ACTIVE':
-            time.sleep(5)
-            status = self.nova.images.get(qserv_image).status
+
+        try:
+          self.cloud.create_image_snapshot(self.snapshot_name, instance, wait=True)
+        except shade.OpenStackCloudException:
+          logging.critical("Unable to create image snapshot %s", self.snapshot_name)
+          sys.exit(1)
+
         logging.info("SUCCESS: Qserv image '%s' is active", self.snapshot_name)
 
     def nova_snapshot_find(self):
         """
         Returns and Openstack image named self.snapshot_name.
         Exit with error code if image is not unique.
-        @throw novaclient.exceptions.NoUniqueMatch if image is not unique.
         """
-        try:
-            snapshot = self.nova.images.find(name=self.snapshot_name)
-        except novaclient.exceptions.NotFound:
-            snapshot = None
-        except novaclient.exceptions.NoUniqueMatch:
-            logging.critical("Qserv snapshot %s not unique, "
-                             "manual cleanup required", self.snapshot_name)
-            sys.exit(1)
+        snapshot = self.cloud.get_image(self.snapshot_name)
+                
         return snapshot
 
     def nova_snapshot_delete(self, snapshot):
@@ -407,12 +387,12 @@ class CloudManager(object):
         Upload user ssh public key on Openstack instances
         """
         logging.info('Manage ssh keys: %s', self.key)
-        if self.nova.keypairs.findall(name=self.key):
+        if self.cloud.get_keypair(self.key):
             logging.debug('Remove previous ssh keys')
-            self.nova.keypairs.delete(key=self.key)
+            self.cloud.delete_keypair(self.key)
 
         with open(os.path.expanduser(self.key_filename + ".pub")) as fpubkey:
-            self.nova.keypairs.create(name=self.key, public_key=fpubkey.read())
+            self.cloud.create_keypair(name=self.key, public_key=fpubkey.read())
 
     def _get_instance_fixed_ip(self, instance, network=None):
         """
@@ -430,35 +410,6 @@ class CloudManager(object):
         floating_ip = self.cloud.add_auto_ip(instance, wait=True)
         logging.info("Attached floating ip %s to instance %s", floating_ip, instance.name)
         
-        return floating_ip
-
-
-    def get_floating_ip(self):
-        """
-        Return an available floating ip address
-        """
-	logging.warn("cloudmanager#get_floating_ip() is deprecated. Use attach_floating_ip() instead!")
-
-        floating_ips = self.nova.floating_ips.list()
-        floating_ip = None
-        floating_ip_pool = self.nova.floating_ip_pools.list()[0].name
-
-        # Check for available public ip address in project
-        for ip in floating_ips:
-            if ip.instance_id is None:
-                floating_ip = ip
-                logging.debug('Available floating ip found %s', floating_ip)
-                break
-
-        # Check for available public ip address in ext-net pool
-        if floating_ip is None:
-            try:
-                logging.debug("Use floating ip pool: %s", floating_ip_pool)
-                floating_ip = self.nova.floating_ips.create(floating_ip_pool)
-            except novaclient.exceptions.Forbidden as exc:
-                logging.fatal("Unable to retrieve public IP: %s", exc)
-                sys.exit(1)
-
         return floating_ip
 
     def print_ssh_config(self, instances, floating_ip):

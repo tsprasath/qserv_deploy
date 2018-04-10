@@ -29,7 +29,6 @@ import sys
 # ----------------------------
 # Imports for other modules --
 # ----------------------------
-from novaclient.exceptions import BadRequest
 import cloudmanager
 
 # -----------------------
@@ -54,20 +53,8 @@ def main():
                                                         userdata)
     cloudManager.wait_active(gateway_instance)
 
-    # Find a floating ip address for gateway
+    # Attach a floating ip address to gateway
     floating_ip = cloudManager.attach_floating_ip(gateway_instance)
-    #if not floating_ip:
-    #    logging.critical("Unable to add public ip to Qserv gateway")
-    #    sys.exit(1)
-    #logging.info("Add floating ip ({0}) to {1}".format(floating_ip,
-    #                                                   gateway_instance.name))
-    #try:
-    #    gateway_instance.add_floating_ip(floating_ip)
-    #except BadRequest as exc:
-    #    logging.critical('The procedure needs to be restarted. '
-    #                     'Exception occurred: %s', exc)
-    #    gateway_instance.delete()
-    #    sys.exit(1)
 
     # Manage ssh security group
     if cloudManager.ssh_security_group:
