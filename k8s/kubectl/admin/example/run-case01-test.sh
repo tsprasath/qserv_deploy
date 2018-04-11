@@ -22,6 +22,6 @@ done
 
 kubectl exec master -c proxy -- su qserv -l -c ". /qserv/stack/loadLSST.bash && \
     setup qserv_distrib -t qserv-dev && \
-    echo \"$CSS_INFO\" | qserv-admin.py -c mysql://qsmaster@127.0.0.1:13306/qservCssData && \
+    echo \"$CSS_INFO\" | qserv-admin.py -c mysql://qsmaster@127.0.0.1:3306/qservCssData && \
     qserv-check-integration.py --case=01 --load -V DEBUG"
 

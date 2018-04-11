@@ -24,7 +24,7 @@ SECRET_KEY = 'CHANGEME'
 
 #  database connection parameters, use None for defaults
 DB_HOST = 'localhost'
-DB_PORT = 13306
+DB_PORT = 3306
 DB_SOCKET = '/qserv/data/mysql/mysql.sock'
 
 # regular database account
@@ -49,7 +49,7 @@ USE_CSS = True
 CSS_CONFIG = {
     'technology': 'mysql',
     'hostname': '<ENV_QSERV_MASTER>',
-    'port': '13306',
+    'port': '3306',
     'username': 'qsmaster',
     'database': 'qservCssData',
 }
