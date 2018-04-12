@@ -95,6 +95,8 @@ packages:
 - util-linux
 
 runcmd:
+- ['setenforce', '0']
+- ['sed', '-i', '"s/SELINUX=enforcing/SELINUX=disabled/"', '/etc/sysconfig/selinux']
 - ['systemctl', 'enable', 'docker']
 - ['systemctl', 'enable', 'kubelet']
 - ['curl', '-O', 'http://linuxsoft.cern.ch/cern/centos/7/cern/x86_64/Packages/parallel-20150522-1.el7.cern.noarch.rpm']
@@ -139,6 +141,9 @@ if __name__ == "__main__":
         instance_id = "source"
         instance_for_snapshot = cloudManager.nova_servers_create(
             instance_id, userdata_snapshot, cloudManager.snapshot_flavor)
+        
+        # Wait for the instance boot complete
+        cloudManager.wait_active(instance_for_snapshot)
 
         # Wait for cloud config completion
         cloudManager.detect_end_cloud_config(instance_for_snapshot)
@@ -146,7 +151,7 @@ if __name__ == "__main__":
         cloudManager.nova_snapshot_create(instance_for_snapshot)
 
         # Delete instance after taking a snapshot
-        instance_for_snapshot.delete()
+        cloudManager.delete_server(instance_for_snapshot)
 
     except Exception as exc:
         logging.critical('Exception occured: %s', exc, exc_info=True)

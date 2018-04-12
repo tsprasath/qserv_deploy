@@ -168,9 +168,9 @@ class CloudManager(object):
 
         self.network_name = config.get('server', 'network')
         if config.get('server', 'net-id'):
-            self.nics = [{'net-id': config.get('server', 'net-id')}]
+            self.net_uuid = config.get('server', 'net-id')
         else:
-            self.nics = []
+            self.net_uuid = None
 
         self.ssh_security_group = config.get('server', 'ssh_security_group')
 
@@ -217,6 +217,16 @@ class CloudManager(object):
         """
         return self._safe_username
 
+    def add_security_group(self, instance, security_group_name):
+        """
+        Add the provided security group to the server
+        """
+        groups = []
+        group = self.cloud.get_security_group(security_group_name)
+        groups.append(group)
+        
+        self.cloud.add_server_security_groups(instance, groups)
+    
     def nova_snapshot_create(self, instance):
         """
         Shutdown instance if needed and snapshot it to an image named self.snapshot_name
@@ -278,10 +288,15 @@ class CloudManager(object):
         logging.info("Launch an instance %s", instance_name)
 
         userdata = userdata.format(node_id=instance_id)
-        logging.debug("userdata %s", userdata)
+        #logging.debug("userdata %s", userdata)
 
         if not flavor:
             flavor = self.flavor
+
+        if self.net_uuid is not None:
+            nics = [{'net-id':self.net_uuid}]
+        else:
+            nics = []
 	
         # Launch an instance from an image
         try:
@@ -289,13 +304,37 @@ class CloudManager(object):
                	                            image=self.image,
 	                                          flavor=flavor,
         	                                  userdata=userdata,
+                                                  ip_pool=self.network_name,
                	                            key_name=self.key,
-                       	                    nics=self.nics)
+                       	                    nics=nics)
         except shade.OpenStackCloudException as exception:
             logging.critical("Error while creating the instance %s: %s", instance_name, exception)
             sys.exit(1)
         
         return instance
+    
+    def detach_floating_ips(self, instance):
+        """
+        Dettach all floating ips attached to the instance
+        """
+        server_floats = shade.meta.find_nova_interfaces(
+            instance['addresses'], ext_tag='floating')
+        for fip in server_floats:
+            try:
+                ip = self.cloud.get_floating_ip(id=None, filters={'floating_ip_address': fip['addr']})
+            except shade.OpenStackCloudURINotFound:
+                continue
+            if not ip:
+                continue
+
+            self.cloud.detach_ip_from_server(instance.id, ip['id'])
+
+    def delete_server(self, instance):
+        """
+        Delete the provided instance from OpenStack
+        """
+        self.detach_floating_ips(instance)
+        self.cloud.delete_server(instance.id)
 
     def wait_active(self, instance):
         """
@@ -349,7 +388,7 @@ class CloudManager(object):
             # server_name must be ascii
             if server.name.startswith(self._hostname_tpl):
                 logging.debug("Cleanup existing instance %s", server.name)
-                self.cloud.delete_server(server.id)
+                self.delete_server(server)
 
     def _manage_ssh_key(self):
         """

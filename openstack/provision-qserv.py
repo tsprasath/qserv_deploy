@@ -58,7 +58,7 @@ def main():
 
     # Manage ssh security group
     if cloudManager.ssh_security_group:
-        gateway_instance.add_security_group(cloudManager.ssh_security_group)
+        cloudManager.add_security_group(gateway_instance, cloudManager.ssh_security_group)
 
     instances.append(gateway_instance)
 
