@@ -17,4 +17,4 @@ echo "Migrate database schema on all nodes"
 parallel --tag "kubectl exec {} -c worker -- su -l qserv -c \
     '. /qserv/stack/loadLSST.bash && 
      setup qserv_distrib -t qserv-dev && \
-     qserv-smig.py -m -c mysql://root:${PASSWORD}@127.0.0.1:13306/qservw_worker wdb'" ::: $WORKER_PODS
+     qserv-smig.py -m -c mysql://root:${PASSWORD}@127.0.0.1:3306/qservw_worker wdb'" ::: $WORKER_PODS
