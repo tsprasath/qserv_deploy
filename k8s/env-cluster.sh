@@ -14,8 +14,17 @@ fi
 
 # Machine names
 ENV_INFRASTRUCTURE_FILE="$CLUSTER_CONFIG_DIR/env-infrastructure.sh"
-. "$ENV_INFRASTRUCTURE_FILE"
+if [ -r "$ENV_INFRASTRUCTURE_FILE" ]; then
+    . "$ENV_INFRASTRUCTURE_FILE"
+else
+    echo "ERROR: $ENV_INFRASTRUCTURE_FILE is not readable"
+    exit 1
+fi
 
 # GNU parallel ssh configuration
 PARALLEL_SSH_CFG="$CLUSTER_CONFIG_DIR/sshloginfile"
+if [ ! -r "$PARALLEL_SSH_CFG" ]; then
+    echo "ERROR: $PARALLEL_SSH_CFG is not readable"
+    exit 1
+fi
 

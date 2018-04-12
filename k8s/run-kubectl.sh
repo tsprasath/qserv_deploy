@@ -14,9 +14,8 @@ usage() {
 Usage: $(basename "$0") [options]
 Available options:
   -C            Command to launch inside container
-  -K            Path to configuration directory,
-                default to $CLUSTER_CONFIG_DIR_DEFAULT_1 if readable
-                if not default to $CLUSTER_CONFIG_DIR_DEFAULT_2 if readable
+  -K            Path to configuration directory, default to
+                \$CLUSTER_CONFIG_DIR env variable value
   -h            This message
 
 Run docker container containing k8s management tools (helm,
@@ -38,18 +37,19 @@ done
 shift "$((OPTIND-1))"
 
 if [ $# -ne 0 ] ; then
-	usage
+    usage
     exit 2
 fi
 
-if [ ! -r "$CLUSTER_CONFIG_DIR" ]; then
+if [ ! -d "$CLUSTER_CONFIG_DIR" ]; then
     echo "ERROR: incorrect CLUSTER_CONFIG_DIR parameter: \"$CLUSTER_CONFIG_DIR\""
+    usage
     exit 2
 fi
 
 case "$CLUSTER_CONFIG_DIR" in
     /*) ;;
-    *) echo "expect absolute path" ; exit 2 ;;
+    *) echo "expect absolute path for CLUSTER_CONFIG_DIR" ; exit 2 ;;
 esac      
 
 # strip trailing slash
