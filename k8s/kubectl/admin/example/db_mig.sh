@@ -11,10 +11,16 @@ DIR=$(cd "$(dirname "$0")"; pwd -P)
 CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR:-$HOME/.lsst/qserv-cluster}"
 . "$CLUSTER_CONFIG_DIR/env.sh"
 
-PASSWORD="changeme"
+PASSWORD='changeme'
 
-echo "Migrate database schema on all nodes"
+echo "Migrate database schema on master"
+kubectl exec master -c master -- su -l qserv -c \
+    ". /qserv/stack/loadLSST.bash && \
+     setup qserv_distrib -t qserv-dev && \
+     qserv-smig.py -m -c mysql://root:${PASSWORD}@127.0.0.1:13306/qservMeta qmeta"
+
+echo "Migrate database schema on all workers"
 parallel --tag "kubectl exec {} -c worker -- su -l qserv -c \
-    '. /qserv/stack/loadLSST.bash && 
+    '. /qserv/stack/loadLSST.bash && \
      setup qserv_distrib -t qserv-dev && \
      qserv-smig.py -m -c mysql://root:${PASSWORD}@127.0.0.1:3306/qservw_worker wdb'" ::: $WORKER_PODS

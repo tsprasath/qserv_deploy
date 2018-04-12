@@ -8,9 +8,8 @@
 set -e
 set -x
 
-CLUSTER_CONFIG_DIR="$HOME/.lsst/qserv-cluster"
-# GNU parallel ssh configuration
-PARALLEL_SSH_CFG="$CLUSTER_CONFIG_DIR/sshloginfile"
+DIR=$(cd "$(dirname "$0")"; pwd -P)
+. "$DIR/../env-cluster.sh"
 
 usage() {
     cat << EOD

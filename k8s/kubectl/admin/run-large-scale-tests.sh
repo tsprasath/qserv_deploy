@@ -11,8 +11,7 @@
 
 set -e
 
-DIR=$(cd "$(dirname "$0")"; pwd -P)
-. "$DIR/env-cluster.sh"
+. "$CLUSTER_CONFIG_DIR/env.sh"
 
 TEST_DIR="$HOME/tmp/qserv_testscale"
 
