@@ -3,3 +3,8 @@
 /*-openrc.sh
 /*.conf
 *.pyc
+*.swp
+*.tfvars
+*.tfstate
+.terraform/
+*.tfstate.backup
