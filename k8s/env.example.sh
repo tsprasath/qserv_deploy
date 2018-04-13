@@ -6,7 +6,6 @@
 # VERSION can be a git ticket branch but with _ instead of /
 # example: tickets_DM-7139, or dev
 VERSION=1bef3d1
-MARIADB_VERSION=10.1.25
 # Version of the deployment tool to use
 DEPLOY_VERSION=dev
 

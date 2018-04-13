@@ -9,6 +9,12 @@
 # @author  Fabrice Jammes, IN2P3/SLAC
 
 set -e
+set -x
+
+# Source pathes to eups packages
+. /qserv/run/etc/sysconfig/qserv
+
+# tail -f /dev/null
 
 DATA_DIR="/qserv/data"
 MARIADB_LOCK="$DATA_DIR/mariadb-cfg.lock"
@@ -16,14 +22,11 @@ MYSQLD_DATA_DIR="$DATA_DIR/mysql"
 MYSQLD_SOCKET="$MYSQLD_DATA_DIR/mysql.sock"
 # TODO: Set password using k8s
 MYSQLD_PASSWORD_ROOT="CHANGEME"
-USER="mysql"
-# TODO manage via configmap
 SQL_DIR="/config-sql"
 
-MARIADB_CONF="/config-mariadb/my.cnf"
+MARIADB_CONF="/config-mariadb-etc/my.cnf"
 if [ -e "$MARIADB_CONF" ]; then
-    cp /etc/mysql/my.cnf /etc/mysql/my.cnf.0
-    ln -sf "$MARIADB_CONF" /etc/mysql/my.cnf
+    ln -sf "$MARIADB_CONF" /etc/my.cnf
 fi
 
 # Make timezone adjustments (if requested)
@@ -49,7 +52,7 @@ then
     touch "$MARIADB_LOCK"
     echo "-- "
     echo "-- Installing mysql database files."
-    mysql_install_db --basedir="${MYSQL_DIR}" --user=${USER} >/dev/null ||
+    ${MYSQL_DIR}/scripts/mysql_install_db --basedir="${MYSQL_DIR}" >/dev/null ||
         {
             echo "ERROR : mysql_install_db failed, exiting"
             exit 1
@@ -84,8 +87,8 @@ then
 	# below will be removed at each container startup.
     # That's why this shared library is currently 
 	# installed in mysql plugin directory at image creation.
-    echo "$MYSQLD_PASSWORD_ROOT" | scisql-deploy.py --mysql-plugin-dir=/usr/lib/mysql/plugin/ \
-        --mysql-bin=/usr/bin/mysql --mysql-socket="$MYSQLD_SOCKET"
+    echo "$MYSQLD_PASSWORD_ROOT" | scisql-deploy.py --mysql-dir="$MYSQL_DIR" \
+        --mysql-socket="$MYSQLD_SOCKET"
 
     echo "-- Stop mariadb server."
     mysqladmin -u root --password="$MYSQLD_PASSWORD_ROOT" shutdown

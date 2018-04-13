@@ -5,10 +5,12 @@
 
 set -e
 
-MARIADB_CONF="/config-mariadb/my.cnf"
+# Source pathes to eups packages
+. /qserv/run/etc/sysconfig/qserv
+
+MARIADB_CONF="/config-mariadb-etc/my.cnf"
 if [ -e "$MARIADB_CONF" ]; then
-    cp /etc/mysql/my.cnf /etc/mysql/my.cnf.0
-    ln -sf "$MARIADB_CONF" /etc/mysql/my.cnf
+    ln -sf "$MARIADB_CONF" /etc/my.cnf
 fi
 
 echo "-- Start mariadb server."

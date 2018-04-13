@@ -68,8 +68,8 @@ kubectl create configmap --from-file="$CONFIGMAP_DIR/mariadb-start.sh" config-ma
 kubectl delete configmap --ignore-not-found=true config-master-sql
 kubectl create configmap --from-file="$CONFIGMAP_DIR/master/sql" config-master-sql
 
-kubectl delete configmap --ignore-not-found=true config-my-dot-cnf
-kubectl create configmap --from-file="$CONFIGMAP_DIR/my.cnf" config-my-dot-cnf
+kubectl delete configmap --ignore-not-found=true config-mariadb-etc
+kubectl create configmap --from-file="$CONFIGMAP_DIR/mariadb/etc/my.cnf" config-mariadb-etc
 
 kubectl delete configmap --ignore-not-found=true config-proxy-etc
 kubectl create configmap --from-file="$CONFIGMAP_DIR/master/proxy/etc" config-proxy-etc
@@ -108,7 +108,6 @@ host_log_dir: $HOST_LOG_DIR
 host_tmp_dir: $HOST_TMP_DIR
 host: $MASTER
 image: $CONTAINER_IMAGE
-image_mariadb: qserv/mariadb_scisql:$MARIADB_VERSION
 master_hostname: $MASTER
 pod_name: master
 EOF
@@ -130,7 +129,6 @@ host_log_dir: $HOST_LOG_DIR
 host_tmp_dir: $HOST_TMP_DIR
 host: $host
 image: $CONTAINER_IMAGE
-image_mariadb: qserv/mariadb_scisql:$MARIADB_VERSION
 master_hostname: $MASTER
 mysql_root_password: CHANGEME
 pod_name: worker-$j
