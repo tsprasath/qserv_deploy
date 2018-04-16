@@ -15,13 +15,12 @@ Pre-requisite
    pip install --upgrade --force pbr
 
    # Install the OpenStack client
-   sudo pip install python-novaclient==6.0.2
-   sudo pip install python-openstackclient==2.1.0
+   sudo pip install shade==1.27.1
 
    # Install docker and gnu-parallel
    sudo apt-get install docker parallel
 
-* Download Openstack RC file: http://docs.openstack.org/user-guide/common/cli_set_environment_variables_using_openstack_rc.html
+* Download Openstack RC file: https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux_OpenStack_Platform/5/html/End_User_Guide/cli_openrc.html#openrc-dashboard
 
 * Add your user to docker group
 

@@ -6,6 +6,7 @@ and provisioning
 
 @author  Oualid Achbal, IN2P3
 @author  Fabrice Jammes, IN2P3
+@author  Benjamin Roziere, IN2P3
 
 """
 
@@ -29,32 +30,11 @@ import warnings
 # ----------------------------
 # Imports for other modules --
 # ----------------------------
-
-from cinderclient import client as cinder_client
-from keystoneauth1 import loading
-from keystoneauth1 import session
-from novaclient import client
-import glanceclient
-import novaclient.exceptions
+import shade
 
 # ---------------------------------
 # Local non-exported definitions --
 # ---------------------------------
-
-_OPENSTACK_API_VERSION = '2'
-_OPENSTACK_VERIFY_SSL = False
-
-
-def _get_nova_creds():
-    """
-    Extract the login information from the environment
-    """
-    creds = {}
-    creds['username'] = os.environ['OS_USERNAME']
-    creds['password'] = os.environ['OS_PASSWORD']
-    creds['auth_url'] = os.environ['OS_AUTH_URL']
-    creds['project_id'] = os.environ['OS_TENANT_ID']
-    return creds
 
 # -----------------------
 # Exported definitions --
@@ -95,11 +75,11 @@ def config_logger(verbose, verboseAll):
     if not verboseAll:
         # suppress INFO/DEBUG regular messages from other loggers
         # Disable dependencies loggers and warnings
-        for logger_name in ["keystoneauth", "novaclient", "requests",
+        for logger_name in ["shade", "keystoneauth", "requests",
                             "stevedore", "urllib3"]:
             logging.getLogger(logger_name).setLevel(logging.ERROR)
         warnings.filterwarnings("ignore")
-
+    
     logger = logging.getLogger()
 
     # create console handler and set level to debug
@@ -137,11 +117,13 @@ class CloudManager(object):
         """
 
         logging.debug("Use configuration file: %s", config_file_name)
-
-        self._creds = _get_nova_creds()
+	
+	self.cloud = shade.openstack_cloud()
+        
+        self._creds = self.cloud.auth
         logging.debug("Openstack user: %s", self._creds['username'])
         self._safe_username = self._creds['username'].replace('.', '')
-
+        
         default_instance_prefix = "{0}-qserv-".format(self._safe_username)
 
         config = configparser.RawConfigParser(
@@ -155,13 +137,7 @@ class CloudManager(object):
              'nb_worker': 3,
              'nb_orchestrator': 1,
              'format': None})
-
-        self._session = self._create_keystone_session()
-        self.nova = client.Client(_OPENSTACK_API_VERSION,
-                                  session=self._session)
-        self.cinder = cinder_client.Client(_OPENSTACK_API_VERSION,
-                                           session=self._session)
-
+                
         with open(config_file_name, 'r') as config_file:
             config.readfp(config_file)
 
@@ -177,27 +153,24 @@ class CloudManager(object):
         else:
             image_name = config.get('server', 'snapshot')
 
-        try:
-            self.image = self.nova.images.find(name=image_name)
-        except novaclient.exceptions.NoUniqueMatch:
-            logging.critical("Image %s not unique", image_name)
-            sys.exit(1)
-        except novaclient.exceptions.NotFound:
+        
+        self.image = self.cloud.get_image(image_name)
+        if self.image is None:
             logging.critical("Image %s do not exist. Create it first",
                              image_name)
             sys.exit(1)
 
         flavor_name = config.get('server', 'flavor')
-        self.flavor = self.nova.flavors.find(name=flavor_name)
+        self.flavor = self.cloud.get_flavor(flavor_name)
 
         snapshot_flavor_name = config.get('server', 'snapshot_flavor')
-        self.snapshot_flavor = self.nova.flavors.find(name=snapshot_flavor_name)
+        self.snapshot_flavor = self.cloud.get_flavor(snapshot_flavor_name)
 
         self.network_name = config.get('server', 'network')
         if config.get('server', 'net-id'):
-            self.nics = [{'net-id': config.get('server', 'net-id')}]
+            self.net_uuid = config.get('server', 'net-id')
         else:
-            self.nics = []
+            self.net_uuid = None
 
         self.ssh_security_group = config.get('server', 'ssh_security_group')
 
@@ -237,16 +210,6 @@ class CloudManager(object):
         """
         return self._hostname_tpl
 
-    def _create_keystone_session(self):
-        """
-        Return a keystone session used to
-        connect to other Openstack services
-        """
-        loader = loading.get_plugin_loader('password')
-        auth = loader.load_from_options(**self._creds)
-        sess = session.Session(auth=auth, verify=_OPENSTACK_VERIFY_SSL)
-        return sess
-
     def get_safe_username(self):
         """
         Returns cleaned Openstack user login
@@ -254,37 +217,37 @@ class CloudManager(object):
         """
         return self._safe_username
 
+    def add_security_group(self, instance, security_group_name):
+        """
+        Add the provided security group to the server
+        """
+        groups = []
+        group = self.cloud.get_security_group(security_group_name)
+        groups.append(group)
+        
+        self.cloud.add_server_security_groups(instance, groups)
+    
     def nova_snapshot_create(self, instance):
         """
-        Shutdown instance and snapshot it to an image named self.snapshot_name
+        Shutdown instance if needed and snapshot it to an image named self.snapshot_name
         """
-        instance.stop()
-        while instance.status != 'SHUTOFF':
-            time.sleep(5)
-            instance.get()
-
         logging.info("Creating Qserv snapshot '%s'", self.snapshot_name)
-        qserv_image = instance.create_image(self.snapshot_name)
-        status = None
-        while status != 'ACTIVE':
-            time.sleep(5)
-            status = self.nova.images.get(qserv_image).status
+
+        try:
+          self.cloud.create_image_snapshot(self.snapshot_name, instance, wait=True)
+        except shade.OpenStackCloudException:
+          logging.critical("Unable to create image snapshot %s", self.snapshot_name)
+          sys.exit(1)
+
         logging.info("SUCCESS: Qserv image '%s' is active", self.snapshot_name)
 
     def nova_snapshot_find(self):
         """
         Returns and Openstack image named self.snapshot_name.
         Exit with error code if image is not unique.
-        @throw novaclient.exceptions.NoUniqueMatch if image is not unique.
         """
-        try:
-            snapshot = self.nova.images.find(name=self.snapshot_name)
-        except novaclient.exceptions.NotFound:
-            snapshot = None
-        except novaclient.exceptions.NoUniqueMatch:
-            logging.critical("Qserv snapshot %s not unique, "
-                             "manual cleanup required", self.snapshot_name)
-            sys.exit(1)
+        snapshot = self.cloud.get_image(self.snapshot_name)
+                
         return snapshot
 
     def nova_snapshot_delete(self, snapshot):
@@ -292,9 +255,16 @@ class CloudManager(object):
         Delete an Openstack image from Glance
         :param snapshot: image to delete
         """
-        glance = glanceclient.Client(_OPENSTACK_API_VERSION,
-                                     session=self._session)
-        glance.images.delete(snapshot.id)
+        try:
+          deleted = self.cloud.delete_image(snapshot.id)
+
+          if deleted:
+            logging.info("Snapshot %s deleted", snapshot.name)
+          else:
+            logging.info("Snapshot %s not found", snapshot.name)
+
+        except shade.OpenStackCloudException:
+          logging.critical("Unable to delete %s snapshot, manual cleanup required", snapshot.name)
 
     def _build_instance_name(self, instance_id):
         """
@@ -318,50 +288,79 @@ class CloudManager(object):
         logging.info("Launch an instance %s", instance_name)
 
         userdata = userdata.format(node_id=instance_id)
-        logging.debug("userdata %s", userdata)
+        #logging.debug("userdata %s", userdata)
 
         if not flavor:
             flavor = self.flavor
 
+        if self.net_uuid is not None:
+            nics = [{'net-id':self.net_uuid}]
+        else:
+            nics = []
+	
         # Launch an instance from an image
-        instance = self.nova.servers.create(name=instance_name,
-                                            image=self.image,
-                                            flavor=flavor,
-                                            userdata=userdata,
-                                            key_name=self.key,
-                                            nics=self.nics)
+        try:
+            instance = self.cloud.create_server(name=instance_name,
+               	                            image=self.image,
+	                                          flavor=flavor,
+        	                                  userdata=userdata,
+                                                  ip_pool=self.network_name,
+               	                            key_name=self.key,
+                       	                    nics=nics)
+        except shade.OpenStackCloudException as exception:
+            logging.critical("Error while creating the instance %s: %s", instance_name, exception)
+            sys.exit(1)
+        
         return instance
+    
+    def detach_floating_ips(self, instance):
+        """
+        Dettach all floating ips attached to the instance
+        """
+        server_floats = shade.meta.find_nova_interfaces(
+            instance['addresses'], ext_tag='floating')
+        for fip in server_floats:
+            try:
+                ip = self.cloud.get_floating_ip(id=None, filters={'floating_ip_address': fip['addr']})
+            except shade.OpenStackCloudURINotFound:
+                continue
+            if not ip:
+                continue
+
+            self.cloud.detach_ip_from_server(instance.id, ip['id'])
+
+    def delete_server(self, instance):
+        """
+        Delete the provided instance from OpenStack
+        """
+        self.detach_floating_ips(instance)
+        self.cloud.delete_server(instance.id)
 
     def wait_active(self, instance):
         """
         Wait for an instance to have 'ACTIVE' status
         """
-        # Poll at 5 second intervals, until the status is 'ACTIVE'
-        status = instance.status
-        while status != 'ACTIVE':
-            time.sleep(5)
-            instance.get()
-            status = instance.status
-        logging.info("Instance %s is %s", instance.name, status)
+        logging.debug("Waiting for instance %s to be ACTIVE", instance.name)
 
-    def nova_create_server_volume(self, instance_id, data_volume_name):
+        self.cloud.wait_for_server(instance, auto_ip=False)
+	server = self.cloud.get_server(instance.id)
+
+        logging.info("Instance %s is %s", instance.name, server.status)
+
+    def nova_create_server_volume(self, instance, data_volume_name):
         """
         Attach a volume to a server, in /dev/vdb
-        @param instance_id: openstack server instance id
+        @param instance: openstack server instance object
         @param data_volume_name: name of data volume to attach
         """
-        data_volumes = self.cinder.volumes.list(search_opts={'name':
-                                                             data_volume_name})
-        if (not len(data_volumes) == 1):
-            msg = "Cinder data volume not found "
-            "(volumes found: {})".format(data_volumes)
+        data_volume = self.cloud.get_volume(data_volume_name)
+
+        if data_volume is None:
+            msg = "Data volume %s not found".format(data_volume_name)
             raise ValueError(msg)
-
-        data_volume_id = data_volumes[0].id
-
-        logging.debug("Volumes: %s", data_volumes)
-        self.nova.volumes.create_server_volume(instance_id,
-                                               data_volume_id, '/dev/vdb')
+        
+        logging.debug("Attaching volume %s to instance %s", data_volume_name, instance.name)
+        self.cloud.attach_volume(instance, data_volume, device='/dev/vdb')
 
     def detect_end_cloud_config(self, instance):
         """
@@ -371,7 +370,7 @@ class CloudManager(object):
         found = None
         while not found:
             time.sleep(5)
-            output = instance.get_console_output()
+            output = self.cloud.get_server_console(instance)
             logging.debug("console output: %s", output)
             logging.debug("instance: %s", instance)
             found = re.search(check_word, output)
@@ -385,48 +384,40 @@ class CloudManager(object):
         """
         if not self._hostname_tpl:
             raise ValueError("Instance prefix is empty")
-        for server in self.nova.servers.list():
+        for server in self.cloud.list_servers():
             # server_name must be ascii
             if server.name.startswith(self._hostname_tpl):
                 logging.debug("Cleanup existing instance %s", server.name)
-                server.delete()
+                self.delete_server(server)
 
     def _manage_ssh_key(self):
         """
         Upload user ssh public key on Openstack instances
         """
         logging.info('Manage ssh keys: %s', self.key)
-        if self.nova.keypairs.findall(name=self.key):
+        if self.cloud.get_keypair(self.key):
             logging.debug('Remove previous ssh keys')
-            self.nova.keypairs.delete(key=self.key)
+            self.cloud.delete_keypair(self.key)
 
         with open(os.path.expanduser(self.key_filename + ".pub")) as fpubkey:
-            self.nova.keypairs.create(name=self.key, public_key=fpubkey.read())
+            self.cloud.create_keypair(name=self.key, public_key=fpubkey.read())
 
-    def get_floating_ip(self):
+    def _get_instance_fixed_ip(self, instance, network=None):
         """
-        Return an available floating ip address
+        Returns the fixed (local) ip address of the instance
         """
-        floating_ips = self.nova.floating_ips.list()
-        floating_ip = None
-        floating_ip_pool = self.nova.floating_ip_pools.list()[0].name
-
-        # Check for available public ip address in project
-        for ip in floating_ips:
-            if ip.instance_id is None:
-                floating_ip = ip
-                logging.debug('Available floating ip found %s', floating_ip)
-                break
-
-        # Check for available public ip address in ext-net pool
-        if floating_ip is None:
-            try:
-                logging.debug("Use floating ip pool: %s", floating_ip_pool)
-                floating_ip = self.nova.floating_ips.create(floating_ip_pool)
-            except novaclient.exceptions.Forbidden as exc:
-                logging.fatal("Unable to retrieve public IP: %s", exc)
-                sys.exit(1)
-
+        server = self.cloud.get_server(instance.id)
+        
+        return server.private_v4
+ 
+    def attach_floating_ip(self, instance):
+        """
+        Attach a floating ip address to the instance
+        """
+        logging.debug("Waiting for floating_ip to be attached to %s", instance.name)
+        floating_ip = self.cloud.add_auto_ip(instance, wait=True)
+        logging.info("Attached floating ip %s to instance %s", floating_ip, instance.name)
+        
         return floating_ip
 
     def print_ssh_config(self, instances, floating_ip):
@@ -454,10 +445,10 @@ Host *
     ServerAliveCountMax 2
 '''
         for instance in instances:
-            fixed_ip = instance.networks[self.network_name][0]
+            fixed_ip = self._get_instance_fixed_ip(instance)
             ssh_config += ssh_config_tpl.format(host=instance.name,
                                                 fixed_ip=fixed_ip,
-                                                floating_ip=floating_ip.ip,
+                                                floating_ip=floating_ip,
                                                 key_filename=self.key_filename,
                                                 ssh_opts=ssh_opts)
         logging.debug("Create SSH client config ")
@@ -500,7 +491,7 @@ Host *
         hostfile = ""
         for instance in instances:
             # Collect IP adresses
-            fixed_ip = instance.networks[self.network_name][0]
+            fixed_ip = self._get_instance_fixed_ip(instance)
             hostfile += hostfile_tpl.format(host=instance.name, ip=fixed_ip)
 
         for instance in instances:
