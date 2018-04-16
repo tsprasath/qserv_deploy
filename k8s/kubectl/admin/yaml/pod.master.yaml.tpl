@@ -26,7 +26,7 @@ spec:
         periodSeconds: 10
       ports:
       - name: mariadb-port
-        containerPort: 13306
+        containerPort: 3306
       volumeMounts:
       - name: config-my-dot-cnf
         mountPath: /config-mariadb
