@@ -59,3 +59,7 @@ variable "docker_registry_port" {
 variable "limit_memlock" {
 	default = "infinity"		
 }
+
+variable "lsst_config_path" {
+	default = "~/.lsst/qserv-cluster"
+}

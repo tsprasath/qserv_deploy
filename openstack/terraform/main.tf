@@ -11,8 +11,10 @@ provider "openstack" {
 	# password    = ""
   # auth_url    = ""
   # region      = ""
+		use_octavia = true
 }
 
+### LOCAL VARS SECTION ###
 
 # Local variables needed for configuration
 locals {
@@ -20,6 +22,7 @@ locals {
 	ssh_key_name  = "${local.safe_username}-qserv"
 }
 
+# Cluster lists
 locals {
 	worker_ips    = "${openstack_compute_instance_v2.workers.*.network.0.fixed_ip_v4}"
 	pet_ips       = "${list(openstack_compute_instance_v2.master.network.0.fixed_ip_v4, openstack_compute_instance_v2.orchestra.network.0.fixed_ip_v4, openstack_compute_instance_v2.gateway.network.0.fixed_ip_v4)}"
@@ -27,9 +30,10 @@ locals {
 
 	worker_names  = "${openstack_compute_instance_v2.workers.*.name}"
 	pet_names     = "${list(openstack_compute_instance_v2.master.name, openstack_compute_instance_v2.orchestra.name, openstack_compute_instance_v2.gateway.name)}"
-	cluster_names = "${concat(local.worker_names, local.cluster_names)}"
+	cluster_names = "${concat(local.worker_names, local.pet_names)}"
 
 	cluster_hosts = "${formatlist("%s	%s", local.cluster_ips, local.cluster_names)}"
+	cluster_hosts_file = "${join("\n", local.cluster_hosts)}"
 }
 
 ### DATA SECTION ###
@@ -49,7 +53,6 @@ data "openstack_networking_network_v2" "network" {
 	name = "${var.network}"
 }
 
-
 # Cloud-Init config file filled with cluster parameters
 data "template_file" "cloud_init" {
 	template = "${file("cloud_config.tpl")}"
@@ -62,6 +65,34 @@ data "template_file" "cloud_init" {
 	}
 }
 
+# env-infrastructure file template
+data "template_file" "env_infra" {
+	template = "${file("env-infrastructure.tpl")}"
+
+	vars {
+		hostname_tpl = "${var.instance_prefix}"
+		worker_last_id = "${var.nb_worker}"
+	}
+}
+
+# Template of a single entry in ssh_config file
+data "template_file" "ssh_host_config" {
+	template = "${file("ssh_host_config.tpl")}"
+
+	vars {
+		key_filename = "${var.ssh_private_key}"
+		floating_ip  = "${openstack_networking_floatingip_v2.floating_ip.address}"
+	}
+}
+
+# ssh_config file template
+data "template_file" "ssh_config" {
+	template = "${file("ssh_config.tpl")}"
+
+	vars {
+		cluster_hosts_config = "${join("\n\n", formatlist(data.template_file.ssh_host_config.rendered, local.cluster_names, local.cluster_ips))}"
+	}
+}
 
 ### RESOURCE SECTION ###
 
@@ -98,7 +129,7 @@ resource "openstack_compute_floatingip_associate_v2" "floating_ip" {
 
 # Creates the k8s master
 resource "openstack_compute_instance_v2" "orchestra" {
-	name     = "${var.instance_prefix}orchestra"
+	name     = "${var.instance_prefix}orchestra-1"
 	image_id  			= "${data.openstack_images_image_v2.node_image.id}"
 	flavor_id 			= "${data.openstack_compute_flavor_v2.node_flavor.id}"
 	key_pair  			= "${openstack_compute_keypair_v2.keypair.name}"
@@ -139,73 +170,39 @@ resource "openstack_compute_instance_v2" "workers" {
 	}
 }
 
-resource "null_resource" "workers_etc" {
+# Update /etc/hosts on all cluster nodes
+resource "null_resource" "cluster_etc_hosts" {
 	
 	connection {
-		type 				 = "ssh"
-		host 				 = "${element(openstack_compute_instance_v2.workers.*.network.0.fixed_ip_v4, count.index)}"
-		user 				 = "qserv"
-		private_key  = "${file(var.ssh_private_key)}"
-		
-		bastion_host = "${openstack_networking_floatingip_v2.floating_ip.address}"
-	}
-		
-	count = "${var.nb_worker}"
+		type = "ssh"
+		host = "${element(local.cluster_ips, count.index)}"
+		user = "qserv"
+		private_key = "${file(var.ssh_private_key)}"
 
-	provisioner "remote-exec" {
-		inline = ["sudo sh -c \"cat << EOF >> /etc/hosts\n${join("\n", formatlist("%s %s", concat(openstack_compute_instance_v2.workers.*.network.0.fixed_ip_v4, list(openstack_compute_instance_v2.master.network.0.fixed_ip_v4, openstack_compute_instance_v2.orchestra.network.0.fixed_ip_v4, openstack_compute_instance_v2.gateway.network.0.fixed_ip_v4)), concat(openstack_compute_instance_v2.workers.*.name, list(openstack_compute_instance_v2.master.name, openstack_compute_instance_v2.orchestra.name, openstack_compute_instance_v2.gateway.name))))}\nEOF\"",
-				"cat /etc/hosts"]
-	}
-}
-
-resource "null_resource" "orchestra_etc" {
-	
-	connection {
-		type 				 = "ssh"
-		host 				 = "${openstack_compute_instance_v2.orchestra.network.0.fixed_ip_v4}"
-		user 				 = "qserv"
-		private_key  = "${file(var.ssh_private_key)}"
-		
 		bastion_host = "${openstack_networking_floatingip_v2.floating_ip.address}"
 	}
 
-	provisioner "remote-exec" {
-		inline = ["sudo sh -c \"cat << EOF >> /etc/hosts\n${join("\n", formatlist("%s %s", concat(openstack_compute_instance_v2.workers.*.network.0.fixed_ip_v4, list(openstack_compute_instance_v2.master.network.0.fixed_ip_v4, openstack_compute_instance_v2.orchestra.network.0.fixed_ip_v4, openstack_compute_instance_v2.gateway.network.0.fixed_ip_v4)), concat(openstack_compute_instance_v2.workers.*.name, list(openstack_compute_instance_v2.master.name, openstack_compute_instance_v2.orchestra.name, openstack_compute_instance_v2.gateway.name))))}\nEOF\"",
-				"cat /etc/hosts"]
-	}
-}
-
-resource "null_resource" "master_etc" {
-	
-	connection {
-		type 				 = "ssh"
-		host 				 = "${openstack_compute_instance_v2.master.network.0.fixed_ip_v4}"
-		user 				 = "qserv"
-		private_key  = "${file(var.ssh_private_key)}"
-		
-		bastion_host = "${openstack_networking_floatingip_v2.floating_ip.address}"
-	}
+	count = "${var.nb_worker + 3}"
 
 	provisioner "remote-exec" {
-		inline = ["sudo sh -c \"cat << EOF >> /etc/hosts\n${join("\n", formatlist("%s %s", concat(openstack_compute_instance_v2.workers.*.network.0.fixed_ip_v4, list(openstack_compute_instance_v2.master.network.0.fixed_ip_v4, openstack_compute_instance_v2.orchestra.network.0.fixed_ip_v4, openstack_compute_instance_v2.gateway.network.0.fixed_ip_v4)), concat(openstack_compute_instance_v2.workers.*.name, list(openstack_compute_instance_v2.master.name, openstack_compute_instance_v2.orchestra.name, openstack_compute_instance_v2.gateway.name))))}\nEOF\"",
-				"cat /etc/hosts"]
+		inline = [
+			"sudo sh -c \"cat << EOF > /etc/hosts\n127.0.0.1  localhost\n::1  localhost\n${local.cluster_hosts_file}\nEOF\""
+		]
 	}
 }
 
 
-resource "null_resource" "gateway_etc" {
-	
-	connection {
-		type 				 = "ssh"
-		host 				 = "${openstack_compute_instance_v2.gateway.network.0.fixed_ip_v4}"
-		user 				 = "qserv"
-		private_key  = "${file(var.ssh_private_key)}"
-		
-		bastion_host = "${openstack_networking_floatingip_v2.floating_ip.address}"
-	}
-
-	provisioner "remote-exec" {
-		inline = ["sudo sh -c \"cat << EOF >> /etc/hosts\n${join("\n", formatlist("%s %s", concat(openstack_compute_instance_v2.workers.*.network.0.fixed_ip_v4, list(openstack_compute_instance_v2.master.network.0.fixed_ip_v4, openstack_compute_instance_v2.orchestra.network.0.fixed_ip_v4, openstack_compute_instance_v2.gateway.network.0.fixed_ip_v4)), concat(openstack_compute_instance_v2.workers.*.name, list(openstack_compute_instance_v2.master.name, openstack_compute_instance_v2.orchestra.name, openstack_compute_instance_v2.gateway.name))))}\nEOF\"",
-				"cat /etc/hosts"]
+# Prints the env-infrastructure.sh file on local desktop
+resource "null_resource" "env_infra_file" {
+	provisioner "local-exec" {
+		command = "echo '${data.template_file.env_infra.rendered}' > ${var.lsst_config_path}/env-infrastructure.sh"
 	}
 }
+
+# Prints the ssh_config for the cluster on local desktop
+resource "null_resource" "ssh_config" {
+	provisioner "local-exec" {
+		command = "echo '${data.template_file.ssh_config.rendered}' > ${var.lsst_config_path}/ssh_config"	
+	}
+}
+
