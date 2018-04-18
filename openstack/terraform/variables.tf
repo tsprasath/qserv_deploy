@@ -19,47 +19,60 @@ variable "instance_prefix" {
 }
 
 variable "nb_worker" {
-	default = 2
+	default     = 2
 	description = "Number of worker nodes to spawn"
 }
 
 variable "security_groups" {
-	type    = "list"
-	default = ["default"]
+	description = "List of security groups to add to nodes"
+	type        = "list"
+	default     = ["default"]
 }
 
 variable "ssh_private_key" {
-	default = "~/.ssh/id_rsa"
+	description = "The private key used to ssh on nodes"
+	default     = "~/.ssh/id_rsa"
 }
 
 variable "nb_orchestrator" {
-	default = 1
+	description = "Number of k8s master"
+	default     = 1
 }
 
 variable "base_image" {
-	default = "CentOS 7 latest"
+	description = "Base image for the snapshot instance"
+	default     = "CentOS 7 latest"
 }
 
 variable "snapshot_flavor" {
-	default = "m1.medium"
+	description = "Flavor of the snapshot instance"
+	default     = "m1.medium"
 }
 
 variable "ip_pool" {
-	default = "public"
+	description = "Name of the floating ip pool"
+	default     = "public"
 }
 
-variable "user_name" {}
+variable "user_name" {
+	description = "OpenStack username, please source terraform-setup.sh to set it automaticaly"
+}
 
-variable "docker_registry_host" {}
+variable "docker_registry_host" {
+	description = "Docker registry server IP"
+}
 
 variable "docker_registry_port" {
-	default = 5000
+	description = "Docker registry server port"
+	default     = 5000
 }
 
 variable "limit_memlock" {
-	default = "infinity"		
+	description = "Amout of memory which can be locked in containers (in Bytes)"
+	default     = "infinity"		
 }
 
 variable "lsst_config_path" {
-	default = "~/.lsst/qserv-cluster"
+	description = "Default lsst config directory"
+	default     = "~/.lsst/qserv-cluster"
 }
