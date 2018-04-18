@@ -7,9 +7,8 @@ Pre-requisites
 ------
 
 * [Install terraform](https://www.terraform.io/downloads.html)
-* Download your OpenStack RC file [Doc on RC file](http://docs.openstack.org/user-guide/common/cli_set_environment_variables_using_openstack_rc.html)
-
-
+* Download your [OpenStack RC file](http://docs.openstack.org/user-guide/common/cli_set_environment_variables_using_openstack_rc.html)
+* Then, in the `terraform` directory run:
 ```bash
 $ . ./<your-rc-file>.sh
 $ . ./terraform-setup.sh

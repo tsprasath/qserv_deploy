@@ -10,10 +10,6 @@ variable "network" {
 	description = "OpenStack network name"
 }
 
-variable "net_id" {
-	description = "OpenStack subnet uuid"
-}
-
 variable "instance_prefix" {
 	description = "The prefix to append to your node's name"
 }
@@ -54,12 +50,9 @@ variable "ip_pool" {
 	default     = "public"
 }
 
-variable "user_name" {
-	description = "OpenStack username, please source terraform-setup.sh to set it automaticaly"
-}
-
 variable "docker_registry_host" {
 	description = "Docker registry server IP"
+	default = ""
 }
 
 variable "docker_registry_port" {
@@ -70,6 +63,13 @@ variable "docker_registry_port" {
 variable "limit_memlock" {
 	description = "Amout of memory which can be locked in containers (in Bytes)"
 	default     = "infinity"		
+}
+
+
+# Variables set by terraform-setup.sh
+
+variable "user_name" {
+	description = "OpenStack username, please source terraform-setup.sh to set it automaticaly"
 }
 
 variable "lsst_config_path" {
