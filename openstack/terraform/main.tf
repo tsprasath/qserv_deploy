@@ -3,13 +3,7 @@
 **/
 
 provider "openstack" {
-  # OpenStack params are infered trough env vars by default  # You must source <your-openstack-provider>-rc.sh file beforehand
-
-  # user_name   = ""
-  # tenant_name = ""
-  # password    = ""
-  # auth_url    = ""
-  # region      = ""
+  # OpenStack params are infered trough env vars by default  # You must source <your-openstack-provider>-rc.sh file beforehand  # user_name   = ""  # tenant_name = ""  # password    = ""  # auth_url    = ""  # region      = ""
 }
 
 ### LOCAL VARS SECTION ###
@@ -22,9 +16,10 @@ locals {
 
 # Cluster lists
 locals {
-  worker_ips  = "${openstack_compute_instance_v2.workers.*.network.0.fixed_ip_v4}"
-  pet_ips     = "${list(openstack_compute_instance_v2.master.network.0.fixed_ip_v4, openstack_compute_instance_v2.orchestra.network.0.fixed_ip_v4, openstack_compute_instance_v2.gateway.network.0.fixed_ip_v4)}"
-  cluster_ips = "${concat(local.worker_ips, local.pet_ips)}"
+  worker_ips      = "${openstack_compute_instance_v2.workers.*.network.0.fixed_ip_v4}"
+  pet_ips         = "${list(openstack_compute_instance_v2.master.network.0.fixed_ip_v4, openstack_compute_instance_v2.orchestra.network.0.fixed_ip_v4, openstack_compute_instance_v2.gateway.network.0.fixed_ip_v4)}"
+  cluster_ips     = "${concat(local.worker_ips, local.pet_ips)}"
+  k8s_cluster_ips = "${concat(local.worker_ips, list(openstack_compute_instance_v2.master.network.0.fixed_ip_v4))}"
 
   worker_names  = "${openstack_compute_instance_v2.workers.*.name}"
   pet_names     = "${list(openstack_compute_instance_v2.master.name, openstack_compute_instance_v2.orchestra.name, openstack_compute_instance_v2.gateway.name)}"
@@ -32,6 +27,11 @@ locals {
 
   cluster_hosts      = "${formatlist("%s	%s", local.cluster_ips, local.cluster_names)}"
   cluster_hosts_file = "${join("\n", local.cluster_hosts)}"
+}
+
+# K8s cluster token (used by kubeadm)
+locals {
+  k8s_token = "${random_string.k8s_token_first.result}.${random_string.k8s_token_last.result}"
 }
 
 ### DATA SECTION ###
@@ -132,7 +132,7 @@ resource "openstack_compute_instance_v2" "orchestra" {
   flavor_id       = "${data.openstack_compute_flavor_v2.node_flavor.id}"
   key_pair        = "${openstack_compute_keypair_v2.keypair.name}"
   security_groups = "${var.security_groups}"
-  user_data       = "${replace(data.template_file.cloud_init.rendered, "#HOST", "${var.instance_prefix}orchestra")}"
+  user_data       = "${replace(data.template_file.cloud_init.rendered, "#HOST", "${var.instance_prefix}orchestra-1")}"
 
   network {
     uuid = "${data.openstack_networking_network_v2.network.id}"
@@ -168,6 +168,27 @@ resource "openstack_compute_instance_v2" "workers" {
   }
 }
 
+# K8s random ressources
+resource "random_string" "k8s_token_first" {
+  length  = 6
+  special = false
+  upper   = false
+
+  keepers = {
+    k8s_master_id = "${openstack_compute_instance_v2.orchestra.id}"
+  }
+}
+
+resource "random_string" "k8s_token_last" {
+  length  = 16
+  special = false
+  upper   = false
+
+  keepers = {
+    k8s_master_id = "${openstack_compute_instance_v2.orchestra.id}"
+  }
+}
+
 # Update /etc/hosts on all cluster nodes
 resource "null_resource" "cluster_etc_hosts" {
   connection {
@@ -185,6 +206,60 @@ resource "null_resource" "cluster_etc_hosts" {
     inline = [
       "sudo sh -c \"cat << EOF > /etc/hosts\n127.0.0.1  localhost\n::1  localhost\n${local.cluster_hosts_file}\nEOF\"",
     ]
+  }
+}
+
+resource "null_resource" "kubeadm_init" {
+  depends_on = ["null_resource.cluster_etc_hosts"]
+
+  connection {
+    type        = "ssh"
+    host        = "${openstack_compute_instance_v2.orchestra.network.0.fixed_ip_v4}"
+    user        = "qserv"
+    private_key = "${file(var.ssh_private_key)}"
+
+    bastion_host = "${openstack_networking_floatingip_v2.floating_ip.address}"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo -- systemctl start kubelet",
+      "sudo -- kubeadm init --apiserver-cert-extra-sans=localhost --token '${local.k8s_token}'",
+      "sudo cp /etc/kubernetes/admin.conf $HOME/",
+      "sudo chown $(id -u):$(id -g) $HOME/admin.conf",
+      "export KUBECONFIG=$HOME/admin.conf",
+      "kubectl apply -f \"https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')\"",
+    ]
+  }
+}
+
+resource "null_resource" "kubeadm_join" {
+  depends_on = ["null_resource.kubeadm_init"]
+
+  connection {
+    type        = "ssh"
+    host        = "${element(local.k8s_cluster_ips, count.index)}"
+    user        = "qserv"
+    private_key = "${file(var.ssh_private_key)}"
+
+    bastion_host = "${openstack_networking_floatingip_v2.floating_ip.address}"
+  }
+
+  count = "${var.nb_worker + 1}"
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo -- systemctl start kubelet",
+      "sudo -- kubeadm join --discovery-token-unsafe-skip-ca-verification --token='${local.k8s_token}' ${openstack_compute_instance_v2.orchestra.name}:6443",
+    ]
+  }
+}
+
+resource "null_resource" "copy_kubeconfig" {
+  depends_on = ["null_resource.kubeadm_init", "null_resource.ssh_config"]
+
+  provisioner "local-exec" {
+    command = "scp -F ${var.lsst_config_path}/ssh_config ${openstack_compute_instance_v2.orchestra.name}:~/admin.conf ${var.lsst_config_path}/kubeconfig && sed -i -- 's,server: https://.*\\(:[0-9]*\\),server: https://localhost\\1,g' ${var.lsst_config_path}/kubeconfig"
   }
 }
 
