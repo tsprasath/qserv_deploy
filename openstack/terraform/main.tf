@@ -3,7 +3,7 @@
 **/
 
 provider "openstack" {
-  # OpenStack params are infered trough env vars by default  # You must source <your-openstack-provider>-rc.sh file beforehand  # user_name   = ""  # tenant_name = ""  # password    = ""  # auth_url    = ""  # region      = ""
+  # OpenStack params are infered trough env vars by default, you must source <your-openstack-provider>-rc.sh file beforehand  
 }
 
 ### LOCAL VARS SECTION ###
@@ -209,6 +209,7 @@ resource "null_resource" "cluster_etc_hosts" {
   }
 }
 
+# Init k8s on the master
 resource "null_resource" "kubeadm_init" {
   depends_on = ["null_resource.cluster_etc_hosts"]
 
@@ -233,6 +234,7 @@ resource "null_resource" "kubeadm_init" {
   }
 }
 
+# Join all nodes on k8s cluster
 resource "null_resource" "kubeadm_join" {
   depends_on = ["null_resource.kubeadm_init"]
 
@@ -255,6 +257,7 @@ resource "null_resource" "kubeadm_join" {
   }
 }
 
+# Copy kubeconfig on the local desktop
 resource "null_resource" "copy_kubeconfig" {
   depends_on = ["null_resource.kubeadm_init", "null_resource.ssh_config"]
 
