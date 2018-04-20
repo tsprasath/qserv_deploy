@@ -13,7 +13,7 @@ MASTER="$${HOSTNAME_TPL}master-1"
 
 # Used for ssh access
 WORKERS=$(seq --format "$${HOSTNAME_TPL}worker-%g" \
-    --separator=' ' "$WORKER_FIRST_ID" "$WORKER_LAST_ID")
+    --separator=" " "$WORKER_FIRST_ID" "$WORKER_LAST_ID")
 
 # Used for ssh access to Kubernetes master
 ORCHESTRATOR="$${HOSTNAME_TPL}orchestra-1"
