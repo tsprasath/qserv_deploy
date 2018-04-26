@@ -1,6 +1,7 @@
 **************************************
 Provision Qserv using Docker+Openstack
 **************************************
+This is the python client setup, to use the Terraform setup see `this README <terraform/README.md>`_
 
 Pre-requisite
 -------------
