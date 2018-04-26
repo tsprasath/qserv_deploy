@@ -15,7 +15,7 @@ before_install:
   - sudo chmod +x /usr/local/bin/terraform
   - cd ./openstack/terraform
   - sudo terraform init .
-  - sudo terraform apply --auto-approve --input=false -var 'user_name=travis' -var 'instance_prefix=travis-${TRAVIS_BUILD_NUMBER}-' --var-file=./openstack/terraform/terraform.tfvars.ci .
+  - sudo terraform apply --auto-approve --input=false -var 'user_name=travis' -var 'instance_prefix=travis-${TRAVIS_BUILD_NUMBER}-' --var-file=./terraform.tfvars.ci .
 #  - sudo apt-get install -y liblz4-tool python3-yaml
 #  - sudo wget -O /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl
 #  - sudo chmod +x /usr/local/bin/kubectl
@@ -24,7 +24,7 @@ before_install:
 
 script:
   - echo "OK"
-  - sudo terraform destroy ./openstack/terraform
+  - sudo terraform destroy .
 #  - ./k8s/kubectl/admin/start.sh
 #  - ./k8s/kubectl/admin/wait-pods-start.sh
 #  - ./k8s/kubectl/admin/run-multinode-tests.sh
