@@ -1,0 +1,7 @@
+flavor = "m1.medium"
+snapshot = "centos7-k8s-201804"
+network = "LSST-net"
+net_id = 0
+security_groups = ["remote SSH", "default"]
+ip_pool = "ext-net"
+docker_registry_host = "172.16.1.247"
