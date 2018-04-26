@@ -42,16 +42,6 @@ def get_cloudconfig():
 #cloud-config
 
 write_files:
-- path: "/etc/yum.repos.d/docker.repo"
-  permissions: "0544"
-  owner: "root"
-  content: |
-    [dockerrepo]
-    name=Docker Repository
-    baseurl=https://yum.dockerproject.org/repo/main/centos/7/
-    enabled=1
-    gpgcheck=1
-    gpgkey=https://yum.dockerproject.org/gpg
 - path: "/etc/yum.repos.d/kubernetes.repo"
   permissions: "0544"
   owner: "root"
@@ -84,14 +74,17 @@ groups:
 packages:
 # required for gnu-parallel
 - [bzip2]
-- [docker-engine, 1.12.3-1.el7.centos]
+- [device-mapper-persistent-data, 0.7.0-0.1.rc6.el7_4.1.x86_64]
+- [docker-ce, 18.03.0.ce-1.el7.centos]
 - ebtables
 - epel-release
 - [kubeadm, 1.9.1-0]
 - [kubectl, 1.9.1-0]
 - [kubelet, 1.9.1-0]
 - [kubernetes-cni, 0.6.0-0]
-- parallel
+- [lvm2, 2.02.171-8.el7.x86_64]
+- [parallel, 20160222-1.el7]
+- [yum-utils, 1.1.31-42.el7.noarch]
 - util-linux
 
 runcmd:
@@ -99,8 +92,6 @@ runcmd:
 - ['sed', '-i', '"s/SELINUX=enforcing/SELINUX=disabled/"', '/etc/sysconfig/selinux']
 - ['systemctl', 'enable', 'docker']
 - ['systemctl', 'enable', 'kubelet']
-- ['curl', '-O', 'http://linuxsoft.cern.ch/cern/centos/7/cern/x86_64/Packages/parallel-20150522-1.el7.cern.noarch.rpm']
-- ['yum', '--assumeyes', '--nogpgcheck', 'localinstall', 'parallel-20150522-1.el7.cern.noarch.rpm' ]
 - ['/tmp/detect_end_cloud_config.sh']
 
 package_upgrade: true
@@ -141,7 +132,7 @@ if __name__ == "__main__":
         instance_id = "source"
         instance_for_snapshot = cloudManager.nova_servers_create(
             instance_id, userdata_snapshot, cloudManager.snapshot_flavor)
-        
+
         # Wait for the instance boot complete
         cloudManager.wait_active(instance_for_snapshot)
 
