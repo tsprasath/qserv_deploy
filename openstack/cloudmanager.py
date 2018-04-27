@@ -555,7 +555,7 @@ write_files:
   owner: "root"
   content: |
     {{{{
-      "storage-driver": "overlay",
+      "storage-driver": "overlay2",
       {registry_json}
     }}}}
 

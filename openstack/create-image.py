@@ -75,7 +75,6 @@ packages:
 # required for gnu-parallel
 - [bzip2]
 - [device-mapper-persistent-data, 0.7.0-0.1.rc6.el7_4.1.x86_64]
-- [docker-ce, 18.03.0.ce-1.el7.centos]
 - ebtables
 - epel-release
 - [kubeadm, 1.9.1-0]
@@ -83,13 +82,15 @@ packages:
 - [kubelet, 1.9.1-0]
 - [kubernetes-cni, 0.6.0-0]
 - [lvm2, 2.02.171-8.el7.x86_64]
-- [parallel, 20160222-1.el7]
 - [yum-utils, 1.1.31-42.el7.noarch]
 - util-linux
 
 runcmd:
 - ['setenforce', '0']
-- ['sed', '-i', '"s/SELINUX=enforcing/SELINUX=disabled/"', '/etc/sysconfig/selinux']
+- ['sed', '-i', 's/SELINUX=enforcing/SELINUX=disabled/', '/etc/sysconfig/selinux']
+- ['yum-config-manager', '--add-repo', 'https://download.docker.com/linux/centos/docker-ce.repo']
+- ['yum', 'install', '-y', 'docker-ce-18.03.0.ce-1.el7.centos']
+- ['yum', 'install', '-y', 'parallel-20160222-1.el7']
 - ['systemctl', 'enable', 'docker']
 - ['systemctl', 'enable', 'kubelet']
 - ['/tmp/detect_end_cloud_config.sh']
