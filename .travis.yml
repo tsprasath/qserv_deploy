@@ -12,14 +12,14 @@ env:
     - TAG=testing
 
 before_install:
-  - sudo mkdir -p $TF_DATA_DIR
-  - sudo ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
-  - sudo wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/0.11.7/terraform_0.11.7_linux_amd64.zip
+  - mkdir -p $TF_DATA_DIR
+  - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
+  - wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/0.11.7/terraform_0.11.7_linux_amd64.zip
   - sudo unzip /tmp/terraform.zip -d /usr/local/bin
   - sudo chmod +x /usr/local/bin/terraform
   - cd ./openstack/terraform
-  - sudo terraform init .
-  - sudo terraform apply --auto-approve --input=false -var 'user_name=travis' -var "instance_prefix=travis-${TRAVIS_BUILD_NUMBER}-" --var-file=./terraform.tfvars.ci .
+  - terraform init .
+  - terraform apply --auto-approve --input=false -var 'user_name=travis' -var "instance_prefix=travis-${TRAVIS_BUILD_NUMBER}-" --var-file=./terraform.tfvars.ci .
 #  - sudo apt-get install -y liblz4-tool python3-yaml
 #  - sudo wget -O /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl
 #  - sudo chmod +x /usr/local/bin/kubectl
@@ -28,7 +28,7 @@ before_install:
 
 script:
   - echo "OK"
-  - sudo terraform destroy .
+  - terraform destroy .
 #  - ./k8s/kubectl/admin/start.sh
 #  - ./k8s/kubectl/admin/wait-pods-start.sh
 #  - ./k8s/kubectl/admin/run-multinode-tests.sh
