@@ -34,9 +34,9 @@ before_script:
   - ./k8s/sysadmin/ssh-tunnel.sh
 
 script:
-  - ./run-kubectl.sh -C "/root/admin/start.sh"
-  - ./run-kubectl.sh -C "/root/admin/wait-pods-start.sh"
-  - ./run-kubectl.sh -C "/root/admin/run-multinode-tests.sh"
+  - ./k8s/run-kubectl.sh -C "/root/admin/start.sh"
+  - ./k8s/run-kubectl.sh -C "/root/admin/wait-pods-start.sh"
+  - ./k8s/run-kubectl.sh -C "/root/admin/run-multinode-tests.sh"
 
 after_success:
   - cd ./openstack/terraform
