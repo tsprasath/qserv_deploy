@@ -30,6 +30,7 @@ install:
 
 before_script:
   - cd ../../
+  - cp ./k8s/env.example.sh $CONFIG_DIR/env.sh
   - ./k8s/sysadmin/ssh-tunnel.sh
 
 script:
