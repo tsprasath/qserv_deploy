@@ -21,10 +21,11 @@ else
     exit 1
 fi
 
-# GNU parallel ssh configuration
-PARALLEL_SSH_CFG="$CLUSTER_CONFIG_DIR/sshloginfile"
-if [ ! -r "$PARALLEL_SSH_CFG" ]; then
-    echo "ERROR: $PARALLEL_SSH_CFG is not readable"
-    exit 1
+if [ ! $CI ]; then
+    # GNU parallel ssh configuration
+    PARALLEL_SSH_CFG="$CLUSTER_CONFIG_DIR/sshloginfile"
+    if [ ! -r "$PARALLEL_SSH_CFG" ]; then
+        echo "ERROR: $PARALLEL_SSH_CFG is not readable"
+        exit 1
+    fi
 fi
-
