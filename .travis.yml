@@ -29,7 +29,8 @@ install:
 #  - ./k8s/configure-k8s.sh
 
 before_script:
-  - ./../../k8s/sysadmin/ssh-tunnel.sh
+  - cd ../../
+  - ./k8s/sysadmin/ssh-tunnel.sh
 
 script:
   - ./k8s/kubectl/admin/start.sh
@@ -37,7 +38,9 @@ script:
   - ./k8s/kubectl/admin/run-multinode-tests.sh
 
 after_success:
+  - cd ./openstack/terraform
   - terraform destroy --auto-approve --input=false -var 'user_name=travis' -var "instance_prefix=travis-${TRAVIS_BUILD_NUMBER}-" --var-file=./terraform.tfvars.ci .
 
 after_failure:
+  - cd ./openstack/terraform
   - terraform destroy --auto-approve --input=false -var 'user_name=travis' -var "instance_prefix=travis-${TRAVIS_BUILD_NUMBER}-" --var-file=./terraform.tfvars.ci .
