@@ -5,6 +5,7 @@ language: minimal
 env:
   global:
     - CONFIG_DIR=$HOME/.lsst/qserv-cluster
+    - CLUSTER_CONFIG_DIR=$CONFIG_DIR
     - TF_DATA_DIR=$CONFIG_DIR/terraform
     - TF_VAR_lsst_config_path=$CONFIG_DIR
     - KUBECTL_VERSION=1.9.0
