@@ -22,7 +22,7 @@ before_install:
 
 install:
   - terraform init .
-  - terraform apply --auto-approve --input=false -var 'user_name=travis' -var "instance_prefix=travis-${TRAVIS_BUILD_NUMBER}-" --var-file=./terraform.tfvars.ci .
+  - terraform apply --auto-approve --input=false -var 'user_name=travis-${TRAVIS_BUILD_NUMBER}' -var "instance_prefix=travis-${TRAVIS_BUILD_NUMBER}-" --var-file=./terraform.tfvars.ci .
 #  - sudo apt-get install -y liblz4-tool python3-yaml
 #  - sudo wget -O /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl
 #  - sudo chmod +x /usr/local/bin/kubectl
@@ -41,8 +41,8 @@ script:
 
 after_success:
   - cd ./openstack/terraform
-  - terraform destroy --auto-approve --input=false -var 'user_name=travis' -var "instance_prefix=travis-${TRAVIS_BUILD_NUMBER}-" --var-file=./terraform.tfvars.ci .
+  - terraform destroy --auto-approve --input=false -var 'user_name=travis-${TRAVIS_BUILD_NUMBER}' -var "instance_prefix=travis-${TRAVIS_BUILD_NUMBER}-" --var-file=./terraform.tfvars.ci .
 
 after_failure:
   - cd ./openstack/terraform
-  - terraform destroy --auto-approve --input=false -var 'user_name=travis' -var "instance_prefix=travis-${TRAVIS_BUILD_NUMBER}-" --var-file=./terraform.tfvars.ci .
+  - terraform destroy --auto-approve --input=false -var 'user_name=travis-${TRAVIS_BUILD_NUMBER}' -var "instance_prefix=travis-${TRAVIS_BUILD_NUMBER}-" --var-file=./terraform.tfvars.ci .
