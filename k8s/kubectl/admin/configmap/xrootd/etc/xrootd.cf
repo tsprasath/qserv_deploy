@@ -7,7 +7,7 @@ set master = $QSERV_MASTER
 ############################
 # if: manager node
 ############################
-if ${master}
+if named master
 
     # Use manager mode
     all.role manager
