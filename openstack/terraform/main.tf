@@ -11,7 +11,7 @@ provider "openstack" {
 # Local variables needed for configuration
 locals {
   safe_username = "${replace(var.user_name, ".", "")}"
-  ssh_key_name  = "${local.safe_username}-qserv"
+  ssh_key_name  = "${local.safe_username}-terraform"
 }
 
 # Cluster lists
