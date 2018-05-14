@@ -37,5 +37,5 @@ if [ $# -ne 0 ] ; then
     exit 2
 fi
 
-kubectl delete all -l app=qserv
+kubectl delete all -l app=qserv --now
 "$DIR"/wait-pods-terminate.sh
