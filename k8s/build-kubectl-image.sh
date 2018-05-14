@@ -10,7 +10,7 @@ set -e
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
 if [ -z "$DEPLOY_VERSION" ]; then
-	echo "ERROR: undefined variable \$DEPLOY_VERSION (use 'dev' or 'testing')"
+	echo "ERROR: undefined variable \$DEPLOY_VERSION (use 'dev' or 'testing' or git tag)"
 	exit 1
 fi
 

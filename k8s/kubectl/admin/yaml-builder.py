@@ -185,7 +185,7 @@ if __name__ == "__main__":
         #
         container_id = _get_container_id('mariadb')
         if container_id is not None:
-            yaml_data['spec']['containers'][container_id]['image'] = config.get('spec', 'image_mariadb')
+            yaml_data['spec']['containers'][container_id]['image'] = config.get('spec', 'image')
             command = ["sh", "/config-start/mariadb-start.sh"]
             yaml_data['spec']['containers'][container_id]['command'] = command
 
@@ -225,44 +225,31 @@ if __name__ == "__main__":
         # initContainer
         #
         yaml_data['spec']['initContainers'] = []
-        if _is_master():
+        # initContainer: configure qserv-data-dir using mariadb image
+        #
+        init_container = dict()
+        command = ["sh", "/config-mariadb/mariadb-configure.sh"]
+        init_container['command'] = command
+        init_container['image'] = config.get('spec', 'image')
+        init_container['imagePullPolicy'] = 'Always'
+        init_container['name'] = 'init-data-dir'
+        init_container['volumeMounts'] = []
+        init_container['volumeMounts'].append({'mountPath': data_mount_path,
+            'name': data_volume_name})
+        init_container['volumeMounts'].append({'mountPath':
+            "/config-mariadb/", 'name': 'config-mariadb-configure'})
+        init_container['volumeMounts'].append({'mountPath':
+            "/config-mariadb-etc/", 'name': 'config-mariadb-etc'})
 
-            # initContainer: configure qserv-data-dir using mariadb image
-            #
-            init_container = dict()
-            command = ["sh", "/config-mariadb/mariadb-configure.sh"]
-            init_container['command'] = command
-            init_container['image'] = config.get('spec', 'image_mariadb')
-            init_container['imagePullPolicy'] = 'Always'
-            init_container['name'] = 'init-data-dir'
-            init_container['volumeMounts'] = []
-            init_container['volumeMounts'].append({'mountPath': data_mount_path,
-                'name': data_volume_name})
-            init_container['volumeMounts'].append({'mountPath':
-                "/config-mariadb/", 'name': 'config-mariadb-configure'})
+        if _is_master():
             init_container['volumeMounts'].append({'mountPath':
                 "/config-sql", 'name': 'config-master-sql'})
-            yaml_data['spec']['initContainers'].append(init_container)
-
         else:
 
-            # initContainer: configure qserv-data-dir using mariadb image
-            #
-            init_container = dict()
-            command = ["sh", "/config-mariadb/mariadb-configure.sh"]
-            init_container['command'] = command
-            init_container['image'] = config.get('spec', 'image_mariadb')
-            init_container['imagePullPolicy'] = 'Always'
-            init_container['name'] = 'init-data-dir'
-            init_container['volumeMounts'] = []
-            init_container['volumeMounts'].append({'mountPath': data_mount_path,
-                'name': data_volume_name})
-            init_container['volumeMounts'].append({'mountPath':
-                "/config-mariadb/", 'name': 'config-mariadb-configure'})
             init_container['volumeMounts'].append({'mountPath':
                 "/config-sql", 'name': 'config-worker-sql'})
-            yaml_data['spec']['initContainers'].append(init_container)
 
+        yaml_data['spec']['initContainers'].append(init_container)
 
         with open(args.yamlFile, 'w') as f:
             f.write(yaml.dump(yaml_data, default_flow_style=False))

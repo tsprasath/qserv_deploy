@@ -26,10 +26,10 @@ spec:
         periodSeconds: 10
       ports:
       - name: mariadb-port
-        containerPort: 13306
+        containerPort: 3306
       volumeMounts:
-      - name: config-my-dot-cnf
-        mountPath: /config-mariadb
+      - name: config-mariadb-etc
+        mountPath: /config-mariadb-etc
       - name: config-mariadb-start
         mountPath: /config-start
     - name: xrootd
@@ -140,9 +140,9 @@ spec:
     - name: config-master
       configMap:
         name: config-master
-    - name: config-my-dot-cnf
+    - name: config-mariadb-etc
       configMap:
-        name: config-my-dot-cnf
+        name: config-mariadb-etc
     - name: config-proxy-etc
       configMap:
         name: config-proxy-etc
