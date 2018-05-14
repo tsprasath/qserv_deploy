@@ -104,6 +104,7 @@ if [ -n "$KUBERNETES" ]; then
 
 	# Trigger special behaviour for Openstack
 	export OPENSTACK=true
+	export CLUSTER_CONFIG_DIR="$HOME/.lsst/qserv-cluster"
 	"$K8S_DIR/full-start.sh"
 
     if [ -n "$LARGE" ]; then

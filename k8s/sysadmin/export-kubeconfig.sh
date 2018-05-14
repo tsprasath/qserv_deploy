@@ -56,6 +56,6 @@ ssh $SSH_CFG_OPT "$ORCHESTRATOR" 'sudo cat /etc/kubernetes/admin.conf' \
 if [ "$OPENSTACK" = true ]; then
     "$DIR/ssh-tunnel.sh"
     sed -i -- 's,server: https://.*\(:[0-9]*\),server: https://localhost\1,g' \
-        "$HOME"/.lsst/qserv-cluster/kubeconfig
+        "$KUBECONFIG"
 fi
 echo "SUCCESS: $KUBECONFIG created"
