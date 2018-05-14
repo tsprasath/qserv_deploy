@@ -3,8 +3,10 @@
 # Configuration file copied to orchestration node, in $ORCHESTRATION_DIR
 # and then sourced by Kubernetes ochestration node scripts
 
-# VERSION can be a git ticket branch but with _ instead of /
-# example: tickets_DM-7139, or dev
+# VERSION is relative to Qserv repository, it can be:
+#  - a git ticket branch but with _ instead of /
+#    example: tickets_DM-7139, or dev
+#  - a git hash
 VERSION=1bef3d1
 # Version of the deployment tool to use
 DEPLOY_VERSION=dev
