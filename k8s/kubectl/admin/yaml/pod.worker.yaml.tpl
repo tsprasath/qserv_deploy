@@ -88,23 +88,18 @@ spec:
       - mountPath: /secret
         name: secret-wmgr
     - name: proxy
-      command: ["/bin/bash", "-c", "[[ `hostname` =~ worker ]] && while true;do sleep 3600; done; /config-start/start.sh"]
+      command: ["/bin/bash", "-c", "--"]
+      args: ["if [[ `hostname` =~ worker ]] ; then while true ; do sleep 3600 ; done ; else /config-start/start.sh ; fi"]
       image: "<INI_IMAGE>"
       imagePullPolicy: Always
       livenessProbe:
         exec:
-          command:
-          - |
-            [[ `hostname` =~ worker ]] && exit 0
-            cat < /dev/null > /dev/tcp/127.0.0.1/4040
+          command: ["/bin/bash", "-c", "--", "if [[ `hostname` =~ worker ]] ; then exit 0 ; else cat < /dev/null > /dev/tcp/127.0.0.1/4040 ; fi"]
         initialDelaySeconds: 15
         periodSeconds: 20
       readinessProbe:
         exec:
-          command:
-          - |
-            [[ `hostname` =~ worker ]] && exit 0
-            cat < /dev/null > /dev/tcp/127.0.0.1/4040
+          command: ["/bin/bash", "-c", "--", "if [[ `hostname` =~ worker ]] ; then exit 0 ; else cat < /dev/null > /dev/tcp/127.0.0.1/4040 ; fi"]
         initialDelaySeconds: 5
         periodSeconds: 10
       ports:
