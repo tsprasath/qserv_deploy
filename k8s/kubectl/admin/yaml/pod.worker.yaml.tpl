@@ -87,6 +87,42 @@ spec:
         name: data-volume
       - mountPath: /secret
         name: secret-wmgr
+    - name: proxy
+      command: ["/bin/bash", "-c", "[[ `hostname` =~ worker ]] && while true;do sleep 3600; done; /config-start/start.sh"]
+      image: "<INI_IMAGE>"
+      imagePullPolicy: Always
+      livenessProbe:
+        exec:
+          command:
+          - |
+            [[ `hostname` =~ worker ]] && exit 0
+            cat < /dev/null > /dev/tcp/127.0.0.1/4040
+        initialDelaySeconds: 15
+        periodSeconds: 20
+      readinessProbe:
+        exec:
+          command:
+          - |
+            [[ `hostname` =~ worker ]] && exit 0
+            cat < /dev/null > /dev/tcp/127.0.0.1/4040
+        initialDelaySeconds: 5
+        periodSeconds: 10
+      ports:
+      - name: proxy-port
+        containerPort: 4040
+      volumeMounts:
+      - mountPath: /home/qserv/.lsst
+        name: config-dot-lsst
+      - mountPath: /config-start
+        name: config-proxy-start
+      - mountPath: /config-etc
+        name: config-proxy-etc
+      - mountPath: /qserv/run/tmp
+        name: tmp-volume
+      - mountPath: /qserv/data
+        name: data-volume
+      - mountPath: /secret
+        name: secret-wmgr
   nodeSelector:
     kubernetes.io/hostname: <INI_HOST>
   volumes:
@@ -120,6 +156,15 @@ spec:
     - name: config-wmgr-start
       configMap:
         name: config-wmgr-start
+    - name: config-dot-lsst
+      configMap:
+        name: config-dot-lsst
+    - name: config-proxy-start
+      configMap:
+        name: config-proxy-start
+    - name: config-proxy-etc
+      configMap:
+        name: config-proxy-etc
     - name: secret-wmgr
       secret:
         secretName: secret-wmgr
