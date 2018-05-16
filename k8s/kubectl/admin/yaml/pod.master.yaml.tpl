@@ -52,19 +52,18 @@ spec:
       - name: config-xrootd-start
         mountPath: /config-start
     - name: proxy
-      command:
-      - sh
-      - /config-start/start.sh
+      command: ["/bin/bash", "-c", "--"]
+      args: ["if [[ `hostname` =~ worker  ]] ; then while true ; do sleep 3600 ; done ; else /config-start/start.sh ; fi"]
       image: "<INI_IMAGE>"
       imagePullPolicy: Always
       livenessProbe:
-        tcpSocket:
-          port: proxy-port
+        exec:
+          command: ["/bin/bash", "-c", "--", "if [[ `hostname` =~ worker  ]]; then exit 0 ; else cat < /dev/null > /dev/tcp/127.0.0.1/4040 ; fi"]
         initialDelaySeconds: 15
         periodSeconds: 20
       readinessProbe:
-        tcpSocket:
-          port: proxy-port
+        exec:
+          command: ["/bin/bash", "-c", "--", "if [[ `hostname` =~ worker  ]]; then exit 0 ; else cat < /dev/null > /dev/tcp/127.0.0.1/4040 ; fi"]
         initialDelaySeconds: 5
         periodSeconds: 10
       ports:
@@ -149,6 +148,7 @@ spec:
     - name: config-proxy-start
       configMap:
         name: config-proxy-start
+        defaultMode: 0755
     - name: config-qserv-configure
       configMap:
         name: config-qserv-configure

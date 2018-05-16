@@ -157,6 +157,7 @@ spec:
     - name: config-proxy-start
       configMap:
         name: config-proxy-start
+        defaultMode: 0755
     - name: config-proxy-etc
       configMap:
         name: config-proxy-etc
