@@ -54,7 +54,3 @@ Provision Qserv & run multinode tests
     # Use -h to see all available options
     ./provision-install-test.sh
 
-.. warning::
-   If `test.sh` crashes during integration tests with shmux,
-   your original `~/.ssh/config` might have been moved in `~/.ssh/config.backup`
-

@@ -14,7 +14,7 @@ docker cp kube-master:/etc/kubernetes/admin.conf "$HOME"/.lsst/qserv-cluster/kub
 # Add configuration
 ln -sf "$HOME"/.lsst/qserv-cluster/kubeconfig.dind "$HOME"/.lsst/qserv-cluster/kubeconfig
 ln -s $DIR/env-infrastructure.dind.sh $HOME/.lsst/qserv-cluster/env-infrastructure.sh 
-ln -s $DIR/env.example.sh $HOME/.lsst/qserv-cluster/env.sh
+ln -s $DIR/env.in.sh $HOME/.lsst/qserv-cluster/env.sh
 
 # Create host directory
 # FIXME: manage this in env.sh and use emptyDir instead
