@@ -23,6 +23,7 @@ Usage: `basename $0` [options]
   Available options:
     -h          this message
     -c          update CentOS7/Docker snapshot
+    -d          remove all host VMs
     -L          run S15 queries
     -k          launch Qserv integration test using kubernetes
     -p          provision Qserv cluster on Openstack
@@ -38,10 +39,11 @@ EOD
 }
 
 # get the options
-while getopts hckLpsS c ; do
+while getopts hcdkLp c ; do
     case $c in
         h) usage ; exit 0 ;;
         c) CREATE="TRUE" ;;
+        d) DELETE="TRUE" ;;
         k) KUBERNETES="TRUE" ;;
         L) LARGE="TRUE" ;;
         p) PROVISION="TRUE" ;;
@@ -67,6 +69,16 @@ K8S_DIR="$DIR/../k8s"
 
 # Choose the configuration file which contains instance parameters
 CONF_FILE="${DIR}/${OS_PROJECT_NAME}.conf"
+
+
+if [ -n "$DELETE" ]; then
+    . "$CLUSTER_CONFIG_DIR/env-infrastructure.sh"
+    for s in $MASTER $WORKERS
+    do
+        openstack server delete $s || echo "Unable to delete server $i"
+    done
+fi
+
 
 if [ -n "$CREATE" ]; then
     echo "Create up to date snapshot image"
