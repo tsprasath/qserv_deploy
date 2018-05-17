@@ -54,7 +54,7 @@ INI_FILE="${CFG_DIR}/pod.master.ini"
 echo "Create kubernetes configmaps for Qserv"
 
 kubectl delete configmap --ignore-not-found=true config-master
-kubectl create configmap config-master --from-literal=qserv_master="$MASTER"
+kubectl create configmap config-master --from-literal=qserv_master="master.qserv"
 
 kubectl delete configmap --ignore-not-found=true config-dot-lsst
 kubectl create configmap --from-file="$CONFIGMAP_DIR/dot-lsst" config-dot-lsst

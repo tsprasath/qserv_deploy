@@ -9,14 +9,12 @@ set -e
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
-if [ -z "$DEPLOY_VERSION" ]; then
-	echo "ERROR: undefined variable \$DEPLOY_VERSION (use 'dev' or 'testing' or git tag)"
-	exit 1
-fi
+GIT_HASH="$(git describe --always)"
+TAG=${DEPLOY_VERSION:-${GIT_HASH}}
 
-IMAGE="qserv/kubectl:$DEPLOY_VERSION"
+IMAGE="qserv/kubectl:$TAG"
 
-echo $DIR
+echo "Building image $IMAGE"
 
 docker build --tag "$IMAGE" "$DIR/kubectl"
 docker push "$IMAGE"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Test script which performs the following tasks:
 
@@ -72,10 +72,12 @@ CONF_FILE="${DIR}/${OS_PROJECT_NAME}.conf"
 
 
 if [ -n "$DELETE" ]; then
+    (
     . "$TF_DIR/terraform-setup.sh"
     cd "$TF_DIR"
     terraform destroy
     cd ..
+    )
 fi
 
 
