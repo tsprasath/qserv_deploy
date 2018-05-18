@@ -9,7 +9,7 @@ set -e
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
-GIT_HASH="$(git describe --always)"
+GIT_HASH="$(git describe --dirty --always)"
 TAG=${DEPLOY_VERSION:-${GIT_HASH}}
 
 IMAGE="qserv/kubectl:$TAG"
