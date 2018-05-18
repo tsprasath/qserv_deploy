@@ -41,6 +41,11 @@ def get_cloudconfig():
     userdata = '''
 #cloud-config
 
+bootcmd:
+- [ cloud-init-per, instance, yumepelrepo, 'yum', 'install', '-y', 'epel-release']
+- [ cloud-init-per, instance, yumepelrepo, 'yum', 'install', '-y', 'yum-utils']
+- [ cloud-init-per, instance, yumdockerrepo, 'yum-config-manager', '--add-repo', 'https://download.docker.com/linux/centos/docker-ce.repo']
+
 write_files:
 - path: "/etc/yum.repos.d/kubernetes.repo"
   permissions: "0544"
@@ -75,24 +80,21 @@ packages:
 # required for gnu-parallel
 - [bzip2]
 - [device-mapper-persistent-data, 0.7.0-0.1.rc6.el7_4.1.x86_64]
+- [docker-ce, 18.03.1.ce-1.el7.centos]
 - ebtables
-- epel-release
 - [kubeadm, 1.9.1-0]
 - [kubectl, 1.9.1-0]
 - [kubelet, 1.9.1-0]
 - [kubernetes-cni, 0.6.0-0]
 - [lvm2, 2.02.171-8.el7.x86_64]
-- [yum-utils, 1.1.31-42.el7.noarch]
+- [parallel, 20160222-1.el7]
 - util-linux
 
 runcmd:
 - ['setenforce', '0']
 - ['sed', '-i', 's/SELINUX=enforcing/SELINUX=disabled/', '/etc/sysconfig/selinux']
-- ['yum-config-manager', '--add-repo', 'https://download.docker.com/linux/centos/docker-ce.repo']
-- ['yum', 'install', '-y', 'docker-ce-18.03.0.ce-1.el7.centos']
-- ['yum', 'install', '-y', 'parallel-20160222-1.el7']
-- ['systemctl', 'enable', 'docker']
-- ['systemctl', 'enable', 'kubelet']
+- ['systemctl', 'enable', 'docker.service']
+- ['systemctl', 'enable', 'kubelet.service']
 - ['/tmp/detect_end_cloud_config.sh']
 
 package_upgrade: true

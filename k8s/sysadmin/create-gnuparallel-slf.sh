@@ -9,6 +9,7 @@ set -x
 # @author  Fabrice Jammes, IN2P3
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
+export CREATE_PARALLEL_SSH_CFG=true
 . "$DIR/../env-cluster.sh"
 
 if [ ! -e "$SSH_CFG" ]
