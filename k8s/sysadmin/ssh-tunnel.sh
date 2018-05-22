@@ -14,7 +14,7 @@ K8S_PORT=6443
 
 # Check for existing tunnel and destroy it
 PIDS=$(ps x | grep ssh | \
-	grep "-N -L ${K8S_PORT}:localhost:${K8S_PORT}" | \
+	grep " -N -L ${K8S_PORT}:localhost:${K8S_PORT}" | \
 	awk '{print $1}')
 for p in $PIDS
 do
