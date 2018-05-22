@@ -32,8 +32,13 @@ Usage: `basename $0` [options]
   Openstack, then install Qserv and launch integration test on it.
   If no option provided, do nothing
 
+  CLUSTER_CONFIG_DIR environment variable point to a directory which contains
+  configuration for cloud platform, node, ssh access, and k8s/docker
+  specific setup
 
-  Pre-requisites: Openstack RC file need to be sourced.
+  Pre-requisites: CLUSTER_CONFIG_DIR env variable be defined,exported and point
+                  to a directory containing at least an Openstack RC file named
+                  os-openrc.sh
 
 EOD
 }
@@ -64,14 +69,22 @@ if [ ! -d "$CLUSTER_CONFIG_DIR" ]; then
 fi
 
 # Check if openstack connection parameters are available
+OS_RC_FILE="$CLUSTER_CONFIG_DIR/os-openrc.sh"
 if [ -z "$OS_PROJECT_NAME" ]; then
-    echo "ERROR: Openstack resource file not sourced"
-    exit 1
+    if [ -f "$OS_RC_FILE" ]; then
+        . "$OS_RC_FILE"
+    else
+        echo "ERROR: Missing Openstack resource file: $OS_RC_FILE"
+        exit 1
+    fi
+    if [ -z "$OS_PROJECT_NAME" ]; then
+        echo "ERROR: Incorrect Openstack resource file: $OS_RC_FILE"
+        exit 1
+    fi
 fi
 
-export CLUSTER_CONFIG_DIR="$HOME/.lsst/qserv-cluster/${OS_PROJECT_NAME}"
+export CLUSTER_CONFIG_DIR
 K8S_DIR="$DIR/../k8s"
-
 
 # Choose the configuration file which contains instance parameters
 CONF_FILE="${DIR}/${OS_PROJECT_NAME}.conf"
