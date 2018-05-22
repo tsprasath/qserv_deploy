@@ -78,15 +78,15 @@ groups:
 
 packages:
 # required for gnu-parallel
-- [bzip2]
-- [device-mapper-persistent-data, 0.7.0-0.1.rc6.el7_4.1.x86_64]
+- bzip2
+- device-mapper-persistent-data
 - ebtables
-- [kubeadm, 1.9.1-0]
-- [kubectl, 1.9.1-0]
-- [kubelet, 1.9.1-0]
+- [kubeadm, 1.10.3-0]
+- [kubectl, 1.10.3-0]
+- [kubelet, 1.10.3-0]
 - [kubernetes-cni, 0.6.0-0]
-- [lvm2, 2.02.171-8.el7.x86_64]
-- [parallel, 20160222-1.el7]
+- lvm2
+- parallel
 - util-linux
 
 runcmd:
