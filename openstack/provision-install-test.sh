@@ -57,6 +57,12 @@ if [ $# -ne 0 ] ; then
     exit 2
 fi
 
+if [ ! -d "$CLUSTER_CONFIG_DIR" ]; then
+    echo "ERROR: incorrect CLUSTER_CONFIG_DIR parameter: \"$CLUSTER_CONFIG_DIR\""
+    usage
+    exit 2
+fi
+
 # Check if openstack connection parameters are available
 if [ -z "$OS_PROJECT_NAME" ]; then
     echo "ERROR: Openstack resource file not sourced"
@@ -121,6 +127,9 @@ if [ -n "$KUBERNETES" ]; then
             "$ENV_FILE"
     fi
     "$K8S_DIR"/start.sh
+
+    # TODO implement ping for pods.qserv
+    sleep 20
 
     if [ -n "$LARGE" ]; then
         echo "Launch large scale tests"
