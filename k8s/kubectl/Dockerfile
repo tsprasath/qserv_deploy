@@ -42,7 +42,7 @@ RUN wget -O /usr/local/bin/kubectl \
 
 # Install kubectl aliases
 RUN wget -O $HOME/.kubectl_aliases \
-    https://github.com/ahmetb/kubectl-aliases/blob/master/.kubectl_aliases
+    https://rawgit.com/ahmetb/kubectl-alias/master/.kubectl_aliases
 
 # Install kubectl completion
 # setup autocomplete in bash, bash-completion package should be installed first.
