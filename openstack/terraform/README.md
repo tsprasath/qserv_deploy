@@ -1,7 +1,7 @@
 Provision Qserv using Terraform
 ======
 
-This procedure setup a Kubernetes cluster in OpenStack for Qserv
+This procedure provision a cluster in OpenStack for Qserv
 
 Pre-requisites
 ------
