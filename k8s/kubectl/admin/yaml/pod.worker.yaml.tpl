@@ -140,9 +140,6 @@ spec:
     - name: config-mariadb-etc
       configMap:
         name: config-mariadb-etc
-    - name: config-qserv-configure
-      configMap:
-        name: config-qserv-configure
     - name: config-worker-sql
       configMap:
         name: config-worker-sql

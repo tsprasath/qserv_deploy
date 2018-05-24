@@ -159,9 +159,6 @@ spec:
     - name: config-proxy-probe
       configMap:
         name: config-proxy-probe
-    - name: config-qserv-configure
-      configMap:
-        name: config-qserv-configure
     - name: config-wmgr-etc
       configMap:
         name: config-wmgr-etc
