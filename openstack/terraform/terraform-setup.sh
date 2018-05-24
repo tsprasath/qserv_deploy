@@ -7,12 +7,15 @@ if [ -z "$OS_PROJECT_NAME" ]; then
 	return
 fi
 
+if [ -z "$CLUSTER_CONFIG_DIR" ]; then
+    >&2 echo "ERROR: CLUSTER_CONFIG_DIR must be defined"
+    return
+fi
+
 # Triggers specific behavior in others install scripts
 export OPENSTACK=true
 
-export CONFIG_DIR=$HOME/.lsst/qserv-cluster
-
-export TF_DATA_DIR=$CONFIG_DIR/terraform
+export TF_DATA_DIR=$CLUSTER_CONFIG_DIR/terraform
 
 # Store the state in lsst config dir
 # A bug in terraform actually prevent this
@@ -23,6 +26,6 @@ export TF_DATA_DIR=$CONFIG_DIR/terraform
 # So this prevents repeating the username in tfvars
 export TF_VAR_user_name=$OS_USERNAME
 
-export TF_VAR_lsst_config_path=$CONFIG_DIR
+export TF_VAR_lsst_config_path=$CLUSTER_CONFIG_DIR
 
 mkdir -p $TF_DATA_DIR

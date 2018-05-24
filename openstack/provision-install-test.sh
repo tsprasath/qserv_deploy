@@ -65,18 +65,17 @@ fi
 
 export CLUSTER_CONFIG_DIR="$HOME/.lsst/qserv-cluster/${OS_PROJECT_NAME}"
 K8S_DIR="$DIR/../k8s"
-
+TF_DIR="$DIR/terraform"
 
 # Choose the configuration file which contains instance parameters
 CONF_FILE="${DIR}/${OS_PROJECT_NAME}.conf"
 
 
 if [ -n "$DELETE" ]; then
-    . "$CLUSTER_CONFIG_DIR/env-infrastructure.sh"
-    for s in $MASTER $WORKERS
-    do
-        openstack server delete $s || echo "Unable to delete server $i"
-    done
+    . "$TF_DIR/terraform-setup.sh"
+    cd "$TF_DIR"
+    terraform destroy
+    cd ..
 fi
 
 
@@ -87,12 +86,12 @@ fi
 
 if [ -n "$PROVISION" ]; then
     echo "Provision Qserv cluster on Openstack"
-    "$DIR/provision-qserv.py" --cleanup \
-        --config "$CONF_FILE" \
-        -vv
-    mkdir -p "$CLUSTER_CONFIG_DIR"
-    cp "$DIR/ssh_config" "$CLUSTER_CONFIG_DIR"
-    cp "$DIR/env-infrastructure.sh" "$CLUSTER_CONFIG_DIR"
+    . "$TF_DIR/terraform-setup.sh"
+    # Terraform performs best in it's own folder
+    cd "$TF_DIR"
+    terraform init .
+    terraform apply --var-file="$TF_DIR/terraform.tfvars" .
+    cd ..
     "$K8S_DIR/sysadmin/create-gnuparallel-slf.sh"
 fi
 
