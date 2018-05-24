@@ -88,18 +88,23 @@ spec:
       - mountPath: /secret
         name: secret-wmgr
     - name: proxy
-      command: ["/bin/sh", "-c", "--"]
-      args: ["if hostname | grep -q 'worker' ; then while true ; do sleep 3600 ; done ; else /config-start/start.sh ; fi"]
+      command:
+      - sh
+      - /config-start/start.sh
       image: "<INI_IMAGE>"
       imagePullPolicy: Always
       livenessProbe:
         exec:
-          command: ["/bin/bash", "-c", "--", "if hostname | grep -q 'worker' ; then exit 0 ; else cat < /dev/null > /dev/tcp/127.0.0.1/4040 ; fi"]
+          command:
+            - /bin/bash
+            - /config-probe/probe.sh
         initialDelaySeconds: 15
         periodSeconds: 20
       readinessProbe:
         exec:
-          command: ["/bin/bash", "-c", "--", "if hostname | grep -q 'worker' ; then exit 0 ; else cat < /dev/null > /dev/tcp/127.0.0.1/4040 ; fi"]
+          command:
+            - /bin/bash
+            - /config-probe/probe.sh
         initialDelaySeconds: 5
         periodSeconds: 10
       ports:
@@ -112,6 +117,8 @@ spec:
         name: config-proxy-start
       - mountPath: /config-etc
         name: config-proxy-etc
+      - mountPath: /config-probe
+        name: config-proxy-probe
       - mountPath: /qserv/run/tmp
         name: tmp-volume
       - mountPath: /qserv/data
@@ -161,6 +168,9 @@ spec:
     - name: config-proxy-etc
       configMap:
         name: config-proxy-etc
+    - name: config-proxy-probe
+      configMap:
+        name: config-proxy-probe
     - name: secret-wmgr
       secret:
         secretName: secret-wmgr
