@@ -7,6 +7,20 @@
 set -e
 set -x
 
+counter=0
+while ! kubectl get componentstatuses
+do
+    if [ "$counter" -lt 10 ]
+    then
+        echo "Wait for master to be up"
+        sleep 1
+    else
+        echo "ERROR: master startup failed"
+        exit 1 
+    fi
+    counter=$((counter+1))
+done
+
 echo "Install weave network"
 KUBEVER=$(kubectl version | base64 | tr -d '\n')
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$KUBEVER"
