@@ -15,6 +15,13 @@ set -e
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
+# Sleep if we are in a worker pod
+if hostname | grep -q 'worker'; then
+    while true; do
+        sleep 3600;
+    done
+fi
+
 # Source functions library.
 . /qserv/run/etc/init.d/qserv-functions
 

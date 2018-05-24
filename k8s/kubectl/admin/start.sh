@@ -72,13 +72,13 @@ kubectl delete configmap --ignore-not-found=true config-mariadb-etc
 kubectl create configmap --from-file="$CONFIGMAP_DIR/mariadb/etc/my.cnf" config-mariadb-etc
 
 kubectl delete configmap --ignore-not-found=true config-proxy-etc
-kubectl create configmap --from-file="$CONFIGMAP_DIR/master/proxy/etc" config-proxy-etc
+kubectl create configmap --from-file="$CONFIGMAP_DIR/proxy/etc" config-proxy-etc
 
 kubectl delete configmap --ignore-not-found=true config-proxy-start
-kubectl create configmap --from-file="$CONFIGMAP_DIR/master/proxy/start.sh" config-proxy-start
+kubectl create configmap --from-file="$CONFIGMAP_DIR/proxy/start.sh" config-proxy-start
 
-kubectl delete configmap --ignore-not-found=true config-qserv-configure
-kubectl create configmap --from-file="$CONFIGMAP_DIR/qserv-configure.sh" config-qserv-configure
+kubectl delete configmap --ignore-not-found=true config-proxy-probe
+kubectl create configmap --from-file="$CONFIGMAP_DIR/proxy/probe.sh" config-proxy-probe
 
 kubectl delete configmap --ignore-not-found=true config-wmgr-etc
 kubectl create configmap --from-file="$CONFIGMAP_DIR/wmgr/etc" config-wmgr-etc 

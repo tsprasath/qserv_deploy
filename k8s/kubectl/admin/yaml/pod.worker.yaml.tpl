@@ -87,6 +87,44 @@ spec:
         name: data-volume
       - mountPath: /secret
         name: secret-wmgr
+    - name: proxy
+      command:
+      - sh
+      - /config-start/start.sh
+      image: "<INI_IMAGE>"
+      imagePullPolicy: Always
+      livenessProbe:
+        exec:
+          command:
+            - /bin/bash
+            - /config-probe/probe.sh
+        initialDelaySeconds: 15
+        periodSeconds: 20
+      readinessProbe:
+        exec:
+          command:
+            - /bin/bash
+            - /config-probe/probe.sh
+        initialDelaySeconds: 5
+        periodSeconds: 10
+      ports:
+      - name: proxy-port
+        containerPort: 4040
+      volumeMounts:
+      - mountPath: /home/qserv/.lsst
+        name: config-dot-lsst
+      - mountPath: /config-start
+        name: config-proxy-start
+      - mountPath: /config-etc
+        name: config-proxy-etc
+      - mountPath: /config-probe
+        name: config-proxy-probe
+      - mountPath: /qserv/run/tmp
+        name: tmp-volume
+      - mountPath: /qserv/data
+        name: data-volume
+      - mountPath: /secret
+        name: secret-wmgr
   nodeSelector:
     kubernetes.io/hostname: <INI_HOST>
   volumes:
@@ -102,9 +140,6 @@ spec:
     - name: config-mariadb-etc
       configMap:
         name: config-mariadb-etc
-    - name: config-qserv-configure
-      configMap:
-        name: config-qserv-configure
     - name: config-worker-sql
       configMap:
         name: config-worker-sql
@@ -120,6 +155,19 @@ spec:
     - name: config-wmgr-start
       configMap:
         name: config-wmgr-start
+    - name: config-dot-lsst
+      configMap:
+        name: config-dot-lsst
+    - name: config-proxy-start
+      configMap:
+        name: config-proxy-start
+        defaultMode: 0755
+    - name: config-proxy-etc
+      configMap:
+        name: config-proxy-etc
+    - name: config-proxy-probe
+      configMap:
+        name: config-proxy-probe
     - name: secret-wmgr
       secret:
         secretName: secret-wmgr

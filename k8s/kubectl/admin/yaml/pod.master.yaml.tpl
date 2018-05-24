@@ -53,18 +53,22 @@ spec:
         mountPath: /config-start
     - name: proxy
       command:
-      - sh
-      - /config-start/start.sh
+        - sh
+        - /config-start/start.sh
       image: "<INI_IMAGE>"
       imagePullPolicy: Always
       livenessProbe:
-        tcpSocket:
-          port: proxy-port
+        exec:
+          command:
+            - /bin/bash
+            - /config-probe/probe.sh
         initialDelaySeconds: 15
         periodSeconds: 20
       readinessProbe:
-        tcpSocket:
-          port: proxy-port
+        exec:
+          command:
+            - /bin/bash
+            - /config-probe/probe.sh
         initialDelaySeconds: 5
         periodSeconds: 10
       ports:
@@ -77,6 +81,8 @@ spec:
         name: config-proxy-start
       - mountPath: /config-etc
         name: config-proxy-etc
+      - mountPath: /config-probe
+        name: config-proxy-probe
       - mountPath: /qserv/run/tmp
         name: tmp-volume
       - mountPath: /qserv/data
@@ -149,9 +155,10 @@ spec:
     - name: config-proxy-start
       configMap:
         name: config-proxy-start
-    - name: config-qserv-configure
+        defaultMode: 0755
+    - name: config-proxy-probe
       configMap:
-        name: config-qserv-configure
+        name: config-proxy-probe
     - name: config-wmgr-etc
       configMap:
         name: config-wmgr-etc
