@@ -72,11 +72,10 @@ CONF_FILE="${DIR}/${OS_PROJECT_NAME}.conf"
 
 
 if [ -n "$DELETE" ]; then
-    . "$CLUSTER_CONFIG_DIR/env-infrastructure.sh"
-    for s in $MASTER $WORKERS
-    do
-        openstack server delete $s || echo "Unable to delete server $i"
-    done
+    . "$TF_DIR/terraform-setup.sh"
+    cd "$TF_DIR"
+    terraform destroy
+    cd ..
 fi
 
 
