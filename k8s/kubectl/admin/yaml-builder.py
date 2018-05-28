@@ -240,14 +240,8 @@ if __name__ == "__main__":
             "/config-mariadb/", 'name': 'config-mariadb-configure'})
         init_container['volumeMounts'].append({'mountPath':
             "/config-mariadb-etc/", 'name': 'config-mariadb-etc'})
-
-        if _is_master():
-            init_container['volumeMounts'].append({'mountPath':
-                "/config-sql", 'name': 'config-master-sql'})
-        else:
-
-            init_container['volumeMounts'].append({'mountPath':
-                "/config-sql", 'name': 'config-worker-sql'})
+        init_container['volumeMounts'].append({'mountPath':
+            "/config-sql", 'name': 'config-sql'})
 
         yaml_data['spec']['initContainers'].append(init_container)
 

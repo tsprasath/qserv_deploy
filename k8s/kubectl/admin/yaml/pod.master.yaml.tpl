@@ -134,9 +134,9 @@ spec:
     - name: config-mariadb-start
       configMap:
         name: config-mariadb-start
-    - name: config-master-sql
+    - name: config-sql
       configMap:
-        name: config-master-sql
+        name: config-sql
     - name: config-xrootd-etc
       configMap:
         name: config-xrootd-etc

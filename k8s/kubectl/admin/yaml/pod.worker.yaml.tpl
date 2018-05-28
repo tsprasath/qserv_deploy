@@ -1,9 +1,10 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: <INI_POD_NAME>
   labels:
     app: qserv
+    node: worker
+  name: <INI_POD_NAME>
 spec:
   dnsPolicy: Default
   hostNetwork: true
@@ -140,9 +141,9 @@ spec:
     - name: config-mariadb-etc
       configMap:
         name: config-mariadb-etc
-    - name: config-worker-sql
+    - name: config-sql
       configMap:
-        name: config-worker-sql
+        name: config-sql
     - name: config-xrootd-etc
       configMap:
         name: config-xrootd-etc
