@@ -2,14 +2,25 @@
 
 # This file must be sourced before running any terraform command
 # It setup terraform to store the state of the cluster in the config dir
-if [ -z "$OS_PROJECT_NAME" ]; then
-	>&2 echo "ERROR: OpenStack RC file not sourced"
-	return
-fi
 
 if [ -z "$CLUSTER_CONFIG_DIR" ]; then
     >&2 echo "ERROR: CLUSTER_CONFIG_DIR must be defined"
     return
+fi
+
+# Check if openstack connection parameters are available
+OS_RC_FILE="$CLUSTER_CONFIG_DIR/os-openrc.sh"
+if [ -z "$OS_PROJECT_NAME" ]; then
+    if [ -f "$OS_RC_FILE" ]; then
+        . "$OS_RC_FILE"
+    else
+        >&2 echo "ERROR: Missing Openstack resource file: $OS_RC_FILE"
+        exit 1
+    fi
+    if [ -z "$OS_PROJECT_NAME" ]; then
+        >&2 echo "ERROR: Incorrect Openstack resource file: $OS_RC_FILE"
+        exit 1
+    fi
 fi
 
 # Triggers specific behavior in others install scripts
