@@ -3,16 +3,16 @@
 # Commented lines are optionnal parameters at default value
 
 # Flavor of the cluster nodes
-flavor = "m1.medium"
+flavor = "c2.xlarge"
 
 # Snapshot to use in the cluster nodes
-snapshot = "qserv-kubernetes-1.9.1_docker-18.03.1"
+snapshot = "qserv-kubernetes-1.10.3"
 
 # OpenStack network name of the cluster
-network = "LSST-net"
+network = "petasky-net"
 
 # Prefix for all instances names
-instance_prefix = "fjammes"
+instance_prefix = "fjammes-"
 
 # Number of workers node
 # nb_worker = 2
@@ -24,13 +24,13 @@ instance_prefix = "fjammes"
 ssh_private_key = "~/.ssh/id_rsa_openstack"
 
 # Security group to add to nodes
-security_groups = ["default", "remote SSH" ]
+security_groups = ["default"]
 
 # OpenStack ip pool name for floating ip
-ip_pool = "ext-net"
+ip_pool = "ext-publicnet"
 
 # Docker registry ip
-docker_registry_host = "172.16.1.247"
+docker_registry_host = "192.168.56.109"
 
 # Docker registry port
 # docker_registry_port = 5000

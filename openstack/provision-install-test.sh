@@ -88,32 +88,40 @@ K8S_DIR="$DIR/../k8s"
 TF_DIR="$DIR/terraform"
 
 # Choose the configuration file which contains instance parameters
-CONF_FILE="${DIR}/${OS_PROJECT_NAME}.conf"
+IMAGE_CONF_FILE="${CLUSTER_CONFIG_DIR}/image.conf"
 
+export TF_DIR=$CLUSTER_CONFIG_DIR/terraform
 
 if [ -n "$DELETE" ]; then
     (
     . "$TF_DIR/terraform-setup.sh"
     cd "$TF_DIR"
-    terraform destroy
+    terraform destroy --auto-approve \
+        --var-file="$CLUSTER_CONFIG_DIR/terraform.tfvars"
     cd ..
+    rm -rf "$TF_DIR"
     )
 fi
 
 
 if [ -n "$CREATE" ]; then
     echo "Create up to date snapshot image"
-    "$DIR/create-image.py" --cleanup --config "$CONF_FILE" -vv
+    "$DIR/create-image.py" --cleanup --config "$IMAGE_CONF_FILE" -vv
 fi
 
 if [ -n "$PROVISION" ]; then
     echo "Provision Qserv cluster on Openstack"
-    . "$TF_DIR/terraform-setup.sh"
-    # Terraform performs best in it's own folder
+    (
+    mkdir -p  "$TF_DIR"
     cd "$TF_DIR"
-    terraform init .
-    terraform apply --var-file="$TF_DIR/terraform.tfvars" .
-    cd ..
+    if [ ! -f "$TF_DIR/terraform-setup.sh" ]; then
+        terraform init -from-module $DIR/terraform
+    fi 
+    . "$TF_DIR/terraform-setup.sh"
+    terraform apply --auto-approve \
+        --var-file="$CLUSTER_CONFIG_DIR/terraform.tfvars"
+    cd -
+    )
     "$K8S_DIR/sysadmin/create-gnuparallel-slf.sh"
 fi
 
@@ -121,14 +129,14 @@ if [ -n "$KUBERNETES" ]; then
 
     # Trigger special behaviour for Openstack
     export OPENSTACK=true
+    # require DEPLOY_VERSION value to use kubectl commands
+    ENV_FILE="$CLUSTER_CONFIG_DIR/env.sh"
+    cp "$K8S_DIR/env.in.sh" "$ENV_FILE"
 
     echo "Create Kubernetes cluster"
     # require sudo access on nodes
    "$K8S_DIR"/sysadmin/kube-destroy.sh
 
-    # require DEPLOY_VERSION value to install weave
-    ENV_FILE="$CLUSTER_CONFIG_DIR/env.sh"
-    cp "$K8S_DIR/env.in.sh" "$ENV_FILE"
    "$K8S_DIR"/sysadmin/kube-create.sh
 
     echo "Configure and launch Qserv"

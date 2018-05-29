@@ -1,4 +1,0 @@
-Restart all nodes after 'kubeadm reset' for reinitializating weave:
-https://github.com/weaveworks/weave/issues/2911
-
-IPVS proxy for kubeadm: https://github.com/kubernetes/kubeadm/issues/655
