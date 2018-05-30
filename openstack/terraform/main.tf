@@ -15,9 +15,9 @@ locals {
 
 # Cluster lists
 locals {
-  worker_ips      = "${openstack_compute_instance_v2.workers.*.network.0.fixed_ip_v4}"
-  pet_ips         = "${list(openstack_compute_instance_v2.master.network.0.fixed_ip_v4, openstack_compute_instance_v2.orchestra.network.0.fixed_ip_v4, openstack_compute_instance_v2.gateway.network.0.fixed_ip_v4)}"
-  cluster_ips     = "${concat(local.worker_ips, local.pet_ips)}"
+  worker_ips  = "${openstack_compute_instance_v2.workers.*.network.0.fixed_ip_v4}"
+  pet_ips     = "${list(openstack_compute_instance_v2.master.network.0.fixed_ip_v4, openstack_compute_instance_v2.orchestra.network.0.fixed_ip_v4, openstack_compute_instance_v2.gateway.network.0.fixed_ip_v4)}"
+  cluster_ips = "${concat(local.worker_ips, local.pet_ips)}"
 
   worker_names  = "${openstack_compute_instance_v2.workers.*.name}"
   pet_names     = "${list(openstack_compute_instance_v2.master.name, openstack_compute_instance_v2.orchestra.name, openstack_compute_instance_v2.gateway.name)}"
@@ -179,6 +179,10 @@ resource "null_resource" "cluster_etc_hosts" {
       "sudo sh -c \"cat << EOF > /etc/hosts\n127.0.0.1  localhost\n::1  localhost\n${local.cluster_hosts_file}\nEOF\"",
     ]
   }
+
+  triggers {
+    cluster_instance_ips = "${join(",", local.cluster_ips)}"
+  }
 }
 
 # Prints the env-infrastructure.sh file on local desktop
@@ -186,11 +190,19 @@ resource "null_resource" "env_infra_file" {
   provisioner "local-exec" {
     command = "echo '${data.template_file.env_infra.rendered}' > ${var.lsst_config_path}/env-infrastructure.sh"
   }
+
+  triggers {
+    cluster_instance_ips = "${join(",", local.cluster_ips)}"
+  }
 }
 
 # Prints the ssh_config for the cluster on local desktop
 resource "null_resource" "ssh_config" {
   provisioner "local-exec" {
     command = "echo '${data.template_file.ssh_config.rendered}' > ${var.lsst_config_path}/ssh_config"
+  }
+
+  triggers {
+    cluster_instance_ips = "${join(",", local.cluster_ips)}"
   }
 }
