@@ -9,7 +9,7 @@
 #  - a git hash
 VERSION=e73191c
 # Version of the deployment tool to use
-DEPLOY_VERSION=DM-14319
+DEPLOY_VERSION=baa0a92-dirty
 
 # `docker run` settings
 # =====================

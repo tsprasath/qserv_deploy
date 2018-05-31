@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Test script which performs the following tasks:
 
@@ -32,8 +32,13 @@ Usage: `basename $0` [options]
   Openstack, then install Qserv and launch integration test on it.
   If no option provided, do nothing
 
+  CLUSTER_CONFIG_DIR environment variable point to a directory which contains
+  configuration for cloud platform, node, ssh access, and k8s/docker
+  specific setup
 
-  Pre-requisites: Openstack RC file need to be sourced.
+  Pre-requisites: CLUSTER_CONFIG_DIR env variable be defined,exported and point
+                  to a directory containing at least an Openstack RC file named
+                  os-openrc.sh
 
 EOD
 }
@@ -57,41 +62,66 @@ if [ $# -ne 0 ] ; then
     exit 2
 fi
 
-# Check if openstack connection parameters are available
-if [ -z "$OS_PROJECT_NAME" ]; then
-    echo "ERROR: Openstack resource file not sourced"
-    exit 1
+if [ ! -d "$CLUSTER_CONFIG_DIR" ]; then
+    echo "ERROR: incorrect CLUSTER_CONFIG_DIR parameter: \"$CLUSTER_CONFIG_DIR\""
+    usage
+    exit 2
 fi
 
-export CLUSTER_CONFIG_DIR="$HOME/.lsst/qserv-cluster/${OS_PROJECT_NAME}"
+# Check if openstack connection parameters are available
+OS_RC_FILE="$CLUSTER_CONFIG_DIR/os-openrc.sh"
+if [ -z "$OS_PROJECT_NAME" ]; then
+    if [ -f "$OS_RC_FILE" ]; then
+        . "$OS_RC_FILE"
+    else
+        echo "ERROR: Missing Openstack resource file: $OS_RC_FILE"
+        exit 1
+    fi
+    if [ -z "$OS_PROJECT_NAME" ]; then
+        echo "ERROR: Incorrect Openstack resource file: $OS_RC_FILE"
+        exit 1
+    fi
+fi
+
+export CLUSTER_CONFIG_DIR
 K8S_DIR="$DIR/../k8s"
 TF_DIR="$DIR/terraform"
 
 # Choose the configuration file which contains instance parameters
-CONF_FILE="${DIR}/${OS_PROJECT_NAME}.conf"
+IMAGE_CONF_FILE="${CLUSTER_CONFIG_DIR}/image.conf"
 
+export TF_DIR=$CLUSTER_CONFIG_DIR/terraform
 
 if [ -n "$DELETE" ]; then
+    (
     . "$TF_DIR/terraform-setup.sh"
     cd "$TF_DIR"
-    terraform destroy
+    terraform destroy --auto-approve \
+        --var-file="$CLUSTER_CONFIG_DIR/terraform.tfvars"
     cd ..
+    rm -rf "$TF_DIR"
+    )
 fi
 
 
 if [ -n "$CREATE" ]; then
     echo "Create up to date snapshot image"
-    "$DIR/create-image.py" --cleanup --config "$CONF_FILE" -vv
+    "$DIR/create-image.py" --cleanup --config "$IMAGE_CONF_FILE" -vv
 fi
 
 if [ -n "$PROVISION" ]; then
     echo "Provision Qserv cluster on Openstack"
-    . "$TF_DIR/terraform-setup.sh"
-    # Terraform performs best in it's own folder
+    (
+    mkdir -p  "$TF_DIR"
     cd "$TF_DIR"
-    terraform init .
-    terraform apply --var-file="$TF_DIR/terraform.tfvars" .
-    cd ..
+    if [ ! -f "$TF_DIR/terraform-setup.sh" ]; then
+        terraform init -from-module $DIR/terraform
+    fi 
+    . "$TF_DIR/terraform-setup.sh"
+    terraform apply --auto-approve \
+        --var-file="$CLUSTER_CONFIG_DIR/terraform.tfvars"
+    cd -
+    )
     "$K8S_DIR/sysadmin/create-gnuparallel-slf.sh"
 fi
 
@@ -99,14 +129,14 @@ if [ -n "$KUBERNETES" ]; then
 
     # Trigger special behaviour for Openstack
     export OPENSTACK=true
+    # require DEPLOY_VERSION value to use kubectl commands
+    ENV_FILE="$CLUSTER_CONFIG_DIR/env.sh"
+    cp "$K8S_DIR/env.in.sh" "$ENV_FILE"
 
     echo "Create Kubernetes cluster"
     # require sudo access on nodes
    "$K8S_DIR"/sysadmin/kube-destroy.sh
 
-    # require DEPLOY_VERSION value to install weave
-    ENV_FILE="$CLUSTER_CONFIG_DIR/env.sh"
-    cp "$K8S_DIR/env.in.sh" "$ENV_FILE"
    "$K8S_DIR"/sysadmin/kube-create.sh
 
     echo "Configure and launch Qserv"
@@ -120,6 +150,9 @@ if [ -n "$KUBERNETES" ]; then
             "$ENV_FILE"
     fi
     "$K8S_DIR"/start.sh
+
+    # TODO implement ping for pods.qserv
+    sleep 20
 
     if [ -n "$LARGE" ]; then
         echo "Launch large scale tests"

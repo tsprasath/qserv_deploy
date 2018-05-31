@@ -54,7 +54,7 @@ INI_FILE="${CFG_DIR}/pod.master.ini"
 echo "Create kubernetes configmaps for Qserv"
 
 kubectl delete configmap --ignore-not-found=true config-master
-kubectl create configmap config-master --from-literal=qserv_master="$MASTER"
+kubectl create configmap config-master --from-literal=qserv_master="master.qserv"
 
 kubectl delete configmap --ignore-not-found=true config-dot-lsst
 kubectl create configmap --from-file="$CONFIGMAP_DIR/dot-lsst" config-dot-lsst
@@ -96,6 +96,10 @@ echo "Create kubernetes secrets for Qserv"
 kubectl delete secret --ignore-not-found=true secret-wmgr
 kubectl create secret generic secret-wmgr \
         --from-file="$CONFIGMAP_DIR/wmgr/wmgr.secret"
+
+
+echo "Create headless service for Qserv"
+kubectl apply $CACHE_OPT -f ${CFG_DIR}/qserv-headless-service.yaml
 
 echo "Create kubernetes pod for Qserv master"
 cat << EOF > "$INI_FILE"

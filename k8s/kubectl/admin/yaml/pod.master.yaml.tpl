@@ -6,8 +6,6 @@ metadata:
     app: qserv
     node: master
 spec:
-  dnsPolicy: Default
-  hostNetwork: true
   subdomain: qserv
   containers:
     - name: mariadb

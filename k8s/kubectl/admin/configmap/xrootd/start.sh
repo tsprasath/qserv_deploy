@@ -19,14 +19,6 @@ MARIADB_LOCK="$DATA_DIR/mariadb-cfg.lock"
 MYSQLD_DATA_DIR="$DATA_DIR/mysql"
 MYSQLD_SOCKET="$MYSQLD_DATA_DIR/mysql.sock"
 
-# Required by xrdssi plugin to choose which type
-# of queries to launch against metadata
-if [ "$(hostname)" = "$QSERV_MASTER" ]; then
-    INSTANCE_NAME='master'
-else
-    INSTANCE_NAME='worker'
-fi
-
 # Wait for mysql to be configured and started
 while true; do
     if mysql --socket "$MYSQLD_SOCKET" --user="$MYSQLD_USER_QSERV"  --skip-column-names \
@@ -44,6 +36,20 @@ while true; do
     sleep 2
 done
 
+# Required by xrdssi plugin to choose which type
+# of queries to launch against metadata
+if [ "$HOSTNAME" = "master" ]; then
+    INSTANCE_NAME='master'
+else
+    INSTANCE_NAME='worker'
+fi
+
+# Wait for xrootd master reachability
+until ping -c 1 "$QSERV_MASTER"; do
+    echo "waiting for DNS (${QSERV_MASTER})..."
+    sleep 2
+done
+
 # Start cmsd and xrootd
 #
 PROCESSES="cmsd xrootd"
@@ -53,6 +59,7 @@ do
     "${p}" -c "$XROOTD_CONFIG" -l @libXrdSsiLog.so -n "$INSTANCE_NAME" -I v4 -+xrdssi "$XRDSSI_CONFIG" &
 done
 
+# Monitor cmsd and xrootd
 PERIOD_SECONDS=5
 while true;
 do

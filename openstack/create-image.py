@@ -78,21 +78,21 @@ groups:
 
 packages:
 # required for gnu-parallel
-- [bzip2]
-- [device-mapper-persistent-data, 0.7.0-0.1.rc6.el7_4.1.x86_64]
-- [docker-ce, 18.03.1.ce-1.el7.centos]
+- bzip2
+- device-mapper-persistent-data
 - ebtables
-- [kubeadm, 1.9.1-0]
-- [kubectl, 1.9.1-0]
-- [kubelet, 1.9.1-0]
+- [kubeadm, 1.10.3-0]
+- [kubectl, 1.10.3-0]
+- [kubelet, 1.10.3-0]
 - [kubernetes-cni, 0.6.0-0]
-- [lvm2, 2.02.171-8.el7.x86_64]
-- [parallel, 20160222-1.el7]
+- lvm2
+- parallel
 - util-linux
 
 runcmd:
 - ['setenforce', '0']
 - ['sed', '-i', 's/SELINUX=enforcing/SELINUX=disabled/', '/etc/sysconfig/selinux']
+- ['yum', 'install', '-y', '--setopt=obsoletes=0', 'docker-ce-17.03.2.ce-1.el7.centos']
 - ['systemctl', 'enable', 'docker.service']
 - ['systemctl', 'enable', 'kubelet.service']
 - ['/tmp/detect_end_cloud_config.sh']

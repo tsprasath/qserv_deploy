@@ -6,8 +6,6 @@ metadata:
     node: worker
   name: <INI_POD_NAME>
 spec:
-  dnsPolicy: Default
-  hostNetwork: true
   subdomain: qserv
   containers:
     - name: mariadb
