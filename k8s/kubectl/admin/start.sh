@@ -60,13 +60,13 @@ kubectl delete configmap --ignore-not-found=true config-dot-lsst
 kubectl create configmap --from-file="$CONFIGMAP_DIR/dot-lsst" config-dot-lsst
 
 kubectl delete configmap --ignore-not-found=true config-mariadb-configure
-kubectl create configmap --from-file="$CONFIGMAP_DIR/mariadb-configure.sh" config-mariadb-configure
+kubectl create configmap --from-file="$CONFIGMAP_DIR/init/mariadb-configure.sh" config-mariadb-configure
 
 kubectl delete configmap --ignore-not-found=true config-mariadb-start
 kubectl create configmap --from-file="$CONFIGMAP_DIR/mariadb-start.sh" config-mariadb-start
 
-kubectl delete configmap --ignore-not-found=true config-master-sql
-kubectl create configmap --from-file="$CONFIGMAP_DIR/master/sql" config-master-sql
+kubectl delete configmap --ignore-not-found=true config-sql
+kubectl create configmap --from-file="$CONFIGMAP_DIR/init/sql" config-sql
 
 kubectl delete configmap --ignore-not-found=true config-mariadb-etc
 kubectl create configmap --from-file="$CONFIGMAP_DIR/mariadb/etc/my.cnf" config-mariadb-etc
@@ -85,9 +85,6 @@ kubectl create configmap --from-file="$CONFIGMAP_DIR/wmgr/etc" config-wmgr-etc
 
 kubectl delete configmap --ignore-not-found=true config-wmgr-start
 kubectl create configmap --from-file="$CONFIGMAP_DIR/wmgr/start.sh" config-wmgr-start
-
-kubectl delete configmap --ignore-not-found=true config-worker-sql
-kubectl create configmap --from-file="$CONFIGMAP_DIR/worker/sql" config-worker-sql
 
 kubectl delete configmap --ignore-not-found=true config-xrootd-start
 kubectl create configmap --from-file="$CONFIGMAP_DIR/xrootd/start.sh" config-xrootd-start
