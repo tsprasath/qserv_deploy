@@ -20,7 +20,10 @@ write_files:
   owner: "root"
   content: |
     {
-      "storage-driver": "overlay",
+      "storage-driver": "overlay2",
+      "storage-opts": [
+        "overlay2.override_kernel_check=true"
+      ],
       "insecure-registries": ["${registry_host}"],
       "registry-mirrors": ["http://${registry_host}:${registry_port}"]
     }

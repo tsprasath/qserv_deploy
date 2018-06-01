@@ -3,16 +3,16 @@
 # Commented lines are optionnal parameters at default value
 
 # Flavor of the cluster nodes
-flavor = "m1.medium"
+flavor = "m1.medium-lowhd"
 
 # Snapshot to use in the cluster nodes
-snapshot = "centos7-k8s-201804"
+snapshot = "qserv-kubernetes-1.10.3_docker-17.06.2"
 
 # OpenStack network name of the cluster
-network = "LSST-net"
+network = "fg-formation-net"
 
 # Prefix for all instances names
-instance_prefix = "benjamin-"
+instance_prefix = "fjammes-"
 
 # Number of workers node
 # nb_worker = 2
@@ -21,25 +21,21 @@ instance_prefix = "benjamin-"
 # nb_orchestrator = 1
 
 # Private key used to ssh on nodes
-# ssh_private_key = "~/.ssh/id_rsa"
+ssh_private_key = "~/.ssh/id_rsa_openstack"
 
 # Security group to add to nodes
-# security_groups = ["default"]
+security_groups = ["default"]
 
 # OpenStack ip pool name for floating ip
-# ip_pool = "public"
+ip_pool = "ext-net"
 
 # Docker registry ip
-# docker_registry_host = ""
+docker_registry_host = "192.168.56.109"
 
 # Docker registry port
 # docker_registry_port = 5000
 
 # Amout of memory which can be locked in container (in Bytes)
-# limit_memlock = "infinity"
+# Defaut to 'infinity'
+limit_memlock = "10737418240"
 
-# Base image for the snapshot
-# base_image = "CentOS 7 latest"
-
-# Flavor of the snapshot instance
-# snapshot_flavor = "m1.medium" 

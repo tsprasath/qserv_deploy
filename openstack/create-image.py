@@ -42,6 +42,8 @@ def get_cloudconfig():
 #cloud-config
 
 bootcmd:
+- [ cloud-init-per, instance, yumclean, 'yum', 'clean', 'all']
+- [ cloud-init-per, instance, yumclean, 'rm', '-rf', '/var/cache/yum']
 - [ cloud-init-per, instance, yumepelrepo, 'yum', 'install', '-y', 'epel-release']
 - [ cloud-init-per, instance, yumepelrepo, 'yum', 'install', '-y', 'yum-utils']
 - [ cloud-init-per, instance, yumdockerrepo, 'yum-config-manager', '--add-repo', 'https://download.docker.com/linux/centos/docker-ce.repo']
@@ -80,6 +82,7 @@ packages:
 # required for gnu-parallel
 - bzip2
 - device-mapper-persistent-data
+- ['docker-ce', '17.06.2.ce-1.el7.centos']
 - ebtables
 - [kubeadm, 1.10.3-0]
 - [kubectl, 1.10.3-0]
@@ -92,7 +95,6 @@ packages:
 runcmd:
 - ['setenforce', '0']
 - ['sed', '-i', 's/SELINUX=enforcing/SELINUX=disabled/', '/etc/sysconfig/selinux']
-- ['yum', 'install', '-y', '--setopt=obsoletes=0', 'docker-ce-17.03.2.ce-1.el7.centos']
 - ['systemctl', 'enable', 'docker.service']
 - ['systemctl', 'enable', 'kubelet.service']
 - ['/tmp/detect_end_cloud_config.sh']
