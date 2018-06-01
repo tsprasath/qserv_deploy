@@ -25,6 +25,10 @@ export OS_USERNAME="lsst-aaoualid"
 
 # With Keystone you pass the keystone password.
 export OS_PASSWORD=""
+if [ -z "$OS_PASSWORD" ]; then
+    >&2 echo "ERROR: enter your OpenStack Password in $CLUSTER_CONFIG_DIR/os-openrc.sh"
+    exit 2
+fi
 
 # If your configuration has multiple regions, we set that information here.
 # OS_REGION_NAME is optional and only valid in certain environments.
