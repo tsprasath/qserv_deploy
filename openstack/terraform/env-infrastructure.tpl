@@ -12,7 +12,7 @@ WORKER_LAST_ID="${worker_last_id}"
 MASTER="$${HOSTNAME_TPL}master-1"
 
 # Used for ssh access
-WORKERS=$(seq --format "$${HOSTNAME_TPL}worker-%g" \
+WORKERS=$(seq --format "$${HOSTNAME_TPL}node-%g" \
     --separator=" " "$WORKER_FIRST_ID" "$WORKER_LAST_ID")
 
 # Used for ssh access to Kubernetes master

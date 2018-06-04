@@ -3,25 +3,25 @@
 # Commented lines are optionnal parameters at default value
 
 # Flavor of the cluster nodes
-flavor = "c2.xlarge"
+flavor = "q1.large"
 
 # Snapshot to use in the cluster nodes
-snapshot = "qserv-kubernetes-1.10.3"
+snapshot = "k8s-anf"
 
 # OpenStack network name of the cluster
 network = "petasky-net"
 
 # Prefix for all instances names
-instance_prefix = "fjammes-"
+instance_prefix = "kube-"
 
 # Number of workers node
-# nb_worker = 2
+nb_worker = 78 
 
 # Number of k8s master
 # nb_orchestrator = 1
 
 # Private key used to ssh on nodes
-ssh_private_key = "~/.ssh/id_rsa_openstack"
+ssh_private_key = "~/.ssh/id_rsa_anf"
 
 # Security group to add to nodes
 security_groups = ["default"]
