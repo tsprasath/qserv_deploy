@@ -149,12 +149,12 @@ resource "openstack_compute_instance_v2" "master" {
 # Creates the Qserv workers
 resource "openstack_compute_instance_v2" "workers" {
   count           = "${var.nb_worker}"
-  name            = "${var.instance_prefix}worker-${count.index + 1}"
+  name            = "${var.instance_prefix}node-${count.index + 1}"
   image_id        = "${data.openstack_images_image_v2.node_image.id}"
   flavor_id       = "${data.openstack_compute_flavor_v2.node_flavor.id}"
   key_pair        = "${openstack_compute_keypair_v2.keypair.name}"
   security_groups = "${var.security_groups}"
-  user_data       = "${replace(data.template_file.cloud_init.rendered, "#HOST", "${var.instance_prefix}worker-${count.index + 1}")}"
+  user_data       = "${replace(data.template_file.cloud_init.rendered, "#HOST", "${var.instance_prefix}node-${count.index + 1}")}"
 
   network {
     uuid = "${data.openstack_networking_network_v2.network.id}"
