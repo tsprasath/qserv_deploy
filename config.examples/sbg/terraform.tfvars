@@ -6,22 +6,22 @@
 flavor = "m1.medium-lowhd"
 
 # Snapshot to use in the cluster nodes
-snapshot = "qserv-kubernetes-1.10.3_docker-17.06.2"
+snapshot = "k8s-anf"
 
 # OpenStack network name of the cluster
 network = "fg-formation-net"
 
 # Prefix for all instances names
-instance_prefix = "fjammes-"
+instance_prefix = "k8s-"
 
 # Number of workers node
-# nb_worker = 2
+nb_worker = 54
 
 # Number of k8s master
 # nb_orchestrator = 1
 
 # Private key used to ssh on nodes
-ssh_private_key = "~/.ssh/id_rsa_openstack"
+ssh_private_key = "~/.ssh/id_rsa_anf"
 
 # Security group to add to nodes
 security_groups = ["default"]
