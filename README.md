@@ -25,7 +25,9 @@ You will need a openrc.sh file with your openstack credentials.
 ```
 If you already have a cluster config directory, you only need to export the `CLUSTER_CONFIG_DIR` var.
 
-# Creating an image
+# Usages
+
+## Creating an image
 
 You can create an OpenStack vm image for the cluster nodes.
 
@@ -36,7 +38,7 @@ You can create an OpenStack vm image for the cluster nodes.
    ./provision-install-test.sh -c
 ```
 
-# Spawning a cluster
+## Spawning a cluster
 
 You can spawn a cluster of machines on OpenStack. This script will:
 * Create a ssh bastion node with an external IP
@@ -52,7 +54,7 @@ You can spawn a cluster of machines on OpenStack. This script will:
    ./provision-install-test.sh -p
 ```
 
-# Installing kubernetes and running Qserv
+## Installing kubernetes and running Qserv
 
 This will install kubernetes and deploy Qserv on the cluster, then run integrations tests.
 
@@ -61,7 +63,7 @@ This will install kubernetes and deploy Qserv on the cluster, then run integrati
    ./provision-install-test.sh -k
 ```
 
-# Deleting your cluster
+## Deleting your cluster
 
 This will delete your cluster but keep the VM image:
 
@@ -70,9 +72,9 @@ This will delete your cluster but keep the VM image:
    ./provision-install-test.sh -d
 ```
 
-## Development
+# Development
 
-# Run Qserv on Kubernetes
+## Run Qserv on Kubernetes
 
 ```shell
    git clone https://github.com/lsst/qserv_deploy.git
