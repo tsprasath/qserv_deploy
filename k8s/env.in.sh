@@ -7,9 +7,9 @@
 #  - a git ticket branch but with _ instead of /
 #    example: tickets_DM-7139, or dev
 #  - a git hash
-VERSION=e73191c
+VERSION=ee48344
 # Version of the deployment tool to use
-DEPLOY_VERSION=baa0a92-dirty
+DEPLOY_VERSION=4f4d5e0
 
 # `docker run` settings
 # =====================
