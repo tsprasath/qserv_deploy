@@ -18,3 +18,4 @@ echo "Building image $IMAGE"
 
 docker build --tag "$IMAGE" "$DIR/kubectl"
 docker push "$IMAGE"
+echo "$IMAGE pushed to Docker Hub"
