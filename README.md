@@ -10,11 +10,21 @@ This script is in 3 parts:
 * Cluster provisioning on OpenStack
 * K8s cluster creation and Qserv deployment (and tests)
 
-You can execute each parts indenpendently (eg. if you already have an OpenStack cluster running)
+Each parts can be runned indenpendently (eg. if you already have an OpenStack cluster running)
 
 # Prequisites
 
-You will need a openrc.sh file with your openstack credentials.
+* Create an ssh key, without password
+```shell
+ssh-keygen  -f ~/.ssh/id_rsa_openstack
+```
+
+* Install terraform
+
+See https://www.terraform.io/intro/getting-started/install.html
+
+
+* Create en `os-openrc.sh` file with your openstack credentials.
 
 ```shell
    git clone https://github.com/lsst/qserv_deploy.git
@@ -27,9 +37,9 @@ If you already have a cluster config directory, you only need to export the `CLU
 
 # Usages
 
-## Creating an image
+## Create an image
 
-You can create an OpenStack vm image for the cluster nodes.
+Create an OpenStack vm image for the cluster nodes.
 
 ```shell
    # Copy image.conf from an example and edit it to suit your needs
