@@ -16,17 +16,7 @@ $QSERV_INSTALL_DIR/k8s/kubectl/delete-nodes.sh || \
 parallel --nonall --slf "$PARALLEL_SSH_CFG" --tag "sudo -- kubeadm reset"
 ssh $SSH_CFG_OPT "$ORCHESTRATOR" "sudo -- kubeadm reset"
 
+# TODO make it at image creation
+parallel --nonall --slf "$PARALLEL_SSH_CFG" --tag --transfer sh -c "{}" ::: "$DIR/weave-cleanup-node.sh"
 
-# Reset weave net
-# For additional information see:
-# https://www.weave.works/docs/net/latest/kubernetes/kube-addon/#install
-
-CMD="sudo curl -L git.io/weave -o /usr/local/bin/weave && \
-    sudo chmod a+x /usr/local/bin/weave && \
-    weave reset && \
-    sudo rm -f /opt/cni/bin/weave-*"
-
-# TODO make it cleaner
-parallel --nonall --slf "$PARALLEL_SSH_CFG" --tag "$CMD"
-
-ssh $SSH_CFG_OPT "$ORCHESTRATOR" "$CMD"
+ssh $SSH_CFG_OPT "$ORCHESTRATOR" "sh -s" < "$DIR/weave-cleanup-node.sh"

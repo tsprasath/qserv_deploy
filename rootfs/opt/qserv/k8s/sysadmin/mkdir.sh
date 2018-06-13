@@ -11,10 +11,13 @@ set -x
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 . "$DIR/../env-cluster.sh"
 
-REMOTE_DIR="/qserv/data"
+REMOTE_DIR="/qserv/desc/log"
 echo "Create directory $REMOTE_DIR on all nodes"
 
-REMOTE_USER=centos
+echo "WARN: this will remove $REMOTE_DIR on all nodes"
+exit 1
+
+REMOTE_USER=qserv
 
 for node in $MASTER $WORKERS
 do
