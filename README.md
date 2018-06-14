@@ -1,6 +1,6 @@
 # qserv_deploy
 
-Qserv deployment scripts for kubernetes
+Fully automated procedure to spawn a Qserv cluster from scratch on Openstack.
 
 [![Build
 Status](https://travis-ci.org/lsst/qserv_deploy.svg?branch=master)](https://travis-ci.org/lsst/qserv_deploy)
