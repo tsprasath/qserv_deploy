@@ -48,17 +48,6 @@ It is also possible to use an existing cluster configuration directory, by expor
 
 # Usages
 
-## Create an image (optional, advanced users)
-
-By default, the tool use an image provided by project maintainers.
-Create an OpenStack vm image for the cluster nodes.
-
-```shell
-   # Edit file below if needed
-   vi $CLUSTER_CONFIG_DIR/image.conf
-   ./provision-install-test.sh -c
-```
-
 ## Spawn a cluster
 
 Spawn a cluster of machines on OpenStack. This script will:
@@ -91,6 +80,18 @@ This will delete your cluster but keep the VM image:
    cd openstack
    ./provision-install-test.sh -d
 ```
+
+## Create a Kubernetes node image (optional, advanced users)
+
+By default, the tool use an image provided by project maintainers.
+Create an OpenStack vm image for the cluster nodes.
+
+```shell
+   # Edit file below if needed
+   vi $CLUSTER_CONFIG_DIR/image.conf
+   ./provision-install-test.sh -c
+```
+
 
 # Development
 
