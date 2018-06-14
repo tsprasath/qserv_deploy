@@ -58,8 +58,10 @@ Spawn a cluster of machines on OpenStack. This script will:
 * Create additional cluster configuration files in your `CLUSTER_CONFIG_DIR` directory (ssh configuration, name of the nodes, ...)
 
 ```shell
-   # Edit file below if needed
-   vi $CLUSTER_CONFIG_DIR/image.conf
+   # Edit file below (optional, advanced users)
+   vi $CLUSTER_CONFIG_DIR/terraform.tfvars
+   
+   # Spawn the cluster
    ./provision-install-test.sh -p
 ```
 
@@ -68,23 +70,21 @@ Spawn a cluster of machines on OpenStack. This script will:
 This will install kubernetes and deploy Qserv on the cluster, then run integrations tests.
 
 ```shell
-   cd openstack
    ./provision-install-test.sh -k
 ```
 
 ## Deleting your cluster
 
-This will delete your cluster but keep the VM image:
+This will delete your cluster but keep the virtual machine image for Kubernetes nodes:
 
 ```shell
-   cd openstack
    ./provision-install-test.sh -d
 ```
 
 ## Create a Kubernetes node image (optional, advanced users)
 
 By default, the tool use an image provided by project maintainers.
-Create an OpenStack vm image for the cluster nodes.
+Create an OpenStack virtual machine image for the cluster nodes.
 
 ```shell
    # Edit file below if needed
