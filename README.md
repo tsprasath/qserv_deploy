@@ -65,7 +65,7 @@ Spawn a cluster of machines on OpenStack. This script will:
    ./provision-install-test.sh -p
 ```
 
-## Install kubernetes, Qserv and run integration tests
+## Install Kubernetes, Qserv and run integration tests
 
 This will install kubernetes and deploy Qserv on the cluster, then run integrations tests.
 
