@@ -117,7 +117,7 @@ Then, set your container configuration (qserv images, attached volumes, ...) in 
    ./admin/stop.sh
 ```
 
-## Access kubernetes nodes via ssh
+## Access Kubernetes nodes via ssh
 
 ```shell
    # Check node names in 
