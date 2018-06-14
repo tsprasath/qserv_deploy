@@ -6,9 +6,9 @@ Fully automated procedure to spawn a Qserv cluster from scratch on Openstack.
 Status](https://travis-ci.org/lsst/qserv_deploy.svg?branch=master)](https://travis-ci.org/lsst/qserv_deploy)
 
 This script is in 3 parts:
-* VM image creation
+* virtual machine image creation (optional)
 * Cluster provisioning on OpenStack
-* K8s cluster creation and Qserv deployment (and tests)
+* K8s cluster creation, Qserv deployment, integration test execution
 
 Each parts can be runned indenpendently (eg. if you already have an OpenStack cluster running)
 
