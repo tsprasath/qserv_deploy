@@ -45,4 +45,3 @@ parallel --nonall --tag --slf "$PARALLEL_SSH_CFG" \
     "sudo /bin/systemctl  daemon-reload && \
      sudo /bin/systemctl ${ACTION} ${SERVICE}.service && \
      echo \"$SERVICE\" ${ACTION}: ok"
-
