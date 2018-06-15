@@ -10,7 +10,7 @@ provider "openstack" {
 # Local variables needed for configuration
 locals {
   safe_username = "${replace(var.user_name, ".", "")}"
-  ssh_key_name  = "${local.safe_username}-terraform"
+  ssh_key_name  = "${var.instance_prefix}${local.safe_username}-terraform"
 }
 
 # Cluster lists

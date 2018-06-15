@@ -58,19 +58,28 @@ CLUSTER_CONFIG_DIR=$(echo $CLUSTER_CONFIG_DIR | sed 's%\(.*[^/]\)/*%\1%')
 # Load VERSION variable (i.e. version of qserv/qserv to use)
 . "$CLUSTER_CONFIG_DIR"/env.sh
 
+if [ "$QSERV_CONTAINER" = true  ]; then
+    
+    if [ -z "${CMD}" ]; then
+        echo "Already in a docker container, use kubectl directly"
+        exit 1
+    fi
 
-if [ -z "${CMD}" ]
-then
-	BASH_OPTS="-it --volume "$DIR"/kubectl/admin:/root/admin-dev"
-    CMD="bash"
+    ${CMD}
+
+else
+
+    if [ -z "${CMD}" ]; then
+        BASH_OPTS="-it --volume "$DIR"/kubectl/admin:/root/admin-dev"
+        CMD="bash"
+    fi
+    # Launch container
+    #
+    # Use host network to easily publish k8s dashboard
+    IMAGE="qserv/kubectl:$DEPLOY_VERSION"
+    docker pull "$IMAGE"
+    docker run $BASH_OPTS --net=host \
+        --rm \
+        --volume "$CLUSTER_CONFIG_DIR":/root/.lsst/qserv-cluster/ \
+        "$IMAGE" $CMD
 fi
-
-# Launch container
-#
-# Use host network to easily publish k8s dashboard
-IMAGE="qserv/kubectl:$DEPLOY_VERSION"
-docker pull "$IMAGE"
-docker run $BASH_OPTS --net=host \
-    --rm \
-    --volume "$CLUSTER_CONFIG_DIR":/root/.lsst/qserv-cluster/ \
-    "$IMAGE" $CMD

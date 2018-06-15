@@ -1,6 +1,7 @@
 FROM debian:stretch
 
 LABEL maintainer "Benjamin Roziere <benjamin.roziere@clermont.in2p3.fr>"
+LABEL maintainer "Fabrice Jammes <fabrice.jammes@clermont.in2p3.fr>"
 
 WORKDIR /root
 
@@ -48,6 +49,11 @@ RUN wget -O /tmp/terraform.zip \
 
 ENV CLUSTER_CONFIG_DIR /root/.qserv
 ENV KUBECONFIG $CLUSTER_CONFIG_DIR/kubeconfig
+ENV QSERV_CONTAINER true
 
 COPY ./openstack /root/openstack
 COPY ./k8s /root/k8s
+COPY ./image /root/image
+COPY ./provision-install-test.sh /root/
+
+RUN ln -s /root/k8s/kubectl/admin /root/admin
