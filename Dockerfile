@@ -1,7 +1,6 @@
 FROM debian:stretch
 
-LABEL maintainer "Benjamin Roziere <benjamin.roziere@clermont.in2p3.fr>"
-LABEL maintainer "Fabrice Jammes <fabrice.jammes@clermont.in2p3.fr>"
+LABEL maintainer="Fabrice Jammes <fabrice.jammes@clermont.in2p3.fr>, Benjamin Roziere <benjamin.roziere@clermont.in2p3.fr>"
 
 WORKDIR /root
 
