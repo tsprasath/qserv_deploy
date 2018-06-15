@@ -84,8 +84,9 @@ if [ -z "$OS_PROJECT_NAME" ]; then
 fi
 
 export CLUSTER_CONFIG_DIR
-K8S_DIR="$DIR/../k8s"
-TF_DIR="$DIR/terraform"
+K8S_DIR="$DIR/k8s"
+OS_DIR="$DIR/openstack"
+TF_DIR="$DIR/openstack/terraform"
 
 # Choose the configuration file which contains instance parameters
 IMAGE_CONF_FILE="${CLUSTER_CONFIG_DIR}/image.conf"
@@ -106,7 +107,7 @@ fi
 
 if [ -n "$CREATE" ]; then
     echo "Create up to date snapshot image"
-    "$DIR/create-image.py" --cleanup --config "$IMAGE_CONF_FILE" -vv
+    "$OS_DIR/create-image.py" --cleanup --config "$IMAGE_CONF_FILE" -vv
 fi
 
 if [ -n "$PROVISION" ]; then
@@ -115,7 +116,7 @@ if [ -n "$PROVISION" ]; then
     mkdir -p  "$TF_DIR"
     cd "$TF_DIR"
     if [ ! -f "$TF_DIR/terraform-setup.sh" ]; then
-        terraform init -from-module $DIR/terraform
+        terraform init -from-module $OS_DIR/terraform
     fi 
     . "$TF_DIR/terraform-setup.sh"
     terraform apply --auto-approve \
