@@ -50,9 +50,6 @@ ENV CLUSTER_CONFIG_DIR /root/.qserv
 ENV KUBECONFIG $CLUSTER_CONFIG_DIR/kubeconfig
 ENV QSERV_CONTAINER true
 
-COPY ./openstack /root/openstack
-COPY ./k8s /root/k8s
-COPY ./image /root/image
-COPY ./provision-install-test.sh /root/
+COPY ./rootfs /
 
 RUN ln -s /root/k8s/kubectl/admin /root/admin
