@@ -5,6 +5,7 @@
 # @author Benjamin Roziere <benjamin.roziere@clermont.in2p3.fr>
 
 set -e
+set -x
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
@@ -33,7 +34,7 @@ if [ ! -d "$CLUSTER_CONFIG_DIR" ]; then
     exit 1
 fi
 
-MOUNTS="-v $CLUSTER_CONFIG_DIR:/root/.qserv -v $SSH_DIR:/root/.ssh"
+MOUNTS="-v $CLUSTER_CONFIG_DIR:/home/qserv/.qserv -v $SSH_DIR:/home/qserv/.ssh:ro -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro"
 
 echo "Starting Qserv deploy on cluster $CLOUD..."
 
@@ -42,4 +43,4 @@ if [ "$QSERV_DEV" = true ]; then
     MOUNTS="$MOUNTS -v $DIR/rootfs/root:/root/"
 fi
 
-docker run -it --rm -l cloud=$CLOUD -l config-path=$CLUSTER_CONFIG_DIR $MOUNTS qserv-deploy
+docker run -it --rm -l cloud=$CLOUD -l config-path=$CLUSTER_CONFIG_DIR --user=$(id -u):$(id -g $USER) -e HOME=/home/qserv $MOUNTS qserv/deploy

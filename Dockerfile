@@ -2,7 +2,7 @@ FROM debian:stretch
 
 LABEL maintainer="Fabrice Jammes <fabrice.jammes@clermont.in2p3.fr>, Benjamin Roziere <benjamin.roziere@clermont.in2p3.fr>"
 
-WORKDIR /root
+WORKDIR /home/qserv
 
 RUN apt-get -y update && \
     apt-get -y install apt-utils && \
@@ -46,10 +46,11 @@ RUN wget -O /tmp/terraform.zip \
     unzip /tmp/terraform.zip -d /usr/local/bin && \
     chmod +x /usr/local/bin/terraform
 
-ENV CLUSTER_CONFIG_DIR /root/.qserv
+ENV CLUSTER_CONFIG_DIR /home/qserv/.qserv
 ENV KUBECONFIG $CLUSTER_CONFIG_DIR/kubeconfig
 ENV QSERV_CONTAINER true
 
-COPY ./rootfs /
+COPY rootfs /
 
-RUN ln -s /root/k8s/kubectl/admin /root/admin
+RUN ln -s /home/qserv/k8s/kubectl/admin /home/qserv/admin
+RUN ln -s /home/qserv/provision-install-test.sh /usr/local/sbin/qserv-deploy
