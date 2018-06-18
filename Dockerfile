@@ -52,5 +52,4 @@ ENV QSERV_CONTAINER true
 
 COPY rootfs /
 
-RUN ln -s /home/qserv/k8s/kubectl/admin /home/qserv/admin
-RUN ln -s /home/qserv/provision-install-test.sh /usr/local/sbin/qserv-deploy
+RUN ln -s /usr/local/sbin/k8s/kubectl/admin /usr/local/sbin/admin

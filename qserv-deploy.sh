@@ -5,7 +5,6 @@
 # @author Benjamin Roziere <benjamin.roziere@clermont.in2p3.fr>
 
 set -e
-set -x
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
@@ -29,12 +28,14 @@ fi
 CLUSTER_CONFIG_DIR="$HOME/.lsst/qserv-cluster/$CLOUD"
 SSH_DIR="$HOME/.ssh"
 
+CONTAINER_HOME="$HOME"
+
 if [ ! -d "$CLUSTER_CONFIG_DIR" ]; then
     >&2 echo "ERROR: Incorrect CLUSTER_CONFIG_DIR parameter: \"$CLUSTER_CONFIG_DIR\""
     exit 1
 fi
 
-MOUNTS="-v $CLUSTER_CONFIG_DIR:/home/qserv/.qserv -v $SSH_DIR:/home/qserv/.ssh:ro -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro"
+MOUNTS="-v $CLUSTER_CONFIG_DIR:$CONTAINER_HOME/.qserv -v $SSH_DIR:$CONTAINER_HOME/.ssh:ro -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro"
 
 echo "Starting Qserv deploy on cluster $CLOUD..."
 
@@ -43,4 +44,4 @@ if [ "$QSERV_DEV" = true ]; then
     MOUNTS="$MOUNTS -v $DIR/rootfs/root:/root/"
 fi
 
-docker run -it --rm -l cloud=$CLOUD -l config-path=$CLUSTER_CONFIG_DIR --user=$(id -u):$(id -g $USER) -e HOME=/home/qserv $MOUNTS qserv/deploy
+docker run -it --rm -l cloud=$CLOUD -l config-path=$CLUSTER_CONFIG_DIR --user=$(id -u):$(id -g $USER) -w $CONTAINER_HOME -e CLUSTER_CONFIG_DIR=$CONTAINER_HOME/.qserv $MOUNTS qserv/deploy
