@@ -14,16 +14,12 @@ Each parts can be runned indenpendently (eg. if you already have an OpenStack cl
 
 # Prequisites
 
+* Install Docker for your distribution (https://docs.docker.com/install/)
+
 * Create an ssh key, without password
 ```shell
 ssh-keygen  -f ~/.ssh/id_rsa_openstack
 ```
-
-* Install terraform
-
-See https://www.terraform.io/intro/getting-started/install.html
-
-
 * Create a cluster configuration directory which contains all informations to manage you Qserv cloud instance.
 
 ```shell
@@ -48,6 +44,9 @@ It is also possible to use an existing cluster configuration directory, by expor
 
 # Usages
 
+Start the tool by running `./qserv-deploy.sh`
+In the container, all commands are prefixed with qserv-
+
 ## Spawn a cluster
 
 Spawn a cluster of machines on OpenStack. This script will:
@@ -62,7 +61,7 @@ Spawn a cluster of machines on OpenStack. This script will:
    vi $CLUSTER_CONFIG_DIR/terraform.tfvars
    
    # Spawn the cluster
-   ./provision-install-test.sh -p
+   qserv-deploy -p
 ```
 
 ## Install Kubernetes, Qserv and run integration tests
@@ -70,7 +69,7 @@ Spawn a cluster of machines on OpenStack. This script will:
 This will install kubernetes and deploy Qserv on the cluster, then run integrations tests.
 
 ```shell
-   ./provision-install-test.sh -k
+   qserv-deploy -k
 ```
 
 ## Deleting your cluster
@@ -78,7 +77,7 @@ This will install kubernetes and deploy Qserv on the cluster, then run integrati
 This will delete your cluster but keep the virtual machine image for Kubernetes nodes:
 
 ```shell
-   ./provision-install-test.sh -d
+   qserv-deploy -d
 ```
 
 ## Create a Kubernetes node image (optional, advanced users)
@@ -89,8 +88,11 @@ Create an OpenStack virtual machine image for the cluster nodes.
 ```shell
    # Edit file below if needed
    vi $CLUSTER_CONFIG_DIR/image.conf
-   ./provision-install-test.sh -c
+   qserv-deploy -c
 ```
+
+# Commands list
+
 
 
 # Development
