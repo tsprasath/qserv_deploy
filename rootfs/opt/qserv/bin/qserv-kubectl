@@ -5,7 +5,6 @@
 # @author  Fabrice Jammes
 
 set -e
-set -x
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
@@ -13,7 +12,7 @@ usage() {
     cat << EOD
 Usage: $(basename "$0") [options]
 Available options:
-  -C            Command to launch inside container
+  -C            Kubectl command to launch
   -K            Path to configuration directory, default to
                 \$CLUSTER_CONFIG_DIR env variable value
   -h            This message
@@ -23,7 +22,6 @@ kubectl, ...) and scripts.
 
 EOD
 }
-set -x
 
 # Get the options
 while getopts hC:K: c ; do
@@ -59,5 +57,12 @@ K8S_SCRIPTS_DIR=$QSERV_INSTALL_DIR/k8s/kubectl/admin
 
 # Load VERSION variable (i.e. version of qserv/qserv to use)
 . "$CLUSTER_CONFIG_DIR"/env.sh
+
+if [ -z "${CMD}" ] || [ ! -x "$K8S_SCRIPTS_DIR/${CMD}" ]; then
+    echo "ERROR: Invalid command: ${CMD}"
+    echo "Available commands:"
+    find $K8S_SCRIPTS_DIR -type f -perm -111 -printf "%f\n"
+    exit 2
+fi
 
 $K8S_SCRIPTS_DIR/${CMD}

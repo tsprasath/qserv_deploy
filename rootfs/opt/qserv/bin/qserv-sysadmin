@@ -6,7 +6,6 @@
 # @author  Benjamin Roziere <benjamin.roziere@clermont.in2p3.fr>
 
 set -e
-set -x
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
@@ -44,5 +43,12 @@ if [ ! -d "$CLUSTER_CONFIG_DIR" ]; then
 fi
 
 SYSADMIN_SCRIPTS_DIR=$QSERV_INSTALL_DIR/k8s/sysadmin
+
+if [ -z "${CMD}" ] || [ ! -x "$SYSADMIN_SCRIPTS_DIR/${CMD}" ]; then
+    echo "ERROR: Invalid command: ${CMD}"
+    echo "Available commands:"
+    find $SYSADMIN_SCRIPTS_DIR -type f -perm -111 -printf "%f\n"
+    exit 2
+fi
 
 $SYSADMIN_SCRIPTS_DIR/${CMD}
