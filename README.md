@@ -35,9 +35,6 @@ ssh-keygen  -f ~/.ssh/id_rsa_openstack
    
    # Edit openstack credentials in file below
    vi $CLUSTER_CONFIG_DIR/os-openrc.sh
-   
-   # Go inside project
-   cd qserv_deploy/openstack
 ```
 
 It is also possible to use an existing cluster configuration directory, by exporting the `CLUSTER_CONFIG_DIR` variable.
@@ -45,7 +42,8 @@ It is also possible to use an existing cluster configuration directory, by expor
 # Usages
 
 Start the tool by running `./qserv-deploy.sh`
-In the container, all commands are prefixed with qserv-
+
+In the container, all commands are prefixed with qserv-***
 
 ## Spawn a cluster
 
