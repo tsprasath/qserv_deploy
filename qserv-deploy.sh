@@ -41,7 +41,7 @@ echo "Starting Qserv deploy on cluster $CLOUD..."
 
 if [ "$QSERV_DEV" = true ]; then
     echo "Running in development mode"
-    MOUNTS="$MOUNTS -v $DIR/rootfs/root:/root/"
+    MOUNTS="$MOUNTS -v $DIR/rootfs/opt/qserv:/opt/qserv"
 fi
 
-docker run -it --rm -l cloud=$CLOUD -l config-path=$CLUSTER_CONFIG_DIR --user=$(id -u):$(id -g $USER) -w $CONTAINER_HOME -e CLUSTER_CONFIG_DIR=$CONTAINER_HOME/.qserv $MOUNTS qserv/deploy
+docker run -it --rm -l cloud=$CLOUD -l config-path=$CLUSTER_CONFIG_DIR --user=$(id -u):$(id -g $USER) -w $CONTAINER_HOME -e CLUSTER_CONFIG_DIR=$CONTAINER_HOME/.qserv  -e KUBECONFIG=$CONTAINER_HOME/.qserv/kubeconfig $MOUNTS qserv/deploy

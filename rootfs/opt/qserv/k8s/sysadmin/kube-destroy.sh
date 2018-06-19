@@ -10,7 +10,7 @@ set -x
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 . "$DIR/../env-cluster.sh"
 
-"$DIR/../run-kubectl.sh" -C /root/admin/delete-nodes.sh || \
+qserv-kubectl -C delete-nodes.sh || \
     echo "WARN: unable to cleanly delete nodes"
 
 parallel --nonall --slf "$PARALLEL_SSH_CFG" --tag "sudo -- kubeadm reset"

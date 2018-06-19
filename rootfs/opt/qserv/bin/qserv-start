@@ -10,5 +10,5 @@ set -e
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
-"$DIR"/run-kubectl.sh -C "/root/admin/start.sh"
-"$DIR"/run-kubectl.sh -C "/root/admin/wait-pods-start.sh"
+qserv-kubectl -C "start.sh"
+qserv-kubectl -C "wait-pods-start.sh"

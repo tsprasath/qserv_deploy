@@ -84,9 +84,9 @@ if [ -z "$OS_PROJECT_NAME" ]; then
 fi
 
 export CLUSTER_CONFIG_DIR
-K8S_DIR="$DIR/k8s"
-OS_DIR="$DIR/openstack"
-TF_DIR="$DIR/openstack/terraform"
+K8S_DIR="$QSERV_INSTALL_DIR/k8s"
+OS_DIR="$QSERV_INSTALL_DIR/openstack"
+TF_DIR="$QSERV_INSTALL_DIR/openstack/terraform"
 
 # Choose the configuration file which contains instance parameters
 IMAGE_CONF_FILE="${CLUSTER_CONFIG_DIR}/image.conf"
@@ -123,7 +123,7 @@ if [ -n "$PROVISION" ]; then
         --var-file="$CLUSTER_CONFIG_DIR/terraform.tfvars"
     cd -
     )
-    "$K8S_DIR/sysadmin/create-gnuparallel-slf.sh"
+    qserv-sysadmin -C create-gnuparallel-slf.sh
 fi
 
 if [ -n "$KUBERNETES" ]; then
@@ -136,9 +136,9 @@ if [ -n "$KUBERNETES" ]; then
 
     echo "Create Kubernetes cluster"
     # require sudo access on nodes
-   "$K8S_DIR"/sysadmin/kube-destroy.sh
+    qserv-sysadmin -C kube-destroy.sh
 
-   "$K8S_DIR"/sysadmin/kube-create.sh
+    qserv-sysadmin -C kube-create.sh
 
     echo "Configure and launch Qserv"
     # require access to kubectl configuration
@@ -150,16 +150,16 @@ if [ -n "$KUBERNETES" ]; then
         sed -i "s,# HOST_DATA_DIR=/qserv/data,HOST_DATA_DIR=/mnt/qserv/data," \
             "$ENV_FILE"
     fi
-    "$K8S_DIR"/start.sh
+    qserv-start
 
     # TODO implement ping for pods.qserv
     sleep 20
 
     if [ -n "$LARGE" ]; then
         echo "Launch large scale tests"
-        "$K8S_DIR"/run-kubectl.sh -C "/root/admin/run-large-scale-tests.sh"
+        qserv-kubectl -C "run-large-scale-tests.sh"
     else
         echo "Launch multinode tests"
-        "$K8S_DIR"/run-kubectl.sh -C "/root/admin/run-multinode-tests.sh"
+        qserv-kubectl -C "run-multinode-tests.sh"
     fi
 fi

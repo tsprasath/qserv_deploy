@@ -46,10 +46,9 @@ RUN wget -O /tmp/terraform.zip \
     unzip /tmp/terraform.zip -d /usr/local/bin && \
     chmod +x /usr/local/bin/terraform
 
-ENV CLUSTER_CONFIG_DIR /home/qserv/.qserv
-ENV KUBECONFIG $CLUSTER_CONFIG_DIR/kubeconfig
 ENV QSERV_CONTAINER true
+ENV QSERV_INSTALL_DIR /opt/qserv
 
 COPY rootfs /
 
-RUN ln -s /usr/local/sbin/k8s/kubectl/admin /usr/local/sbin/admin
+RUN ln -s /opt/qserv/bin/* /usr/local/sbin/

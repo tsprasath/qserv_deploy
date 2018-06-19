@@ -12,10 +12,10 @@ echo
 echo "Check that Qserv master and workers pods are running on all nodes"
 echo "================================================================="
 echo
-"$DIR"/run-kubectl.sh -C "kubectl get pods -l app=qserv"
+kubectl get pods -l app=qserv
 
 echo
 echo "Check that Qserv services are running on all these pods"
 echo "======================================================="
 echo
-"$DIR"/run-kubectl.sh -C "/root/admin/status.sh"
+qserv-kubectl -C "status.sh"
