@@ -93,7 +93,14 @@ Create an OpenStack virtual machine image for the cluster nodes.
 
 # Commands list
 
-
+* `qserv-deploy` : Qserv cluster provisionning and installation
+* `qserv-full-start` : Qserv kubernetes cluster installation
+* `qserv-kubectl` : Kubernetes administration scripts runner
+* `qserv-start` : Start Qserv on the cluster
+* `qserv-status` : Show Qserv running status
+* `qserv-stop` : Stop Qserv
+* `qserv-sysadmin` : Cluster administration scripts runner
+* `qserv-test-multiple` : Test Qserv full deployment 5 times
 
 # Development
 
