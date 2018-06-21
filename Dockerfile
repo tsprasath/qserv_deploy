@@ -46,7 +46,6 @@ RUN wget -O /tmp/terraform.zip \
 
 ENV QSERV_CONTAINER true
 ENV QSERV_INSTALL_DIR /opt/qserv
+ENV PATH="${QSERV_INSTALL_DIR}/bin:${PATH}"
 
 COPY rootfs /
-
-RUN ln -s /opt/qserv/bin/* /usr/local/sbin/
