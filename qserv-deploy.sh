@@ -37,4 +37,4 @@ if [ "$QSERV_DEV" = true ]; then
     MOUNTS="$MOUNTS -v $DIR/rootfs/opt/qserv:/opt/qserv"
 fi
 
-docker run -it --rm -l config-path=$CLUSTER_CONFIG_DIR --user=$(id -u):$(id -g $USER) -w $CONTAINER_HOME -e CLUSTER_CONFIG_DIR=$CONTAINER_HOME/.qserv -e KUBECONFIG=$CONTAINER_HOME/.qserv/kubeconfig $MOUNTS qserv/deploy
+docker run -it --net=host --rm -l config-path=$CLUSTER_CONFIG_DIR --user=$(id -u):$(id -g $USER) -w $CONTAINER_HOME -e CLUSTER_CONFIG_DIR=$CONTAINER_HOME/.qserv -e KUBECONFIG=$CONTAINER_HOME/.qserv/kubeconfig $MOUNTS qserv/deploy
