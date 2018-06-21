@@ -8,7 +8,7 @@ set -e
 set -x
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
-. "$DIR/../env-cluster.sh"
+. "$QSERV_INSTALL_DIR/k8s/env-cluster.sh"
 
 K8S_PORT=6443
 
