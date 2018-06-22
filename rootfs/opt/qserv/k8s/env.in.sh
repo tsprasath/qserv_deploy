@@ -7,7 +7,7 @@
 #  - a git ticket branch but with _ instead of /
 #    example: tickets_DM-7139, or dev
 #  - a git hash
-VERSION=ee48344
+VERSION=dev
 # Version of the deployment tool to use
 DEPLOY_VERSION=4f4d5e0
 

@@ -47,7 +47,7 @@ ssh $SSH_CFG_OPT "$ORCHESTRATOR" 'sudo cat /etc/kubernetes/admin.conf' \
 
 # Hack for Openstack (use ssh tunnel)
 if [ "$OPENSTACK" = true ]; then
-    "$DIR/ssh-tunnel.sh"
+    "ssh-tunnel"
     sed -i -- 's,server: https://.*\(:[0-9]*\),server: https://localhost\1,g' \
         "$KUBECONFIG"
 fi
