@@ -156,9 +156,9 @@ if [ -n "$KUBERNETES" ]; then
 
     if [ -n "$LARGE" ]; then
         echo "Launch large scale tests"
-        qserv-kubectl -C "run-large-scale-tests.sh"
+        $K8S_DIR/kubectl/run-large-scale-tests.sh"
     else
         echo "Launch multinode tests"
-        qserv-kubectl -C "run-multinode-tests.sh"
+        $K8S_DIR/kubectl/run-multinode-tests.sh"
     fi
 fi

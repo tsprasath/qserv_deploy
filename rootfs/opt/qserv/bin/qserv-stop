@@ -10,4 +10,4 @@ DIR=$(cd "$(dirname "$0")"; pwd -P)
 
 echo "Delete Qserv pods on Kubernetes cluster"
 
-qserv-kubectl -C "stop.sh"
+$QSERV_INSTALL_DIR/k8s/kubectl/stop.sh"
