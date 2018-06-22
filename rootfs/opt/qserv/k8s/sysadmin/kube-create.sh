@@ -17,7 +17,7 @@ TOKEN=$(ssh $SSH_CFG_OPT "$ORCHESTRATOR" "sudo -- kubeadm token generate")
 SSH_TUNNEL_OPT="--apiserver-cert-extra-sans=localhost"
 ssh $SSH_CFG_OPT "$ORCHESTRATOR" "sudo -- kubeadm init $SSH_TUNNEL_OPT --token '$TOKEN'"
 
-$QSERV_INSTALL_DIR/k8s/sysadmin/export-kubeconfig.sh -K $CLUSTER_CONFIG_DIR/kubeconfig
+$QSERV_INSTALL_DIR/k8s/sysadmin/export-kubeconfig.sh
 
 $QSERV_INSTALL_DIR/k8s/kubectl/install-weave.sh
 
