@@ -1,6 +1,6 @@
 # Directory containing infrastructure specification
 # (ssh credentials, machine names)
-CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR:-$HOME/.lsst/qserv-cluster}"
+CLUSTER_CONFIG_DIR="/qserv-deploy/config"
 
 # ssh credentials, optional
 SSH_CFG="$CLUSTER_CONFIG_DIR/ssh_config"

@@ -36,10 +36,7 @@ Usage: `basename $0` [options]
   configuration for cloud platform, node, ssh access, and k8s/docker
   specific setup
 
-  Pre-requisites: CLUSTER_CONFIG_DIR env variable be defined,exported and point
-                  to a directory containing at least an Openstack RC file named
-                  os-openrc.sh
-
+  CLUSTER_CONFIG_DIR is set to ${CLUSTER_CONFIG_DIR}
 EOD
 }
 
@@ -61,6 +58,8 @@ if [ $# -ne 0 ] ; then
     usage
     exit 2
 fi
+
+CLUSTER_CONFIG_DIR="/qserv-deploy/config"
 
 if [ ! -d "$CLUSTER_CONFIG_DIR" ]; then
     echo "ERROR: incorrect CLUSTER_CONFIG_DIR parameter: \"$CLUSTER_CONFIG_DIR\""
@@ -123,7 +122,7 @@ if [ -n "$PROVISION" ]; then
         --var-file="$CLUSTER_CONFIG_DIR/terraform.tfvars"
     cd -
     )
-    qserv-sysadmin -C create-gnuparallel-slf.sh
+    $QSERV_INSTALL_DIR/k8s/sysadmin/create-gnuparallel-slf.sh
 fi
 
 if [ -n "$KUBERNETES" ]; then
@@ -136,9 +135,9 @@ if [ -n "$KUBERNETES" ]; then
 
     echo "Create Kubernetes cluster"
     # require sudo access on nodes
-    qserv-sysadmin -C kube-destroy.sh
+    $QSERV_INSTALL_DIR/k8s/sysadmin/kube-destroy.sh
 
-    qserv-sysadmin -C kube-create.sh
+    $QSERV_INSTALL_DIR/k8s/sysadmin/kube-create.sh
 
     echo "Configure and launch Qserv"
     # require access to kubectl configuration

@@ -73,5 +73,5 @@ variable "user_name" {
 
 variable "lsst_config_path" {
   description = "Default lsst config directory"
-  default     = "~/.lsst/qserv-cluster"
+  default     = "/qserv-deploy/config"
 }

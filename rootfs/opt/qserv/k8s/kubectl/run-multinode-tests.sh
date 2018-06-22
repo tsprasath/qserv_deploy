@@ -5,10 +5,11 @@
 # @author Fabrice Jammes SLAC/IN2P3
 
 set -e
+set -x
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
-CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR:-$HOME/.lsst/qserv-cluster}"
+CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR:-/qserv-deploy/config}"
 . "$CLUSTER_CONFIG_DIR/env.sh"
 
 # Build CSS input data
@@ -23,5 +24,5 @@ done
 kubectl exec master -c proxy -- su qserv -l -c ". /qserv/stack/loadLSST.bash && \
     setup qserv_distrib -t qserv-dev && \
     echo \"$CSS_INFO\" | qserv-admin.py -c mysql://qsmaster@127.0.0.1:3306/qservCssData && \
-    qserv-check-integration.py --case=01 --load -V DEBUG"
+    qserv-test-integration.py -V DEBUG"
 
