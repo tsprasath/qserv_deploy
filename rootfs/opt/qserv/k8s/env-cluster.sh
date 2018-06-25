@@ -1,6 +1,9 @@
 # Directory containing infrastructure specification
 # (ssh credentials, machine names)
-CLUSTER_CONFIG_DIR="/qserv-deploy/config"
+
+# Can be used on bare-metal
+CLUSTER_CONFIG_DIR="${QSERV_CFG_DIR:-'/qserv-deploy/config'}"
+export KUBECONFIG="${CLUSTER_CONFIG_DIR}/kubeconfig"
 
 # ssh credentials, optional
 SSH_CFG="$CLUSTER_CONFIG_DIR/ssh_config"

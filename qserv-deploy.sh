@@ -6,6 +6,8 @@
 
 set -e
 
+STABLE_VERSION="e655caf"
+
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
 usage() {
@@ -20,7 +22,6 @@ Usage: `basename $0`
 EOD
 }
 
-STABLE_VERSION="9a726bc-dirty"
 VERSION=${DEPLOY_VERSION:-$STABLE_VERSION}
 
 SSH_DIR="$HOME/.ssh"
