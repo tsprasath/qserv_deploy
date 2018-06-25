@@ -37,4 +37,4 @@ if [ "$QSERV_DEV" = true ]; then
     MOUNTS="$MOUNTS -v $DIR/rootfs/opt/qserv:/opt/qserv"
 fi
 
-docker run -it --net=host --rm -l config-path=$QSERV_CFG_DIR --user=$(id -u):$(id -g $USER) $MOUNTS qserv/deploy
+docker run -it --net=host --rm -l config-path=$QSERV_CFG_DIR --user=$(id -u):$(id -g $USER) $MOUNTS qserv/deploy:4849312
