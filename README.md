@@ -24,10 +24,10 @@ ssh-keygen  -f ~/.ssh/id_rsa_openstack
    # Create a directory to store your cluster(s) configuration
    export QSERV_CFG_DIR="$HOME/.lsst/qserv-cluster/$CLOUD"
    mkdir -p $QSERV_CFG_DIR
-   cp -r "qserv_deploy/config.$CLOUD"/* "$QSERV_CFG_DIR"
+   cp -r "qserv_deploy/config.examples/$CLOUD"/* "$QSERV_CFG_DIR"
    
    # Edit openstack credentials in file below
-   vi $QSERV_CFG_DIR/os-openrc.sh
+   vi "$QSERV_CFG_DIR/os-openrc.sh"
 ```
 
 It is also possible to use an existing cluster configuration directory, by exporting the `QSERV_CFG_DIR` variable.

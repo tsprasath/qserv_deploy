@@ -20,6 +20,9 @@ Usage: `basename $0`
 EOD
 }
 
+STABLE_VERSION="9a726bc-dirty"
+VERSION=${DEPLOY_VERSION:-$STABLE_VERSION}
+
 SSH_DIR="$HOME/.ssh"
 CONTAINER_HOME="$HOME"
 
@@ -28,7 +31,9 @@ if [ ! -d "$QSERV_CFG_DIR" ]; then
     exit 1
 fi
 
-MOUNTS="-v $QSERV_CFG_DIR:/qserv-deploy/config -v $SSH_DIR:$CONTAINER_HOME/.ssh:ro -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro"
+MOUNTS="-v $QSERV_CFG_DIR:/qserv-deploy/config "
+MOUNTS="$MOUNTS -v $SSH_DIR:$CONTAINER_HOME/.ssh:ro"
+MOUNTS="$MOUNTS -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro"
 
 echo "Starting Qserv deploy on cluster $QSERV_CFG_DIR"
 
@@ -37,4 +42,6 @@ if [ "$QSERV_DEV" = true ]; then
     MOUNTS="$MOUNTS -v $DIR/rootfs/opt/qserv:/opt/qserv"
 fi
 
-docker run -it --net=host --rm -l config-path=$QSERV_CFG_DIR --user=$(id -u):$(id -g $USER) $MOUNTS qserv/deploy:4849312
+docker run -it --net=host --rm -l config-path=$QSERV_CFG_DIR \
+    --user=$(id -u):$(id -g $USER) $MOUNTS \
+    qserv/deploy:$VERSION
