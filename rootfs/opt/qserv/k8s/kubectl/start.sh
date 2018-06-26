@@ -101,6 +101,9 @@ kubectl create secret generic secret-wmgr \
 echo "Create headless service for Qserv"
 kubectl apply $CACHE_OPT -f ${CFG_DIR}/qserv-headless-service.yaml
 
+echo "Create nodeport service for Qserv"
+kubectl apply $CACHE_OPT -f ${CFG_DIR}/qserv-nodeport-service.yaml
+
 echo "Create kubernetes pod for Qserv master"
 cat << EOF > "$INI_FILE"
 [spec]

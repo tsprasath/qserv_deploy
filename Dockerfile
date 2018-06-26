@@ -47,7 +47,7 @@ RUN wget -O /tmp/terraform.zip \
 ENV QSERV_INSTALL_DIR /opt/qserv
 ENV PATH="${QSERV_INSTALL_DIR}/bin:${PATH}"
 ENV CLUSTER_CONFIG_DIR /qserv-deploy/config
-ENV KUBECONFIG /qserv-deploy/config/kubeconfig
+ENV KUBECONFIG "$CLUSTER_CONFIG_DIR"/kubeconfig
 
 
 WORKDIR /qserv-deploy

@@ -8,8 +8,6 @@
 #    example: tickets_DM-7139, or dev
 #  - a git hash
 VERSION=828ff67
-# Version of the deployment tool to use
-DEPLOY_VERSION=4f4d5e0
 
 # `docker run` settings
 # =====================

@@ -60,6 +60,7 @@ if [ "$CONT" != "y" ]; then
 fi
 
 parallel --nonall --tag --slf "$PARALLEL_SSH_CFG" \
-    "sudo -- rm -rf $TARGET_DIR && \
-     echo $TARGER_DIR removed on \$(hostname)"
+    "sudo -- rm -rf $TARGET_DIR/* && \
+     sudo -- rm -rf $TARGET_DIR/.* && \
+     echo $TARGET_DIR emptied on \$(hostname)"
 
