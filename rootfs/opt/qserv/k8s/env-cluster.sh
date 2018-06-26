@@ -2,7 +2,7 @@
 # (ssh credentials, machine names)
 
 # Can be used on bare-metal
-CLUSTER_CONFIG_DIR="${QSERV_CFG_DIR:-'/qserv-deploy/config'}"
+CLUSTER_CONFIG_DIR="${QSERV_CFG_DIR:-/qserv-deploy/config}"
 export KUBECONFIG="${CLUSTER_CONFIG_DIR}/kubeconfig"
 
 # ssh credentials, optional
