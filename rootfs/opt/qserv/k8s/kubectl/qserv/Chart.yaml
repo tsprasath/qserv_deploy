@@ -1,0 +1,10 @@
+apiVersion: v1
+appVersion: "dev"
+description: A shared nothing relationnal SQL database for LSST space catalogs
+name: qserv
+version: 0.1.0
+maintainers:
+    - name: "Fabrice Jammes"
+      email: "fabrice.jammes@in2p3.fr"
+    - name : "Benjamin Roziere"
+      email: "benjamin.roziere@clermont.in2p3.fr"

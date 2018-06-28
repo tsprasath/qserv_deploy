@@ -1,0 +1,1 @@
+Qserv is installed successfully!
