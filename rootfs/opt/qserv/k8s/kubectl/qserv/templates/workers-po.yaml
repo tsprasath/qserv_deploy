@@ -1,0 +1,217 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: qserv
+    node: worker
+  name: worker-1
+spec:
+  containers:
+  - command:
+    - sh
+    - /config-start/mariadb-start.sh
+    image: qserv/qserv:dev
+    imagePullPolicy: Always
+    livenessProbe:
+      initialDelaySeconds: 15
+      periodSeconds: 20
+      tcpSocket:
+        port: mariadb-port
+    name: mariadb
+    ports:
+    - containerPort: 3306
+      name: mariadb-port
+    readinessProbe:
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      tcpSocket:
+        port: mariadb-port
+    volumeMounts:
+    - mountPath: /config-mariadb-etc
+      name: config-mariadb-etc
+    - mountPath: /config-start
+      name: config-mariadb-start
+    - mountPath: /qserv/run/var/log
+      name: log-volume
+    - mountPath: /qserv/run/tmp
+      name: tmp-volume
+    - mountPath: /qserv/data
+      name: data-volume
+  - args:
+    - qserv
+    - -c
+    - sh /config-start/start.sh
+    command:
+    - /bin/su
+    env:
+    - name: QSERV_MASTER
+      valueFrom:
+        configMapKeyRef:
+          key: qserv_master
+          name: config-master
+    image: qserv/qserv:dev
+    imagePullPolicy: Always
+    name: xrootd
+    securityContext:
+      capabilities:
+        add:
+        - IPC_LOCK
+    volumeMounts:
+    - mountPath: /config-etc
+      name: config-xrootd-etc
+    - mountPath: /config-start
+      name: config-xrootd-start
+    - mountPath: /qserv/run/var/log
+      name: log-volume
+    - mountPath: /qserv/run/tmp
+      name: tmp-volume
+    - mountPath: /qserv/data
+      name: data-volume
+  - command:
+    - sh
+    - /config-start/start.sh
+    env:
+    - name: QSERV_MASTER
+      valueFrom:
+        configMapKeyRef:
+          key: qserv_master
+          name: config-master
+    image: qserv/qserv:dev
+    imagePullPolicy: Always
+    livenessProbe:
+      initialDelaySeconds: 15
+      periodSeconds: 20
+      tcpSocket:
+        port: wmgr-port
+    name: wmgr
+    ports:
+    - containerPort: 5012
+      name: wmgr-port
+    readinessProbe:
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      tcpSocket:
+        port: wmgr-port
+    volumeMounts:
+    - mountPath: /config-start
+      name: config-wmgr-start
+    - mountPath: /config-etc
+      name: config-wmgr-etc
+    - mountPath: /qserv/run/tmp
+      name: tmp-volume
+    - mountPath: /qserv/data
+      name: data-volume
+    - mountPath: /secret
+      name: secret-wmgr
+  - command:
+    - sh
+    - /config-start/start.sh
+    image: qserv/qserv:dev
+    imagePullPolicy: Always
+    livenessProbe:
+      exec:
+        command:
+        - /bin/bash
+        - /config-probe/probe.sh
+      initialDelaySeconds: 15
+      periodSeconds: 20
+    name: proxy
+    ports:
+    - containerPort: 4040
+      name: proxy-port
+    readinessProbe:
+      exec:
+        command:
+        - /bin/bash
+        - /config-probe/probe.sh
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    volumeMounts:
+    - mountPath: /home/qserv/.lsst
+      name: config-dot-lsst
+    - mountPath: /config-start
+      name: config-proxy-start
+    - mountPath: /config-etc
+      name: config-proxy-etc
+    - mountPath: /config-probe
+      name: config-proxy-probe
+    - mountPath: /qserv/run/tmp
+      name: tmp-volume
+    - mountPath: /qserv/data
+      name: data-volume
+    - mountPath: /secret
+      name: secret-wmgr
+  hostname: worker-1
+  initContainers:
+  - command:
+    - sh
+    - /config-mariadb/mariadb-configure.sh
+    image: qserv/qserv:dev
+    imagePullPolicy: Always
+    name: init-data-dir
+    volumeMounts:
+    - mountPath: /qserv/data
+      name: data-volume
+    - mountPath: /config-mariadb/
+      name: config-mariadb-configure
+    - mountPath: /config-mariadb-etc/
+      name: config-mariadb-etc
+    - mountPath: /config-sql
+      name: config-sql
+  nodeSelector:
+    kubernetes.io/hostname: benjamin-worker-1
+  restartPolicy: Never
+  subdomain: qserv
+  volumes:
+  - configMap:
+      name: config-mariadb-configure
+    name: config-mariadb-configure
+  - configMap:
+      name: config-mariadb-start
+    name: config-mariadb-start
+  - configMap:
+      name: config-master
+    name: config-master
+  - configMap:
+      name: config-mariadb-etc
+    name: config-mariadb-etc
+  - configMap:
+      name: config-sql
+    name: config-sql
+  - configMap:
+      name: config-xrootd-etc
+    name: config-xrootd-etc
+  - configMap:
+      name: config-xrootd-start
+    name: config-xrootd-start
+  - configMap:
+      name: config-wmgr-etc
+    name: config-wmgr-etc
+  - configMap:
+      name: config-wmgr-start
+    name: config-wmgr-start
+  - configMap:
+      name: config-dot-lsst
+    name: config-dot-lsst
+  - configMap:
+      defaultMode: 493
+      name: config-proxy-start
+    name: config-proxy-start
+  - configMap:
+      name: config-proxy-etc
+    name: config-proxy-etc
+  - configMap:
+      name: config-proxy-probe
+    name: config-proxy-probe
+  - name: secret-wmgr
+    secret:
+      secretName: secret-wmgr
+  - hostPath:
+      path: /qserv/log
+    name: log-volume
+  - hostPath:
+      path: /qserv/tmp
+    name: tmp-volume
+  - name: data-volume
+    persistentVolumeClaim:
+      claimName: qserv-pvc-1
