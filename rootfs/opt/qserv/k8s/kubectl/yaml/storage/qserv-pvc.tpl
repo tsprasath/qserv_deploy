@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-    name: qserv-pvc-1
+    name: <PVC_NAME>
 spec:
     accessModes:
       - ReadWriteOnce
@@ -12,4 +12,4 @@ spec:
     storageClassName: qserv-local-storage
     selector:
         matchLabels:
-            dataid: "1"
+            dataid: <DATA_ID>

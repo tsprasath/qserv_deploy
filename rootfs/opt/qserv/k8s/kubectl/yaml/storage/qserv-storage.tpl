@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-    name: qserv-1
+    name: <PV_NAME>
     labels:
-        dataid: "1"
+        dataid: <DATA_ID>
 spec:
     capacity:
         storage: 10Gi
@@ -13,7 +13,7 @@ spec:
     persistentVolumeReclaimPolicy: Retain
     storageClassName: qserv-local-storage
     local:
-        path: /qserv/data
+        path: <DATA_PATH>
     nodeAffinity:
         required:
             nodeSelectorTerms:
@@ -21,4 +21,4 @@ spec:
               - key: kubernetes.io/hostname
                 operator: In
                 values:
-                - benjamin-worker-1
+                - <HOSTNAME>
