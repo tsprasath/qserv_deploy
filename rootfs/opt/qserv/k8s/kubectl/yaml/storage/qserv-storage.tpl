@@ -6,7 +6,7 @@ metadata:
         dataid: <DATA_ID>
 spec:
     capacity:
-        storage: 10Gi
+        storage: 100Gi # Mandatory, muste be the same in PVC
     volumeMode: Filesystem
     accessModes:
     - ReadWriteOnce

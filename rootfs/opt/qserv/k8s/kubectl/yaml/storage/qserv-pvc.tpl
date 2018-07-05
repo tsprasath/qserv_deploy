@@ -8,7 +8,7 @@ spec:
     volumeMode: Filesystem
     resources:
         requests:
-            storage: 10Gi
+            storage: 100Gi # Mandatory, must be the same in PV
     storageClassName: qserv-local-storage
     selector:
         matchLabels:
