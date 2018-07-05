@@ -15,9 +15,7 @@ CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR:-/qserv-deploy/config}"
 CFG_DIR="${DIR}/yaml"
 RESOURCE_DIR="${DIR}/resource"
 CONFIGMAP_DIR="${DIR}/configmap"
-OUTPUT_DIR="${CLUSTER_CONFIG_DIR}/yaml"
-
-mkdir -p "$OUTPUT_DIR"
+OUTPUT_DIR=$(mktemp -d --suffix=-qserv-deploy-yaml)
 
 # For in2p3 cluster: k8s schema cache must not be on AFS
 TMP_DIR=$(mktemp -d --suffix=-kube-$USER)
