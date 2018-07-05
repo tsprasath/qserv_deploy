@@ -15,11 +15,11 @@ CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR:-/qserv-deploy/config}"
 CFG_DIR="${DIR}/yaml"
 RESOURCE_DIR="${DIR}/resource"
 CONFIGMAP_DIR="${DIR}/configmap"
-OUTPUT_DIR=$(mktemp -d --suffix=-qserv-deploy-yaml)
+TMP_DIR=$(mktemp -d --suffix=-qserv-deploy-yaml)
 
 # For in2p3 cluster: k8s schema cache must not be on AFS
-TMP_DIR=$(mktemp -d --suffix=-kube-$USER)
-CACHE_OPT="--cache-dir=$TMP_DIR/schema"
+CACHE_DIR=$(mktemp -d --suffix=-kube-$USER)
+CACHE_OPT="--cache-dir=$CACHE_DIR/schema"
 
 usage() {
   cat << EOD
@@ -49,8 +49,8 @@ if [ $# -ne 0 ] ; then
 fi
 
 YAML_MASTER_TPL="${CFG_DIR}/pod.master.yaml.tpl"
-YAML_FILE="${OUTPUT_DIR}/master.yaml"
-INI_FILE="${OUTPUT_DIR}/pod.master.ini"
+YAML_FILE="${TMP_DIR}/master.yaml"
+INI_FILE="${TMP_DIR}/pod.master.ini"
 
 echo "Create kubernetes configmaps for Qserv"
 
@@ -125,8 +125,8 @@ YAML_WORKER_TPL="${CFG_DIR}/pod.worker.yaml.tpl"
 j=1
 for host in $WORKERS;
 do
-    YAML_FILE="${OUTPUT_DIR}/worker-${j}.yaml"
-    INI_FILE="${OUTPUT_DIR}/pod.worker-${j}.ini"
+    YAML_FILE="${TMP_DIR}/worker-${j}.yaml"
+    INI_FILE="${TMP_DIR}/pod.worker-${j}.ini"
     cat << EOF > "$INI_FILE"
 [spec]
 host_data_dir: $HOST_DATA_DIR
