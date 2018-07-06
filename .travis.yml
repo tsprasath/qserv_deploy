@@ -2,42 +2,8 @@ sudo: required
 services: docker
 language: minimal
 
-env:
-  global:
-    - CONFIG_DIR=$HOME/.lsst/qserv-cluster
-    - CLUSTER_CONFIG_DIR=$CONFIG_DIR
-    - TF_DATA_DIR=$CONFIG_DIR/terraform
-    - TF_VAR_lsst_config_path=$CONFIG_DIR
-    - KUBECTL_VERSION=1.9.0
-    - KUBECONFIG=$HOME/.lsst/qserv-cluster/kubeconfig
-    - TAG=testing
-
-before_install:
-  - mkdir -p $TF_DATA_DIR
-  - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
-  - wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/0.11.7/terraform_0.11.7_linux_amd64.zip
-  - sudo unzip /tmp/terraform.zip -d /usr/local/bin
-  - sudo chmod +x /usr/local/bin/terraform
-  - cd ./openstack/terraform
-
-install:
-  - terraform init .
-  - terraform apply --auto-approve --input=false -var "user_name=travis-${TRAVIS_BUILD_NUMBER}" -var "instance_prefix=travis-${TRAVIS_BUILD_NUMBER}-" --var-file=./terraform.tfvars.ci .
-
 before_script:
-  - cd ../../
-  - cp ./k8s/env.example.sh $CONFIG_DIR/env.sh
-  - ./k8s/sysadmin/ssh-tunnel.sh
+  - ./minikube/minikube-create.sh
 
 script:
-  - ./k8s/run-kubectl.sh -C "/root/admin/start.sh"
-  - ./k8s/run-kubectl.sh -C "/root/admin/wait-pods-start.sh"
-  - ./k8s/run-kubectl.sh -C "/root/admin/run-multinode-tests.sh"
-
-after_success:
-  - cd ./openstack/terraform
-  - terraform destroy --auto-approve --input=false -var "user_name=travis-${TRAVIS_BUILD_NUMBER}" -var "instance_prefix=travis-${TRAVIS_BUILD_NUMBER}-" --var-file=./terraform.tfvars.ci .
-
-after_failure:
-  - cd ./openstack/terraform
-  - terraform destroy --auto-approve --input=false -var "user_name=travis-${TRAVIS_BUILD_NUMBER}" -var "instance_prefix=travis-${TRAVIS_BUILD_NUMBER}-" --var-file=./terraform.tfvars.ci .
+  - ./minikube/launch.sh

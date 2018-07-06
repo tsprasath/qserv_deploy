@@ -15,9 +15,6 @@ VERSION=828ff67
 # Data directory location on docker host
 # HOST_DATA_DIR=/qserv/data
 
-# Log directory location on docker host
-HOST_LOG_DIR=/qserv/log
-
 # Qserv temporary directory location on docker host
 HOST_TMP_DIR=/qserv/tmp
 

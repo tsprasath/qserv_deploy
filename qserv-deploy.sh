@@ -13,7 +13,10 @@ DIR=$(cd "$(dirname "$0")"; pwd -P)
 usage() {
     cat << EOD
 
-Usage: `basename $0`
+Usage: `basename $0` [options] [cmd]
+
+  Available options:
+    -h          this message
 
   Run a docker container with all the Qserv deployment tools inside.
 
@@ -21,6 +24,22 @@ Usage: `basename $0`
 
 EOD
 }
+
+# get the options
+while getopts h c ; do
+    case $c in
+        h) usage ; exit 0 ;;
+        \?) usage ; exit 2 ;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+if [ $# -ge 2 ] ; then
+    usage
+    exit 2
+elif [ $# -eq 1 ]; then
+    CMD=$1
+fi
 
 VERSION=${DEPLOY_VERSION:-$STABLE_VERSION}
 
@@ -43,6 +62,12 @@ if [ "$QSERV_DEV" = true ]; then
     MOUNTS="$MOUNTS -v $DIR/rootfs/opt/qserv:/opt/qserv"
 fi
 
+# Used with minikube to retrieve keys stored in $HOME/.minikube/
+if [ "$MOUNT_DOT_MK" = true ]; then
+    echo "Mounting $HOME/.minikube inside container"
+    MOUNTS="$MOUNTS -v $HOME/.minikube:$HOME/.minikube"
+fi
+
 docker run -it --net=host --rm -l config-path=$QSERV_CFG_DIR \
     --user=$(id -u):$(id -g $USER) $MOUNTS \
-    qserv/deploy:$VERSION
+    qserv/deploy:$VERSION $CMD
