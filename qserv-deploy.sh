@@ -43,6 +43,12 @@ if [ "$QSERV_DEV" = true ]; then
     MOUNTS="$MOUNTS -v $DIR/rootfs/opt/qserv:/opt/qserv"
 fi
 
+# Used with minikube to retrieve keys stored in $HOME/.minikube/
+if [ "$MOUNT_HOME" = true ]; then
+    echo "Mounting $HOME inside container"
+    MOUNTS="$MOUNTS -v $HOME:$HOME"
+fi
+
 docker run -it --net=host --rm -l config-path=$QSERV_CFG_DIR \
     --user=$(id -u):$(id -g $USER) $MOUNTS \
     qserv/deploy:$VERSION
