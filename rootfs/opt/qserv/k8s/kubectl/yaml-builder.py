@@ -189,7 +189,10 @@ if __name__ == "__main__":
             command = ["sh", "/config-start/mariadb-start.sh"]
             yaml_data['spec']['containers'][container_id]['command'] = command
 
-        yaml_data['spec']['nodeSelector']['kubernetes.io/hostname'] = config.get('spec', 'host')
+        if config.get('spec', 'host') != "-MK-":
+            node_selector = dict()
+            node_selector['kubernetes.io/hostname'] = config.get('spec', 'host')
+            yaml_data['spec']['nodeSelector'] = node_selector
 
         # Attach log-dir to containers
         #

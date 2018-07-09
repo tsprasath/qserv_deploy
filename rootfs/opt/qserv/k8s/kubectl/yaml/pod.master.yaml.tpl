@@ -120,8 +120,6 @@ spec:
         name: data-volume
       - mountPath: /secret
         name: secret-wmgr
-  nodeSelector:
-    kubernetes.io/hostname: <INI_HOST>
   volumes:
     - name: config-dot-lsst
       configMap:
