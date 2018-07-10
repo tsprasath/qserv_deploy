@@ -1,3 +1,6 @@
+set -e
+set -x
+
 MINIKUBE_BIN=/tmp/minikube
 KUBECTL_BIN=/tmp/kubectl
 

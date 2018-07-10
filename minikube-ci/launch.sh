@@ -9,4 +9,4 @@ cp "$HOME"/.kube/config "$QSERV_CFG_DIR"/kubeconfig
 
 cp -r "$DIR"/../config.examples/minikube-ci/* "$QSERV_CFG_DIR"
 
-$DIR"/../qserv-deploy.sh qserv-start
+"$DIR"/../qserv-deploy.sh qserv-start

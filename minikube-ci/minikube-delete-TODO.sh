@@ -1,9 +1,20 @@
 set -e
 set -x
 
+MINIKUBE_BIN=/tmp/minikube
+
+export MINIKUBE_WANTUPDATENOTIFICATION=false
+export MINIKUBE_WANTREPORTERRORPROMPT=false
+export MINIKUBE_HOME=$HOME
+export CHANGE_MINIKUBE_NONE_USER=true
+mkdir -p $HOME/.kube
+touch $HOME/.kube/config
+
+export KUBECONFIG=$HOME/.kube/config
+
+sudo -E "$MINIKUBE_BIN" stop
 sudo /tmp/minikube delete || echo "WARN: unable to delete minikube"
 sudo rm -rf /etc/kubernetes
-sudo rm -rf /root/.kube
-sudo rm -rf /root/.minikube
-rm -rf $HOME/.kube
-rm -rf $HOME/.minikube
+sudo rm -rf /data/minikube
+sudo rm -rf $HOME/.kube
+sudo rm -rf $HOME/.minikube
