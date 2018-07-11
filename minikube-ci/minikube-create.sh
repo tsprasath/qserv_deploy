@@ -24,9 +24,10 @@ sudo -E "$MINIKUBE_BIN" start --vm-driver=none
 
 # this for loop waits until kubectl can access the api server that Minikube has created
 for i in {1..150}; do # timeout for 5 minutes
-   "$KUBECTL_BIN" get pods &> /dev/null
-   if [ $? -ne 1 ]; then
-      break
+  "$KUBECTL_BIN" get pods &> /dev/null
+  if [ $? -ne 1 ]; then
+    echo "k8s api server ready"
+    break
   fi
   sleep 2
 done
