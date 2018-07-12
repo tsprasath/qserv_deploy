@@ -4,30 +4,27 @@ set -x
 MINIKUBE_BIN="/usr/local/bin/minikube"
 KUBECTL_BIN="/usr/local/bin/kubectl"
 
-sudo curl -Lo "$MINIKUBE_BIN" \
-https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-sudo chmod +x "$MINIKUBE_BIN"
-
-sudo curl -Lo "$KUBECTL_BIN" \
-https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-sudo chmod +x "$KUBECTL_BIN"
-
-export MINIKUBE_WANTUPDATENOTIFICATION=false
-export MINIKUBE_WANTREPORTERRORPROMPT=false
 export MINIKUBE_HOME=$HOME
 export CHANGE_MINIKUBE_NONE_USER=true
-mkdir -p $HOME/.kube
-touch $HOME/.kube/config
 
-export KUBECONFIG=$HOME/.kube/config
-sudo -E "$MINIKUBE_BIN" start --vm-driver=none
+# Download kubectl, which is a requirement for using minikube.
+KUBECTL_VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v1.9.0/bin/linux/amd64/kubectl
+chmod +x kubectl
+sudo mv kubectl "$KUBECTL_BIN"
+
+# Download minikube.
+MINIKUBE_VERSION="v0.25.2"
+curl -Lo minikube https://storage.googleapis.com/minikube/releases/"$MINIKUBE_VERSION"/minikube-linux-amd64 &&
+chmod +x minikube
+sudo mv minikube "$MINIKUBE_BIN"
+
+sudo -E minikube start --vm-driver=none --kubernetes-version=v1.9.0
+# Fix the kubectl context, as it's often stale.
+minikube update-context
 
 # this for loop waits until kubectl can access the api server that Minikube has created
-for i in {1..150}; do # timeout for 5 minutes
-  "$KUBECTL_BIN" get pods &> /dev/null
-  if [ $? -ne 1 ]; then
-    echo "k8s api server ready"
-    break
-  fi
-  sleep 2
+JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'
+until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"
+  do sleep 1
 done
