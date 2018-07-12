@@ -1,8 +1,8 @@
 set -e
 set -x
 
-MINIKUBE_BIN=/tmp/minikube
-KUBECTL_BIN=/tmp/kubectl
+MINIKUBE_BIN=/usr/local/bin/minikube
+KUBECTL_BIN=/usr/local/bin/kubectl
 
 curl -Lo "$MINIKUBE_BIN" \
 https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
