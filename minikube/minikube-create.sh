@@ -14,7 +14,7 @@ mkdir -p $HOME/.kube
 touch $HOME/.kube/config
 
 # Download kubectl, which is a requirement for using minikube.
-K8S_VERSION="v1.10.3"
+K8S_VERSION="v1.9.0"
 curl -Lo /tmp/kubectl https://storage.googleapis.com/kubernetes-release/release/"$K8S_VERSION"/bin/linux/amd64/kubectl
 chmod +x /tmp/kubectl
 sudo mv /tmp/kubectl "$KUBECTL_BIN"
@@ -26,7 +26,7 @@ curl -Lo /tmp/minikube https://storage.googleapis.com/minikube/releases/"$MINIKU
 chmod +x /tmp/minikube
 sudo mv /tmp/minikube "$MINIKUBE_BIN"
 
-sudo -E "$MINIKUBE_BIN" start --vm-driver=none --kubernetes-version=v1.9.0
+sudo -E "$MINIKUBE_BIN" start --vm-driver=none --kubernetes-version="$K8S_VERSION"
 # Fix the kubectl context, as it's often stale.
 "$MINIKUBE_BIN" update-context
 
