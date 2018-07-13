@@ -72,6 +72,12 @@ def _get_container_id(container_name):
             return i
     return None
 
+def _get_init_container_id(container_name):
+    for i, container in enumerate(yaml_data['spec']['initContainers']):
+        if container['name'] == container_name:
+            return i
+    return None
+
 def _is_master():
     labels = yaml_data['metadata']['labels']
     return labels.get('node') == 'master'
@@ -90,6 +96,23 @@ def _mount_volume(container_name, container_dir, volume_name):
             yaml_data['spec']['containers'][container_id]['volumeMounts'] = []
 
         volume_mounts = yaml_data['spec']['containers'][container_id]['volumeMounts']
+        volume_mount = {'mountPath': container_dir, 'name': volume_name}
+        volume_mounts.append(volume_mount)
+
+def _mount_init_volume(init_container_name, container_dir, volume_name):
+    """
+    Map host_dir to container_dir in pod configuration
+    using volume technology, for initContainer
+    @param container_name: initContainer name in yaml file
+    @param container_dir: directory in container
+    @param volume_name: name of volume made containing host_dir
+    """
+    container_id = _get_init_container_id(init_container_name)
+    if container_id is not None:
+        if 'volumeMounts' not in yaml_data['spec']['initContainers'][container_id]:
+            yaml_data['spec']['containers'][container_id]['volumeMounts'] = []
+
+        volume_mounts = yaml_data['spec']['initContainers'][container_id]['volumeMounts']
         volume_mount = {'mountPath': container_dir, 'name': volume_name}
         volume_mounts.append(volume_mount)
 
@@ -208,9 +231,9 @@ if __name__ == "__main__":
         init_container['volumeMounts'] = []
         yaml_data['spec']['initContainers'].append(init_container)
 
-        _mount_volume('init-data-dir', '/config-mariadb', 'config-mariadb-configure')
-        _mount_volume('init-data-dir', '/config-mariadb-etc', 'config-mariadb-etc')
-        _mount_volume('init-data-dir', '/config-sql', 'config-sql')
+        _mount_init_volume('init-data-dir', '/config-mariadb', 'config-mariadb-configure')
+        _mount_init_volume('init-data-dir', '/config-mariadb-etc', 'config-mariadb-etc')
+        _mount_init_volume('init-data-dir', '/config-sql', 'config-sql')
 
 
         # Attach tmp-dir to containers
@@ -236,7 +259,7 @@ if __name__ == "__main__":
         else:
             _add_emptydir_volume(volume_name)
 
-        _mount_volume('init-data-dir', mount_path, volume_name)
+        _mount_init_volume('init-data-dir', mount_path, volume_name)
         _mount_volume('mariadb', mount_path, volume_name)
         _mount_volume('proxy', mount_path, volume_name)
         _mount_volume('wmgr', mount_path, volume_name)

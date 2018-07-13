@@ -12,6 +12,10 @@ VERSION=828ff67
 # `docker run` settings
 # =====================
 
+# WARN MINIKUBE must have 3 variables below commented
+# if not all Qserv pods will use same data directories
+# and Qserv may crash
+
 # Data directory location on docker host
 # HOST_DATA_DIR=/qserv/data
 
