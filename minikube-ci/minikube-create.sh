@@ -4,8 +4,14 @@ set -x
 MINIKUBE_BIN="/usr/local/bin/minikube"
 KUBECTL_BIN="/usr/local/bin/kubectl"
 
-export MINIKUBE_HOME=$HOME
 export CHANGE_MINIKUBE_NONE_USER=true
+export MINIKUBE_HOME=$HOME
+export MINIKUBE_WANTREPORTERRORPROMPT=false
+export MINIKUBE_WANTUPDATENOTIFICATION=false
+export KUBECONFIG=$HOME/.kube/config
+
+mkdir -p $HOME/.kube
+touch $HOME/.kube/config
 
 # Download kubectl, which is a requirement for using minikube.
 KUBECTL_VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
@@ -19,12 +25,12 @@ curl -Lo minikube https://storage.googleapis.com/minikube/releases/"$MINIKUBE_VE
 chmod +x minikube
 sudo mv minikube "$MINIKUBE_BIN"
 
-sudo -E minikube start --vm-driver=none --kubernetes-version=v1.9.0
+sudo -E "$MINIKUBE_BIN" start --vm-driver=none --kubernetes-version=v1.9.0
 # Fix the kubectl context, as it's often stale.
-minikube update-context
+"$MINIKUBE_BIN" update-context
 
 # this for loop waits until kubectl can access the api server that Minikube has created
 JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'
-until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"
+until "$KUBECTL_BIN" get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"
   do sleep 1
 done

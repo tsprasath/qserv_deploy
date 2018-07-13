@@ -1,7 +1,7 @@
 set -e
 set -x
 
-MINIKUBE_BIN=/tmp/minikube
+MINIKUBE_BIN=/usr/local/bin/minikube
 
 export MINIKUBE_WANTUPDATENOTIFICATION=false
 export MINIKUBE_WANTREPORTERRORPROMPT=false
