@@ -194,37 +194,6 @@ if __name__ == "__main__":
             node_selector['kubernetes.io/hostname'] = config.get('spec', 'host')
             yaml_data['spec']['nodeSelector'] = node_selector
 
-        # Attach log-dir to containers
-        #
-        if config.get('spec', 'host_log_dir'):
-            volume_name = 'log-volume'
-            mount_path = '/qserv/run/var/log'
-            _add_volume(config.get('spec', 'host_log_dir'), volume_name)
-            _mount_volume('mariadb', mount_path, volume_name)
-            _mount_volume('xrootd', mount_path, volume_name)
-
-        # Attach tmp-dir to containers
-        #
-        if config.get('spec', 'host_tmp_dir'):
-            volume_name = 'tmp-volume'
-            mount_path = '/qserv/run/tmp'
-            _add_volume(config.get('spec', 'host_tmp_dir'), volume_name)
-            _mount_volume('mariadb', mount_path, volume_name)
-            _mount_volume('xrootd', mount_path, volume_name)
-
-        # Attach data-dir to containers
-        #
-        data_volume_name = 'data-volume'
-        data_mount_path = '/qserv/data'
-        if config.get('spec', 'host_data_dir'):
-            _add_volume(config.get('spec', 'host_data_dir'), data_volume_name)
-        else:
-            _add_emptydir_volume(data_volume_name)
-
-        _mount_volume('mariadb', data_mount_path, data_volume_name)
-        # xrootd mmap/mlock *.MYD files and need to access mysql.sock
-        _mount_volume('xrootd', data_mount_path, data_volume_name)
-
         # initContainer
         #
         yaml_data['spec']['initContainers'] = []
@@ -237,16 +206,43 @@ if __name__ == "__main__":
         init_container['imagePullPolicy'] = 'Always'
         init_container['name'] = 'init-data-dir'
         init_container['volumeMounts'] = []
-        init_container['volumeMounts'].append({'mountPath': data_mount_path,
-            'name': data_volume_name})
-        init_container['volumeMounts'].append({'mountPath':
-            "/config-mariadb/", 'name': 'config-mariadb-configure'})
-        init_container['volumeMounts'].append({'mountPath':
-            "/config-mariadb-etc/", 'name': 'config-mariadb-etc'})
-        init_container['volumeMounts'].append({'mountPath':
-            "/config-sql", 'name': 'config-sql'})
-
         yaml_data['spec']['initContainers'].append(init_container)
+
+        _mount_volume('init-data-dir', '/config-mariadb', 'config-mariadb-configure')
+        _mount_volume('init-data-dir', '/config-mariadb-etc', 'config-mariadb-etc')
+        _mount_volume('init-data-dir', '/config-sql', 'config-sql')
+
+
+        # Attach tmp-dir to containers
+        #
+        volume_name = 'tmp-volume'
+        mount_path = '/qserv/run/tmp'
+        if config.get('spec', 'host_tmp_dir'):
+            _add_volume(config.get('spec', 'host_tmp_dir'), volume_name)
+        else:
+            _add_emptydir_volume(volume_name)
+
+        _mount_volume('mariadb', mount_path, volume_name)
+        _mount_volume('proxy', mount_path, volume_name)
+        _mount_volume('wmgr', mount_path, volume_name)
+        _mount_volume('xrootd', mount_path, volume_name)
+
+        # Attach data-dir to containers
+        #
+        volume_name = 'data-volume'
+        mount_path = '/qserv/data'
+        if config.get('spec', 'host_data_dir'):
+            _add_volume(config.get('spec', 'host_data_dir'), volume_name)
+        else:
+            _add_emptydir_volume(volume_name)
+
+        _mount_volume('init-data-dir', mount_path, volume_name)
+        _mount_volume('mariadb', mount_path, volume_name)
+        _mount_volume('proxy', mount_path, volume_name)
+        _mount_volume('wmgr', mount_path, volume_name)
+        # xrootd mmap/mlock *.MYD files and need to access mysql.sock
+        _mount_volume('xrootd', mount_path, volume_name)
+
 
         with open(args.yamlFile, 'w') as f:
             f.write(yaml.dump(yaml_data, default_flow_style=False))

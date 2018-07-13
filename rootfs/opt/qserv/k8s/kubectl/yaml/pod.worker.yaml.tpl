@@ -80,10 +80,6 @@ spec:
         name: config-wmgr-start
       - mountPath: /config-etc
         name: config-wmgr-etc
-      - mountPath: /qserv/run/tmp
-        name: tmp-volume
-      - mountPath: /qserv/data
-        name: data-volume
       - mountPath: /secret
         name: secret-wmgr
     - name: proxy
@@ -118,10 +114,6 @@ spec:
         name: config-proxy-etc
       - mountPath: /config-probe
         name: config-proxy-probe
-      - mountPath: /qserv/run/tmp
-        name: tmp-volume
-      - mountPath: /qserv/data
-        name: data-volume
       - mountPath: /secret
         name: secret-wmgr
   volumes:
