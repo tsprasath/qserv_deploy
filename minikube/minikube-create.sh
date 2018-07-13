@@ -14,14 +14,15 @@ mkdir -p $HOME/.kube
 touch $HOME/.kube/config
 
 # Download kubectl, which is a requirement for using minikube.
-KUBECTL_VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
-curl -Lo /tmp/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.9.0/bin/linux/amd64/kubectl
+K8S_VERSION="v1.10.3"
+curl -Lo /tmp/kubectl https://storage.googleapis.com/kubernetes-release/release/"$K8S_VERSION"/bin/linux/amd64/kubectl
 chmod +x /tmp/kubectl
 sudo mv /tmp/kubectl "$KUBECTL_BIN"
 
 # Download minikube.
+# WARN: on travis-ci, v0.25.0 is known to work, but v0.28.0 is not.
 MINIKUBE_VERSION="v0.25.2"
-curl -Lo /tmp/minikube https://storage.googleapis.com/minikube/releases/"$MINIKUBE_VERSION"/minikube-linux-amd64 &&
+curl -Lo /tmp/minikube https://storage.googleapis.com/minikube/releases/"$MINIKUBE_VERSION"/minikube-linux-amd64
 chmod +x /tmp/minikube
 sudo mv /tmp/minikube "$MINIKUBE_BIN"
 
