@@ -3,7 +3,7 @@ services: docker
 language: minimal
 
 before_script:
-  - ./minikube-ci/minikube-create.sh
+  - ./minikube/minikube-create.sh
 
 script:
-  - ./minikube-ci/launch.sh
+  - ./minikube/launch.sh
