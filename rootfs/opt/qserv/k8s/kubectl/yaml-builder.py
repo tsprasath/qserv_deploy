@@ -67,13 +67,13 @@ def _config_logger(verbose):
 
 
 def _get_container_id(container_name):
-    for i, container in enumerate(yaml_data['spec']['containers']):
+    for i, container in enumerate(yaml_data_tpl['containers']):
         if container['name'] == container_name:
             return i
     return None
 
 def _get_init_container_id(container_name):
-    for i, container in enumerate(yaml_data['spec']['initContainers']):
+    for i, container in enumerate(yaml_data_tpl['initContainers']):
         if container['name'] == container_name:
             return i
     return None
@@ -92,48 +92,28 @@ def _mount_volume(container_name, container_dir, volume_name):
     """
     container_id = _get_container_id(container_name)
     if container_id is not None:
-        if 'volumeMounts' not in yaml_data['spec']['containers'][container_id]:
-            yaml_data['spec']['containers'][container_id]['volumeMounts'] = []
+        if 'volumeMounts' not in yaml_data_tpl['containers'][container_id]:
+            yaml_data_tpl['containers'][container_id]['volumeMounts'] = []
 
-        volume_mounts = yaml_data['spec']['containers'][container_id]['volumeMounts']
+        volume_mounts = yaml_data_tpl['containers'][container_id]['volumeMounts']
         volume_mount = {'mountPath': container_dir, 'name': volume_name}
         volume_mounts.append(volume_mount)
-
-def _mount_init_volume(init_container_name, container_dir, volume_name):
-    """
-    Map host_dir to container_dir in pod configuration
-    using volume technology, for initContainer
-    @param container_name: initContainer name in yaml file
-    @param container_dir: directory in container
-    @param volume_name: name of volume made containing host_dir
-    """
-    container_id = _get_init_container_id(init_container_name)
-    if container_id is not None:
-        if 'volumeMounts' not in yaml_data['spec']['initContainers'][container_id]:
-            yaml_data['spec']['containers'][container_id]['volumeMounts'] = []
-
-        volume_mounts = yaml_data['spec']['initContainers'][container_id]['volumeMounts']
-        volume_mount = {'mountPath': container_dir, 'name': volume_name}
-        volume_mounts.append(volume_mount)
-
 
 def _add_volume(host_dir, volume_name):
-    if 'volumes' not in yaml_data['spec']:
-        yaml_data['spec']['volumes'] = []
-    volume = {'hostPath': {'path': host_dir},
-              'name': volume_name}
-    volumes = yaml_data['spec']['volumes']
+    if 'volumes' not in yaml_data_tpl:
+        yaml_data_tpl['volumes'] = []
+    if host_dir:
+        volume = {'hostPath': {'path': host_dir},
+                  'name': volume_name}
+    else:
+        volume = {'emptyDir': {},
+                  'name': volume_name}
+    volumes = yaml_data_tpl['volumes']
     volumes.append(volume)
 
 
 def _add_emptydir_volume(volume_name):
-    if 'volumes' not in yaml_data['spec']:
-        yaml_data['spec']['volumes'] = []
-
-    volume = {'emptyDir': {},
-              'name': volume_name}
-    volumes = yaml_data['spec']['volumes']
-    volumes.append(volume)
+    _add_volume(None, volume_name)
 
 
 if __name__ == "__main__":
@@ -173,14 +153,17 @@ if __name__ == "__main__":
         resourcePath = args.resourcePath
         yaml.add_representer(str, _str_presenter)
 
-        yaml_data['metadata']['name'] = config.get('spec', 'pod_name')
-        yaml_data['spec']['hostname'] = config.get('spec', 'pod_name')
+        yaml_data['metadata']['name'] = 'qserv'
+
+        yaml_data_tpl = yaml_data['spec']['template']['spec']
+
+        yaml_data['spec']['replicas'] = int(config.get('spec', 'replicas'))
 
         # Configure xrootd
         #
         container_id = _get_container_id('xrootd')
         if container_id is not None:
-            container = yaml_data['spec']['containers'][container_id]
+            container = yaml_data_tpl['containers'][container_id]
             command = ["/bin/su"]
             _args = ["qserv", "-c", "sh /config-start/start.sh"]
             # Uncomment line below for debugging purpose
@@ -188,53 +171,33 @@ if __name__ == "__main__":
             container['command'] = command
             container['args'] = _args
             container['image'] = config.get('spec', 'image')
-            yaml_data['spec']['containers'][container_id] = container
+            yaml_data_tpl['containers'][container_id] = container
 
         # Configure mysql-proxy
         #
         container_id = _get_container_id('proxy')
         if container_id is not None:
-            container = yaml_data['spec']['containers'][container_id]
+            container = yaml_data_tpl['containers'][container_id]
             container['image'] = config.get('spec', 'image')
 
         # Configure wmgr
         #
         container_id = _get_container_id('wmgr')
         if container_id is not None:
-            container = yaml_data['spec']['containers'][container_id]
+            container = yaml_data_tpl['containers'][container_id]
             container['image'] = config.get('spec', 'image')
 
         # Configure mariadb
         #
         container_id = _get_container_id('mariadb')
         if container_id is not None:
-            yaml_data['spec']['containers'][container_id]['image'] = config.get('spec', 'image')
-            command = ["sh", "/config-start/mariadb-start.sh"]
-            yaml_data['spec']['containers'][container_id]['command'] = command
+            yaml_data_tpl['containers'][container_id]['image'] = config.get('spec', 'image')
 
-        if config.get('spec', 'host') != "-MK-":
-            node_selector = dict()
-            node_selector['kubernetes.io/hostname'] = config.get('spec', 'host')
-            yaml_data['spec']['nodeSelector'] = node_selector
-
-        # initContainer
-        #
-        yaml_data['spec']['initContainers'] = []
         # initContainer: configure qserv-data-dir using mariadb image
         #
-        init_container = dict()
-        command = ["sh", "/config-mariadb/mariadb-configure.sh"]
-        init_container['command'] = command
-        init_container['image'] = config.get('spec', 'image')
-        init_container['imagePullPolicy'] = 'Always'
-        init_container['name'] = 'init-data-dir'
-        init_container['volumeMounts'] = []
-        yaml_data['spec']['initContainers'].append(init_container)
-
-        _mount_init_volume('init-data-dir', '/config-mariadb', 'config-mariadb-configure')
-        _mount_init_volume('init-data-dir', '/config-mariadb-etc', 'config-mariadb-etc')
-        _mount_init_volume('init-data-dir', '/config-sql', 'config-sql')
-
+        container_id = _get_init_container_id('init-data-dir')
+        if container_id is not None:
+            yaml_data_tpl['initContainers'][container_id]['image'] = config.get('spec', 'image')
 
         # Attach tmp-dir to containers
         #
@@ -259,7 +222,6 @@ if __name__ == "__main__":
         else:
             _add_emptydir_volume(volume_name)
 
-        _mount_init_volume('init-data-dir', mount_path, volume_name)
         _mount_volume('mariadb', mount_path, volume_name)
         _mount_volume('proxy', mount_path, volume_name)
         _mount_volume('wmgr', mount_path, volume_name)

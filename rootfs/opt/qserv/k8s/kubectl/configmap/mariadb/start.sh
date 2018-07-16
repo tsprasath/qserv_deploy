@@ -8,7 +8,7 @@ set -e
 # Source pathes to eups packages
 . /qserv/run/etc/sysconfig/qserv
 
-MARIADB_CONF="/config-mariadb-etc/my.cnf"
+MARIADB_CONF="/config-etc/my.cnf"
 if [ -e "$MARIADB_CONF" ]; then
     ln -sf "$MARIADB_CONF" /etc/my.cnf
 fi
