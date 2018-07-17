@@ -44,6 +44,13 @@ else
     INSTANCE_NAME='worker'
 fi
 
+# When at least one of the current pod's containers
+# readiness health check pass, then qserv name resolve.
+until ping -c 1 ${HOSTNAME}.qserv; do
+  echo "waiting for DNS (${HOSTNAME}.qserv)..."
+  sleep 2
+done
+
 # Wait for xrootd master reachability
 until ping -c 1 "$QSERV_MASTER"; do
     echo "waiting for DNS (${QSERV_MASTER})..."

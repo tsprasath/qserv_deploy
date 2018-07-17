@@ -109,11 +109,9 @@ echo "Create kubernetes pod for Qserv master"
 cat << EOF > "$INI_FILE"
 [spec]
 host_data_dir: $HOST_DATA_DIR
-host_log_dir: $HOST_LOG_DIR
 host_tmp_dir: $HOST_TMP_DIR
 host: $MASTER
 image: $CONTAINER_IMAGE
-master_hostname: $MASTER
 pod_name: master
 EOF
 
@@ -130,11 +128,9 @@ do
     cat << EOF > "$INI_FILE"
 [spec]
 host_data_dir: $HOST_DATA_DIR
-host_log_dir: $HOST_LOG_DIR
 host_tmp_dir: $HOST_TMP_DIR
 host: $host
 image: $CONTAINER_IMAGE
-master_hostname: $MASTER
 mysql_root_password: CHANGEME
 pod_name: worker-$j
 EOF
