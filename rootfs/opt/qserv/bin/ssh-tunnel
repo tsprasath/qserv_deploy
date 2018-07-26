@@ -22,4 +22,4 @@ do
 done
 
 echo "INFO: open ssh tunnel to access kubernetes master"
-ssh $SSH_CFG_OPT "$ORCHESTRATOR" -N -L $K8S_PORT:localhost:$K8S_PORT &
+ssh -C $SSH_CFG_OPT "$ORCHESTRATOR" -N -L $K8S_PORT:localhost:$K8S_PORT &
