@@ -6,13 +6,13 @@
 # @author Fabrice Jammes SLAC/IN2P3
 
 set -e
-set -x
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
 CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR:-/qserv-deploy/config}"
 . "$CLUSTER_CONFIG_DIR/env.sh"
 
+PASSWORD="CHANGEME"
 SQL="$1"
 # SQL="SELECT * FROM qservw_worker.Dbs"
 # SQL="USE qservw_worker; SHOW TABLES;"
@@ -22,5 +22,5 @@ parallel --tag "kubectl exec {} -c mariadb -- \
     bash -c \". /qserv/stack/loadLSST.bash && \
     setup mariadbclient && \
     mysql --socket /qserv/data/mysql/mysql.sock \
-    --user=root --password=changeme \
+    --user=root --password='$PASSWORD' \
     -e \\\"$SQL\\\"\"" ::: master worker-1

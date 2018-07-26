@@ -17,7 +17,7 @@ SQL="SELECT * FROM qservw_worker.Dbs"
 SQL="USE qservw_worker; SHOW TABLES;"
 
 echo "Launch '$SQL' on all nodes"
-parallel --tag "kubectl exec {} -c worker -- \
+parallel --tag "kubectl exec {} -c mariadb -- \
     bash -c \". /qserv/stack/loadLSST.bash && \
     setup mariadbclient && \
     mysql --socket /qserv/run/var/lib/mysql/mysql.sock \
