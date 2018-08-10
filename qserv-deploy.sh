@@ -6,7 +6,8 @@
 
 set -e
 
-STABLE_VERSION="ea4ae8d"
+# Use version below for deployment container
+IMAGE="qserv/deploy:a2bfaec"
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
@@ -41,9 +42,13 @@ elif [ $# -eq 1 ]; then
     CMD=$1
 fi
 
-VERSION=${DEPLOY_VERSION:-$STABLE_VERSION}
-
 SSH_DIR="$HOME/.ssh"
+HELM_DIR="$HOME/.helm"
+
+# Force directories below to exist
+# and belong to current user
+mkdir -p $SSH_DIR $HELM_DIR
+
 CONTAINER_HOME="$HOME"
 
 if [ ! -d "$QSERV_CFG_DIR" ]; then
@@ -53,6 +58,7 @@ fi
 
 MOUNTS="-v $QSERV_CFG_DIR:/qserv-deploy/config "
 MOUNTS="$MOUNTS -v $SSH_DIR:$CONTAINER_HOME/.ssh"
+MOUNTS="$MOUNTS -v $HELM_DIR:$CONTAINER_HOME/.helm"
 MOUNTS="$MOUNTS -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro"
 
 echo "Starting Qserv deploy on cluster $QSERV_CFG_DIR"
@@ -70,4 +76,4 @@ fi
 
 docker run -it --net=host --rm -l config-path=$QSERV_CFG_DIR \
     --user=$(id -u):$(id -g $USER) $MOUNTS \
-    qserv/deploy:$VERSION $CMD
+    "$IMAGE" $CMD
