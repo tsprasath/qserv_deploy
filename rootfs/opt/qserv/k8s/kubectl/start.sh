@@ -63,9 +63,6 @@ kubectl create configmap config-master --from-literal=qserv_master="$QSERV_MASTE
     --from-literal=qserv_domain="$QSERV_DOMAIN" \
     --from-literal=qserv_master_dn="$QSERV_MASTER_DN"
 
-kubectl delete configmap --ignore-not-found=true config-dot-lsst
-kubectl create configmap --from-file="$CONFIGMAP_DIR/dot-lsst" config-dot-lsst
-
 kubectl delete configmap --ignore-not-found=true config-mariadb-configure
 kubectl create configmap --from-file="$CONFIGMAP_DIR/init/mariadb-configure.sh" config-mariadb-configure
 
@@ -89,6 +86,9 @@ kubectl create configmap --from-file="$CONFIGMAP_DIR/proxy/start.sh" config-prox
 
 kubectl delete configmap --ignore-not-found=true config-proxy-probe
 kubectl create configmap --from-file="$CONFIGMAP_DIR/proxy/probe.sh" config-proxy-probe
+
+kubectl delete configmap --ignore-not-found=true config-sql
+kubectl create configmap --from-file="$CONFIGMAP_DIR/init/sql" config-sql
 
 kubectl delete configmap --ignore-not-found=true config-wmgr-etc
 kubectl create configmap --from-file="$CONFIGMAP_DIR/wmgr/etc" config-wmgr-etc 
