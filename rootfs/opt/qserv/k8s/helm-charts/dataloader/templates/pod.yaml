@@ -6,10 +6,24 @@ metadata:
     app: qserv
     node: dataloader 
 spec:
+  affinity:
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - qserv 
+          - key: node 
+            operator: In
+            values:
+            - master 
+        topologyKey: "kubernetes.io/hostname"
   subdomain: qserv
   containers:
     - name: mariadb
-      image: "<INI_IMAGE>"
+      image: {{ .Values.image.repository }}/qserv:{{ .Values.image.tag }} 
       imagePullPolicy: Always
       command:
         - sh
@@ -37,7 +51,7 @@ spec:
         - tail 
         - -f
         - /dev/null
-      image: "<INI_IMAGE>"
+      image: {{ .Values.image.repository }}/qserv:{{ .Values.image.tag }} 
       imagePullPolicy: Always
       ports:
       volumeMounts:
@@ -49,6 +63,9 @@ spec:
     - name: config-dot-lsst
       configMap:
         name: config-dot-lsst
+    - name: config-mariadb-etc
+      configMap:
+        name: config-mariadb-etc
     - name: config-mariadb-configure
       configMap:
         name: config-mariadb-configure

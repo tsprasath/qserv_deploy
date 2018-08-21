@@ -87,9 +87,6 @@ kubectl create configmap --from-file="$CONFIGMAP_DIR/proxy/start.sh" config-prox
 kubectl delete configmap --ignore-not-found=true config-proxy-probe
 kubectl create configmap --from-file="$CONFIGMAP_DIR/proxy/probe.sh" config-proxy-probe
 
-kubectl delete configmap --ignore-not-found=true config-sql
-kubectl create configmap --from-file="$CONFIGMAP_DIR/init/sql" config-sql
-
 kubectl delete configmap --ignore-not-found=true config-wmgr-etc
 kubectl create configmap --from-file="$CONFIGMAP_DIR/wmgr/etc" config-wmgr-etc 
 

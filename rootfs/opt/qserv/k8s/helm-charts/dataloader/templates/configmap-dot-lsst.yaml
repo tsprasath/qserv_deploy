@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: configmap-dot-lsst
+  name: config-dot-lsst
 data:
   {{ $root := . }}  
   {{ range $path, $bytes := .Files.Glob "configmap/dot-lsst/*" }}

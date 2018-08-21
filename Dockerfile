@@ -41,6 +41,15 @@ RUN wget -O /usr/local/bin/kubectl \
 RUN wget -O $HOME/.kubectl_aliases \
     https://rawgit.com/ahmetb/kubectl-alias/master/.kubectl_aliases
 
+# Install kubectl completion
+# setup autocomplete in bash, bash-completion package should be installed first.
+RUN mkdir -p /opt/share/bash-completion && \
+    kubectl completion bash > /opt/share/bash-completion/kubectl
+
+# setup autocomplete in zsh
+RUN mkdir -p /opt/share/zsh-completion && \
+    kubectl completion bash > /opt/share/zsh-completion/kubectl
+
 # Install terraform
 RUN wget -O /tmp/terraform.zip \
     https://releases.hashicorp.com/terraform/0.11.7/terraform_0.11.7_linux_amd64.zip && \
@@ -53,13 +62,6 @@ ENV CLUSTER_CONFIG_DIR /qserv-deploy/config
 ENV KUBECONFIG "$CLUSTER_CONFIG_DIR"/kubeconfig
 
 WORKDIR /qserv-deploy
-
-# Install kubectl completion
-# setup autocomplete in bash, bash-completion package should be installed first.
-RUN mkdir .bash && kubectl completion bash > .bash/kubectl.completion
-
-# setup autocomplete in zsh
-RUN mkdir .zsh && kubectl completion bash > .zsh/kubectl.completion
 
 COPY rootfs /
 

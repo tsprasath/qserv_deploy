@@ -7,7 +7,7 @@
 set -e
 
 # Use version below for deployment container
-IMAGE="qserv/deploy:a2bfaec"
+IMAGE="qserv/deploy:ab733db-dirty"
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
@@ -40,6 +40,8 @@ if [ $# -ge 2 ] ; then
     exit 2
 elif [ $# -eq 1 ]; then
     CMD=$1
+elif [ $# -eq 0 ]; then
+    CMD="bash"
 fi
 
 SSH_DIR="$HOME/.ssh"

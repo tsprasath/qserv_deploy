@@ -5,8 +5,8 @@
 replicaCount: 1
 
 image:
-  repository: nginx
-  tag: stable
+  repository: qserv
+  tag: 828ff67
   pullPolicy: IfNotPresent
 
 service:
