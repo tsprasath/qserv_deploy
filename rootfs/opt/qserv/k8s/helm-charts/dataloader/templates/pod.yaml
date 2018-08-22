@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: dataloader 
+  name: dataloader
   labels:
     app: qserv
-    node: dataloader 
+    node: dataloader
 spec:
   affinity:
     podAffinity:
@@ -14,20 +14,20 @@ spec:
           - key: app
             operator: In
             values:
-            - qserv 
-          - key: node 
+            - qserv
+          - key: node
             operator: In
             values:
-            - master 
+            - master
         topologyKey: "kubernetes.io/hostname"
   subdomain: qserv
   containers:
-    - name: dataloader 
+    - name: dataloader
       command:
-        - tail 
+        - tail
         - -f
         - /dev/null
-      image: {{ .Values.image.repository }}/qserv:{{ .Values.image.tag }} 
+      image: {{ .Values.image.repository }}/qserv:{{ .Values.image.tag }}
       imagePullPolicy: Always
       ports:
       volumeMounts:
@@ -35,10 +35,15 @@ spec:
         name: config-dot-lsst
       - mountPath: /secret
         name: secret-wmgr
+      - mountPath: /qserv/data
+        name: qserv-data
   volumes:
     - name: config-dot-lsst
       configMap:
         name: config-dot-lsst
+    - hostPath:
+        path: /qserv/tmp
+      name: qserv-data
     - name: secret-wmgr
       secret:
         secretName: secret-wmgr

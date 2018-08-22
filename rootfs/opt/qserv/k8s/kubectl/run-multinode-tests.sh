@@ -14,15 +14,16 @@ CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR:-/qserv-deploy/config}"
 
 # Build CSS input data
 i=1
+DN="qserv"
+HOSTNAME_PREFIX="worker"
 for node in $WORKERS;
 do
     CSS_INFO="${CSS_INFO}CREATE NODE worker${i} type=worker port=5012 \
-    host=qserv-${i}.qserv; "
+    host=${HOSTNAME_PREFIX}-${i}.${DN}; "
     i=$((i+1))
 done
 
-kubectl exec qserv-0 -c proxy -- su qserv -l -c ". /qserv/stack/loadLSST.bash && \
+kubectl exec dataloader -c dataloader -- su qserv -l -c ". /qserv/stack/loadLSST.bash && \
     setup qserv_distrib -t qserv-dev && \
     echo \"$CSS_INFO\" | qserv-admin.py -c mysql://qsmaster@127.0.0.1:3306/qservCssData && \
     qserv-test-integration.py -V DEBUG"
-
