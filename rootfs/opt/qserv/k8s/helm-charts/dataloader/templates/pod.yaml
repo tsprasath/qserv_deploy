@@ -42,7 +42,7 @@ spec:
       configMap:
         name: config-dot-lsst
     - hostPath:
-        path: /qserv/tmp
+        path: /qserv/data
       name: qserv-data
     - name: secret-wmgr
       secret:
