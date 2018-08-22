@@ -23,7 +23,10 @@ do
     i=$((i+1))
 done
 
+MYSQL_SOCKET="/qserv/data/mysql/mysql.sock"
+URL="mysql://qsmaster@localhost/qservCssData?unix_socket=${MYSQL_SOCKET}"
+
 kubectl exec dataloader -c dataloader -- su qserv -l -c ". /qserv/stack/loadLSST.bash && \
     setup qserv_distrib -t qserv-dev && \
-    echo \"$CSS_INFO\" | qserv-admin.py -c mysql://qsmaster@127.0.0.1:3306/qservCssData && \
+    echo \"$CSS_INFO\" | qserv-admin.py -c ${URL} && \
     qserv-test-integration.py -V DEBUG"
