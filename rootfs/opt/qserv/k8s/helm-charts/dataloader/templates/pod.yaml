@@ -15,10 +15,10 @@ spec:
             operator: In
             values:
             - qserv
-          - key: node
+          - key: statefulset.kubernetes.io/pod-name
             operator: In
             values:
-            - master
+            - qserv-0
         topologyKey: "kubernetes.io/hostname"
   subdomain: qserv
   containers:
