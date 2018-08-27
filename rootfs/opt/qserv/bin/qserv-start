@@ -11,4 +11,4 @@ set -e
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
 $QSERV_INSTALL_DIR/k8s/kubectl/start.sh
-$QSERV_INSTALL_DIR/k8s/kubectl/wait-pods-start.sh
+$QSERV_INSTALL_DIR/k8s/kubectl/wait-statefulset-ready.sh

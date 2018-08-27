@@ -24,7 +24,7 @@ MYSQLD_SOCKET="$MYSQLD_DATA_DIR/mysql.sock"
 MYSQLD_PASSWORD_ROOT="CHANGEME"
 SQL_DIR="/config-sql"
 
-MARIADB_CONF="/config-mariadb-etc/my.cnf"
+MARIADB_CONF="/config-etc/my.cnf"
 if [ -e "$MARIADB_CONF" ]; then
     ln -sf "$MARIADB_CONF" /etc/my.cnf
 fi
@@ -69,7 +69,12 @@ then
 
     echo "-- "
     echo "-- Initializing Qserv database"
-    for file_name in "${SQL_DIR}"/*; do
+    if [ "$HOSTNAME" = "$QSERV_MASTER" ]; then
+        INSTANCE_NAME='master'
+    else
+        INSTANCE_NAME='worker'
+    fi
+    for file_name in "${SQL_DIR}/${INSTANCE_NAME}"/*; do
         echo "-- Loading ${file_name} in MySQL"
         if mysql -vvv --user="root" --password="${MYSQLD_PASSWORD_ROOT}" \
             < "${file_name}"

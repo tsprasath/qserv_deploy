@@ -52,7 +52,7 @@ if [ ! -d "$QSERV_CFG_DIR" ]; then
 fi
 
 MOUNTS="-v $QSERV_CFG_DIR:/qserv-deploy/config "
-MOUNTS="$MOUNTS -v $SSH_DIR:$CONTAINER_HOME/.ssh:ro"
+MOUNTS="$MOUNTS -v $SSH_DIR:$CONTAINER_HOME/.ssh"
 MOUNTS="$MOUNTS -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro"
 
 echo "Starting Qserv deploy on cluster $QSERV_CFG_DIR"

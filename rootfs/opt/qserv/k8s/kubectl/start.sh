@@ -48,14 +48,20 @@ if [ $# -ne 0 ] ; then
     exit 2
 fi
 
-YAML_MASTER_TPL="${CFG_DIR}/pod.master.yaml.tpl"
-YAML_FILE="${TMP_DIR}/master.yaml"
-INI_FILE="${TMP_DIR}/pod.master.ini"
+YAML_TPL="${CFG_DIR}/statefulset.yaml.tpl"
+YAML_FILE="${TMP_DIR}/statefulset.yaml"
+INI_FILE="${TMP_DIR}/statefulset.ini"
 
 echo "Create kubernetes configmaps for Qserv"
 
+QSERV_MASTER="qserv-0"
+QSERV_DOMAIN="qserv"
+QSERV_MASTER_DN="${QSERV_MASTER}.${QSERV_DOMAIN}"
+
 kubectl delete configmap --ignore-not-found=true config-master
-kubectl create configmap config-master --from-literal=qserv_master="master.qserv"
+kubectl create configmap config-master --from-literal=qserv_master="$QSERV_MASTER" \
+    --from-literal=qserv_domain="$QSERV_DOMAIN" \
+    --from-literal=qserv_master_dn="$QSERV_MASTER_DN"
 
 kubectl delete configmap --ignore-not-found=true config-dot-lsst
 kubectl create configmap --from-file="$CONFIGMAP_DIR/dot-lsst" config-dot-lsst
@@ -64,10 +70,13 @@ kubectl delete configmap --ignore-not-found=true config-mariadb-configure
 kubectl create configmap --from-file="$CONFIGMAP_DIR/init/mariadb-configure.sh" config-mariadb-configure
 
 kubectl delete configmap --ignore-not-found=true config-mariadb-start
-kubectl create configmap --from-file="$CONFIGMAP_DIR/mariadb-start.sh" config-mariadb-start
+kubectl create configmap --from-file="$CONFIGMAP_DIR/mariadb/start.sh" config-mariadb-start
 
-kubectl delete configmap --ignore-not-found=true config-sql
-kubectl create configmap --from-file="$CONFIGMAP_DIR/init/sql" config-sql
+kubectl delete configmap --ignore-not-found=true config-sql-master
+kubectl create configmap --from-file="$CONFIGMAP_DIR/init/sql/master" config-sql-master
+
+kubectl delete configmap --ignore-not-found=true config-sql-worker
+kubectl create configmap --from-file="$CONFIGMAP_DIR/init/sql/worker" config-sql-worker
 
 kubectl delete configmap --ignore-not-found=true config-mariadb-etc
 kubectl create configmap --from-file="$CONFIGMAP_DIR/mariadb/etc/my.cnf" config-mariadb-etc
@@ -105,37 +114,18 @@ kubectl apply $CACHE_OPT -f ${CFG_DIR}/qserv-headless-service.yaml
 echo "Create nodeport service for Qserv"
 kubectl apply $CACHE_OPT -f ${CFG_DIR}/qserv-nodeport-service.yaml
 
-echo "Create kubernetes pod for Qserv master"
+echo "Create kubernetes pod for Qserv statefulset"
+
+REPLICAS=$(echo $WORKERS $MASTER | wc -w)
+
 cat << EOF > "$INI_FILE"
 [spec]
 host_data_dir: $HOST_DATA_DIR
 host_tmp_dir: $HOST_TMP_DIR
-host: $MASTER
+replicas: $REPLICAS
 image: $CONTAINER_IMAGE
-pod_name: master
 EOF
 
-"$DIR"/yaml-builder.py -i "$INI_FILE" -r "$RESOURCE_DIR" -t "$YAML_MASTER_TPL" -o "$YAML_FILE"
+"$DIR"/yaml-builder.py -i "$INI_FILE" -r "$RESOURCE_DIR" -t "$YAML_TPL" -o "$YAML_FILE"
 
 kubectl apply $CACHE_OPT -f "$YAML_FILE"
-
-YAML_WORKER_TPL="${CFG_DIR}/pod.worker.yaml.tpl"
-j=1
-for host in $WORKERS;
-do
-    YAML_FILE="${TMP_DIR}/worker-${j}.yaml"
-    INI_FILE="${TMP_DIR}/pod.worker-${j}.ini"
-    cat << EOF > "$INI_FILE"
-[spec]
-host_data_dir: $HOST_DATA_DIR
-host_tmp_dir: $HOST_TMP_DIR
-host: $host
-image: $CONTAINER_IMAGE
-mysql_root_password: CHANGEME
-pod_name: worker-$j
-EOF
-    "$DIR"/yaml-builder.py -i "$INI_FILE" -r "$RESOURCE_DIR" -t "$YAML_WORKER_TPL" -o "$YAML_FILE"
-    echo "Create kubernetes pod for Qserv worker-${j}"
-    kubectl apply $CACHE_OPT -f "$YAML_FILE"
-    j=$((j+1));
-done

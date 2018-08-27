@@ -6,7 +6,7 @@
 # @author  Fabrice Jammes, IN2P3/SLAC
 
 set -e
-set -x
+# set -x
 
 # Source pathes to eups packages
 . /qserv/run/etc/sysconfig/qserv
@@ -38,22 +38,22 @@ done
 
 # Required by xrdssi plugin to choose which type
 # of queries to launch against metadata
-if [ "$HOSTNAME" = "master" ]; then
+if [ "$HOSTNAME" = "$QSERV_MASTER" ]; then
     INSTANCE_NAME='master'
 else
     INSTANCE_NAME='worker'
 fi
 
 # When at least one of the current pod's containers
-# readiness health check pass, then qserv name resolve.
-until ping -c 1 ${HOSTNAME}.qserv; do
-  echo "waiting for DNS (${HOSTNAME}.qserv)..."
+# readiness health check pass, then dns name resolve.
+until ping -c 1 ${HOSTNAME}.${QSERV_DOMAIN}; do
+  echo "waiting for DNS (${HOSTNAME}.${QSERV_DOMAIN})..."
   sleep 2
 done
 
 # Wait for xrootd master reachability
-until ping -c 1 "$QSERV_MASTER"; do
-    echo "waiting for DNS (${QSERV_MASTER})..."
+until ping -c 1 "$QSERV_MASTER_DN"; do
+    echo "waiting for DNS (${QSERV_MASTER_DN})..."
     sleep 2
 done
 
@@ -73,7 +73,7 @@ do
     sleep "$PERIOD_SECONDS"
     for p in $PROCESSES;
     do
-        if ! pidof "$p"; then
+        if ! pidof "$p" > /dev/null ; then
             echo "ERROR: ${p} not running, exiting"
             exit 1
         fi
