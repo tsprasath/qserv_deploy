@@ -3,7 +3,4 @@ kind: ConfigMap
 metadata:
   name: config-dot-lsst
 data:
-  {{ $root := . }}  
-  {{ range $path, $bytes := .Files.Glob "configmap/dot-lsst/*" }}
-  {{ base $path }}: '{{ $root.Files.Get $path }}'
-  {{ end }}
+{{ (.Files.Glob "configmap/dot-lsst/*").AsConfig | indent 2 }}
