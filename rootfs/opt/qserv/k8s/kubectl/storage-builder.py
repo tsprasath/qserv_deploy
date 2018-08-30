@@ -8,6 +8,7 @@ Create k8s Persistent Volumes and Persitent Volume Claims
 # -------------------------------
 #  Imports of standard modules --
 # -------------------------------
+import os.path
 import sys
 import yaml
 import argparse
@@ -15,31 +16,39 @@ import argparse
 def _path2name(path):
     return path.replace("qserv", "").strip("/").replace("/", "-")
 
-def _create_persistent_volume(data_path, hostname, data_id, output_dir):
+def _build_yaml(data_path, hostname, data_id, output_dir, template_dir):
 
-    with open("yaml/storage/qserv-storage.tpl", 'r') as f:
+    data_name =_path2name(data_path)
+
+    # yaml for persistent volume
+    #
+    yaml_tpl = os.path.join(template_dir, 'qserv-pv.tpl')
+    with open(yaml_tpl, 'r') as f:
         yaml_storage = yaml.load(f)
 
-    yaml_storage['metadata']['name'] = "qserv-{}-pv-{}".format(_path2name(data_path), data_id)
+    yaml_storage['metadata']['name'] = "qserv-{}-pv-{}".format(data_name, data_id)
     yaml_storage['metadata']['labels']['dataid'] = data_id
 
     yaml_storage['spec']['local']['path'] = data_path
     yaml_storage['spec']['nodeAffinity']['required']['nodeSelectorTerms'][0]['matchExpressions'][0]['values'][0] = hostname
 
-    with open("{}/qserv-{}-pv-{}.yaml".format(output_dir.rstrip("/"), _path2name(data_path), data_id), "w") as f:
+    yaml_fname = "qserv-{}-pv-{}.yaml".format(data_name, data_id)
+    yaml_fname = os.path.join(output_dir, yaml_fname)
+    with open( yaml_fname, "w") as f:
         f.write(yaml.dump(yaml_storage, default_flow_style=False))
 
-
-def _create_persistent_volume_claim(data_path, hostname, data_id, output_dir):
-
-    with open("yaml/storage/qserv-pvc.tpl", 'r') as f:
+    # yaml for persistent volume claim
+    #
+    yaml_tpl = os.path.join(template_dir, 'qserv-pvc.tpl')
+    with open(yaml_tpl, 'r') as f:
         yaml_storage = yaml.load(f)
 
-    yaml_storage['metadata']['name'] = "qserv-{}-pvc-{}".format(_path2name(data_path), data_id)
-
+    yaml_storage['metadata']['name'] = "qserv-{}-qserv-{}".format(data_name, data_id)
     yaml_storage['spec']['selector']['matchLabels']['dataid'] = data_id
 
-    with open("{}/qserv-{}-pvc-{}.yaml".format(output_dir.rstrip("/"), _path2name(data_path), data_id), 'w') as f:
+    yaml_fname = "qserv-{}-pvc-{}.yaml".format(data_name, data_id)
+    yaml_fname = os.path.join(output_dir, yaml_fname)
+    with open( yaml_fname, "w") as f:
         f.write(yaml.dump(yaml_storage, default_flow_style=False))
 
 if __name__ == "__main__":
@@ -51,15 +60,18 @@ if __name__ == "__main__":
                             required=True, metavar='<hostPath>',
                             help='Path on the host')
         parser.add_argument('-H', '--hostname', dest='hostname',
-                            required=True, metavar='<hostname>',
-                            help='Hostname of the node')
+                            required=False, metavar='<hostname>',
+                            help='Hostname of the node, do not fill it for minikube')
         parser.add_argument('-d', '--dataid', dest='data_id',
                             required=True, metavar='<dataId>',
                             help='Data ID')
-
+        parser.add_argument('-t', '--templateDir', dest='template_dir',
+                            default='/opt/qserv/k8s/kubectl/yaml',
+                            required=False, metavar='<templateDir>',
+                            help='yaml template directory')
         parser.add_argument('-o', '--outputDir', dest='output_dir',
                             required=True, metavar='<outputDir>',
-                            help='Output dir for generated yaml files')
+                            help='Output directory for generated yaml files')
 
         args = parser.parse_args()
 
@@ -67,9 +79,9 @@ if __name__ == "__main__":
         hostname = args.hostname
         data_id = args.data_id
         output_dir = args.output_dir
+        template_dir = args.template_dir
 
-        _create_persistent_volume(data_path, hostname, data_id, output_dir)
-        _create_persistent_volume_claim(data_path, hostname, data_id, output_dir)
+        _build_yaml(data_path, hostname, data_id, output_dir, template_dir)
 
     except Exception as e:
         print(e)

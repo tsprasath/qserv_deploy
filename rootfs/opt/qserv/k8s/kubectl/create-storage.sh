@@ -44,16 +44,21 @@ STORAGE_OUTPUT_DIR="$CLUSTER_CONFIG_DIR"/storage
 
 mkdir -p $STORAGE_OUTPUT_DIR
 
-echo "Creating local volume for Qserv Master"
+echo "Creating local volumes for Qserv nodes"
 
-"$DIR"/storage-builder.py -p $DATA_PATH -H $MASTER -d 0 -o $STORAGE_OUTPUT_DIR
+DATA_ID=0
 
-echo "Creating local volumes for Qserv Workers"
-
-DATA_ID=1
-
-for host in $WORKERS;
+for host in $MASTER $WORKERS;
 do
     "$DIR"/storage-builder.py -p $DATA_PATH -H $host -d $DATA_ID -o $STORAGE_OUTPUT_DIR
+    DATA_ID=$((DATA_ID+1))
+done
+
+DATA_ID=0
+
+for host in $MASTER $WORKERS;
+do
+    kubectl apply -f "${STORAGE_OUTPUT_DIR}/qserv-data-pv-${DATA_ID}.yaml"
+    kubectl apply -f "${STORAGE_OUTPUT_DIR}/qserv-data-pvc-${DATA_ID}.yaml"
     DATA_ID=$((DATA_ID+1))
 done
