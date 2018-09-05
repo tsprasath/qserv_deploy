@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-master
+data:
+  qserv_domain: {{ .Values.qserv.domain  }}
+  qserv_master: {{ .Values.qserv.master  }}
+  qserv_master_dns: {{ .Values.qserv.master  }}.{{ .Values.qserv.domain  }}

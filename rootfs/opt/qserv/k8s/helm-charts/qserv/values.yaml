@@ -1,3 +1,13 @@
 # Default values for qserv.
-common:
-    workersCount: 2
+
+# Number of nodes (including master)
+replicaCount: 2
+
+image:
+    repository: qserv
+    tag: 828ff67
+    pullPolicy: IfNotPresent
+
+qserv:
+    domaine: qserv
+    master: qserv-0
