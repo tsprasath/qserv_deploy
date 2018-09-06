@@ -40,10 +40,19 @@ spec:
             mountPath: /config-etc
           - name: config-mariadb-start
             mountPath: /config-start
+          - mountPath: /qserv/run/tmp
+            name: tmp-volume
+          - mountPath: /qserv/data
+            name: data-volume
         - name: xrootd
           image: "{{ .Values.image.repository  }}/qserv:{{ .Values.image.tag  }}"
           imagePullPolicy: {{ .Values.image.pullPolicy  }}
-          command: [<RESOURCE_START_MASTER>]
+          {{- if .Values.debug -}}
+          command: ["tail", "-f", "/dev/null"]
+          {{- else -}}
+          command: ["/bin/su"]
+          {{- end -}}
+          args: ["qserv", "-c", "sh /config-start/start.sh"]
           env:
             - name: QSERV_MASTER
               valueFrom:
@@ -69,6 +78,10 @@ spec:
             mountPath: /config-etc
           - name: config-xrootd-start
             mountPath: /config-start
+          - mountPath: /qserv/run/tmp
+            name: tmp-volume
+          - mountPath: /qserv/data
+            name: data-volume
         - name: proxy
           command:
             - sh
@@ -109,6 +122,10 @@ spec:
             name: config-proxy-probe
           - mountPath: /secret
             name: secret-wmgr
+          - mountPath: /qserv/run/tmp
+            name: tmp-volume
+          - mountPath: /qserv/data
+            name: data-volume
         - name: wmgr
           command:
             - sh
@@ -138,6 +155,10 @@ spec:
             name: config-wmgr-etc
           - mountPath: /secret
             name: secret-wmgr
+          - mountPath: /qserv/run/tmp
+            name: tmp-volume
+          - mountPath: /qserv/data
+            name: data-volume
       initContainers:
         - command:
           - sh
@@ -209,3 +230,8 @@ spec:
         - name: secret-wmgr
           secret:
             secretName: secret-wmgr
+        - name: tmp-volume
+          emptyDir: {}
+        - name: data-volume
+          emptyDir: {}
+

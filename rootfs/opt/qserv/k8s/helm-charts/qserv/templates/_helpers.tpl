@@ -30,3 +30,15 @@ Create chart name and version as used by the chart label.
 {{- define "qserv.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{/*
+Create a config map made of files in a directory.
+*/}}
+{{- define "qserv.cm" -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Name }}
+data:
+{{ .Path.AsConfig | indent 2 }}
+{{- end -}}
