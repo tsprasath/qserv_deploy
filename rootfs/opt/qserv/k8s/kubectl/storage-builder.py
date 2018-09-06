@@ -8,10 +8,10 @@ Create k8s Persistent Volumes and Persitent Volume Claims
 # -------------------------------
 #  Imports of standard modules --
 # -------------------------------
+import argparse
 import os.path
 import sys
 import yaml
-import argparse
 
 def _path2name(path):
     return path.replace("qserv", "").strip("/").replace("/", "-")
@@ -20,22 +20,31 @@ def _build_yaml(data_path, hostname, data_id, output_dir, template_dir):
 
     data_name =_path2name(data_path)
 
+    minikube = True
+    if hostname:
+        minikube = False
+
     # yaml for persistent volume
     #
-    yaml_tpl = os.path.join(template_dir, 'qserv-pv.tpl')
-    with open(yaml_tpl, 'r') as f:
-        yaml_storage = yaml.load(f)
+    # On minikube pvc will automatically create pv
+    if not minikube:
+        tpl_fname = 'qserv-pv.tpl'
 
-    yaml_storage['metadata']['name'] = "qserv-{}-pv-{}".format(data_name, data_id)
-    yaml_storage['metadata']['labels']['dataid'] = data_id
+        yaml_tpl = os.path.join(template_dir, tpl_fname)
+        with open(yaml_tpl, 'r') as f:
+            yaml_storage = yaml.load(f)
 
-    yaml_storage['spec']['local']['path'] = data_path
-    yaml_storage['spec']['nodeAffinity']['required']['nodeSelectorTerms'][0]['matchExpressions'][0]['values'][0] = hostname
+        yaml_storage['metadata']['name'] = "qserv-{}-pv-{}".format(data_name, data_id)
+        yaml_storage['metadata']['labels']['dataid'] = data_id
 
-    yaml_fname = "qserv-{}-pv-{}.yaml".format(data_name, data_id)
-    yaml_fname = os.path.join(output_dir, yaml_fname)
-    with open( yaml_fname, "w") as f:
-        f.write(yaml.dump(yaml_storage, default_flow_style=False))
+        node_name = yaml_storage['spec']['nodeAffinity']['required']['nodeSelectorTerms'][0]['matchExpressions'][0]['values']
+        node_name[0] = hostname
+        yaml_storage['spec']['local']['path'] = data_path
+
+        yaml_fname = "qserv-{}-pv-{}.yaml".format(data_name, data_id)
+        yaml_fname = os.path.join(output_dir, yaml_fname)
+        with open( yaml_fname, "w") as f:
+            f.write(yaml.dump(yaml_storage, default_flow_style=False))
 
     # yaml for persistent volume claim
     #
@@ -45,6 +54,14 @@ def _build_yaml(data_path, hostname, data_id, output_dir, template_dir):
 
     yaml_storage['metadata']['name'] = "qserv-{}-qserv-{}".format(data_name, data_id)
     yaml_storage['spec']['selector']['matchLabels']['dataid'] = data_id
+
+    if minikube:
+        yaml_storage['spec']['storageClassName'] = 'standard'
+
+    if minikube:
+        # See
+        # https://github.com/kubernetes/minikube/blob/master/deploy/addons/storageclass/storageclass.yaml
+        yaml_storage['spec']
 
     yaml_fname = "qserv-{}-pvc-{}.yaml".format(data_name, data_id)
     yaml_fname = os.path.join(output_dir, yaml_fname)

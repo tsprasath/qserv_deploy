@@ -48,17 +48,31 @@ echo "Creating local volumes for Qserv nodes"
 
 DATA_ID=0
 
+if [ "$MASTER" = "-MK-" ]; then
+    MINIKUBE=true
+fi
+
 for host in $MASTER $WORKERS;
 do
-    "$DIR"/storage-builder.py -p $DATA_PATH -H $host -d $DATA_ID -o $STORAGE_OUTPUT_DIR
+    if [ "$MINIKUBE" = true ]; then
+        OPT_HOST=
+    else
+        OPT_HOST="-H $host"
+    fi
+    "$DIR"/storage-builder.py -p "$DATA_PATH" $OPT_HOST -d "$DATA_ID" -o "$STORAGE_OUTPUT_DIR"
     DATA_ID=$((DATA_ID+1))
 done
 
 DATA_ID=0
 
+if [ "$MINIKUBE" != true ]; then
+    kubectl apply -f "${DIR}/yaml/qserv-storageclass.yaml"
+fi
 for host in $MASTER $WORKERS;
 do
-    kubectl apply -f "${STORAGE_OUTPUT_DIR}/qserv-data-pv-${DATA_ID}.yaml"
+    if [ "$MINIKUBE" != true ]; then
+        kubectl apply -f "${STORAGE_OUTPUT_DIR}/qserv-data-pv-${DATA_ID}.yaml"
+    fi
     kubectl apply -f "${STORAGE_OUTPUT_DIR}/qserv-data-pvc-${DATA_ID}.yaml"
     DATA_ID=$((DATA_ID+1))
 done

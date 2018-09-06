@@ -159,6 +159,15 @@ if __name__ == "__main__":
 
         yaml_data['spec']['replicas'] = int(config.get('spec', 'replicas'))
 
+        minikube = bool(config.get('spec', 'minikube'))
+        if minikube:
+            storage_class = "standard"
+        else:
+            storage_class = "qserv-local-storage"
+
+        volumeClaimTemplates = yaml_data['spec']['volumeClaimTemplates']
+        volumeClaimTemplates[0]['spec']['storageClassName'] = storage_class
+
         # Configure xrootd
         #
         container_id = _get_container_id('xrootd')

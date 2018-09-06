@@ -118,12 +118,19 @@ echo "Create kubernetes pod for Qserv statefulset"
 
 REPLICAS=$(echo $WORKERS $MASTER | wc -w)
 
+if [ "$MASTER" = "-MK-" ]; then
+    MINIKUBE="True"
+else
+    MINIKUBE="False"
+fi
+
 cat << EOF > "$INI_FILE"
 [spec]
 host_data_dir: $HOST_DATA_DIR
 host_tmp_dir: $HOST_TMP_DIR
-replicas: $REPLICAS
 image: $CONTAINER_IMAGE
+minikube: $MINIKUBE
+replicas: $REPLICAS
 EOF
 
 "$DIR"/yaml-builder.py -i "$INI_FILE" -r "$RESOURCE_DIR" -t "$YAML_TPL" -o "$YAML_FILE"
