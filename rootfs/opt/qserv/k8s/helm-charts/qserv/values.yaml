@@ -9,5 +9,5 @@ image:
     pullPolicy: IfNotPresent
 
 qserv:
-    domaine: qserv
+    domain: qserv
     master: qserv-0

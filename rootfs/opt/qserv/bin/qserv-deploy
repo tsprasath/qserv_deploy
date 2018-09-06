@@ -138,7 +138,7 @@ if [ -n "$KUBERNETES" ]; then
     $QSERV_INSTALL_DIR/k8s/sysadmin/kube-destroy.sh
 
     $QSERV_INSTALL_DIR/k8s/sysadmin/kube-create.sh
-
+    exit
     echo "Configure and launch Qserv"
     # require access to kubectl configuration
     . "$ENV_FILE"
