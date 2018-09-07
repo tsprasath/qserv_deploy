@@ -15,7 +15,7 @@ data:
 ---
 {{ include "qserv.cm" (dict "Name" "config-sql-master" "Path" (.Files.Glob "configmap/init/sql/master/*")) }}
 ---
-{{ include "qserv.cm" (dict "Name" "config-sql-worker" "Path" (.Files.Glob "configmap/init/sql/worker")) }}
+{{ include "qserv.cm" (dict "Name" "config-sql-worker" "Path" (.Files.Glob "configmap/init/sql/worker/*")) }}
 ---
 {{ include "qserv.cm" (dict "Name" "config-mariadb-etc" "Path" (.Files.Glob "configmap/mariadb/etc/my.cnf")) }}
 ---
