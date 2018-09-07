@@ -5,7 +5,7 @@ metadata:
 data:
   qserv_domain: {{ .Values.qserv.domain }}
   qserv_master: {{ .Values.qserv.master }}
-  qserv_master_dns: {{ .Values.qserv.master }}.{{ .Values.qserv.domain }}
+  qserv_master_dn: {{ .Values.qserv.master }}.{{ .Values.qserv.domain }}
 ---
 {{ include "qserv.cm" (dict "Name" "config-dot-lsst" "Path" (.Files.Glob "configmap/dot-lsst/*")) }}
 ---

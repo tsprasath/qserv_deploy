@@ -16,6 +16,8 @@ CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR:-/qserv-deploy/config}"
 HELM_CHART="${DIR}/qserv"
 RELEASE_NAME="qserv"
 
+REPLICA_COUNT=`expr "$WORKER_LAST_ID" + 1`
+
 usage() {
   cat << EOD
 
@@ -43,6 +45,6 @@ if [ $# -ne 0 ] ; then
     exit 2
 fi
 
-echo "Create kubernetes pod for Qserv statefulset"
+echo "Deploying Qserv statefulset"
 
-helm upgrade -i --dry-run --debug $RELEASE_NAME $HELM_CHART
+helm upgrade -i $RELEASE_NAME $HELM_CHART --set replicaCount=$REPLICA_COUNT
