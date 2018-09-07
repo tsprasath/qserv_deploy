@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
         - name: mariadb
-          image: "{{ .Values.image.repository  }}/qserv:{{ .Values.image.tag  }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy  }}
+          image: "{{ .Values.image.repository }}/qserv:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
             - sh
             - /config-start/start.sh
@@ -45,13 +45,13 @@ spec:
           - mountPath: /qserv/data
             name: data-volume
         - name: xrootd
-          image: "{{ .Values.image.repository  }}/qserv:{{ .Values.image.tag  }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy  }}
-          {{- if .Values.debug -}}
+          image: "{{ .Values.image.repository }}/qserv:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{ if .Values.debug -}}
           command: ["tail", "-f", "/dev/null"]
           {{- else -}}
           command: ["/bin/su"]
-          {{- end -}}
+          {{- end }}
           args: ["qserv", "-c", "sh /config-start/start.sh"]
           env:
             - name: QSERV_MASTER
