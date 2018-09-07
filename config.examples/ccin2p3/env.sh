@@ -45,3 +45,7 @@ do
     WORKER_PODS="$WORKER_PODS worker-$j"
     j=$((j+1));
 done
+
+# Helm configuration
+# =========
+RELEASE_NAME="qserv"
