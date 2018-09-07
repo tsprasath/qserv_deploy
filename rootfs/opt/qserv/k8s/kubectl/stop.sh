@@ -8,6 +8,8 @@ set -e
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
+CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR:-/qserv-deploy/config}"
+. "$CLUSTER_CONFIG_DIR/env.sh"
 
 usage() {
   cat << EOD
@@ -37,5 +39,6 @@ if [ $# -ne 0 ] ; then
     exit 2
 fi
 
-kubectl delete all -l app=qserv --now
+helm delete --purge $RELEASE_NAME
+#kubectl delete all -l app=qserv --now
 "$DIR"/wait-pods-terminate.sh
