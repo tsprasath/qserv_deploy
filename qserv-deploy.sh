@@ -6,7 +6,7 @@
 
 set -e
 
-IMAGE="qserv/deploy:1c4214d8"
+IMAGE="qserv/deploy:1a1e775f"
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
