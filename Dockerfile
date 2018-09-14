@@ -28,7 +28,7 @@ RUN wget -O /tmp/helm.tgz \
     cd tmp && \
     tar zxvf /tmp/helm.tgz && \
     chmod +x /tmp/linux-amd64/helm && \
-    mv /tmp/linux-amd64/helm /usr/local/bin/heml-${HELM_VERSION} && \
+    mv /tmp/linux-amd64/helm /usr/local/bin/helm-${HELM_VERSION} && \
     ln -s /usr/local/bin/helm-${HELM_VERSION} /usr/local/bin/helm
 
 # Install kubectl
