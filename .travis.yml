@@ -4,6 +4,7 @@ language: minimal
 
 install:
   - sudo apt-get install socat
+  - ./minikube/ubuntu-compile-nsenter.sh
 
 before_script:
   - ./minikube/minikube-create.sh
