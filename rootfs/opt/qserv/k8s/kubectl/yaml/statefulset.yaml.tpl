@@ -209,3 +209,9 @@ spec:
         - name: secret-wmgr
           secret:
             secretName: secret-wmgr
+  volumeClaimTemplates:
+  - metadata:
+      name: qserv-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: <STORAGE-CLASS>
