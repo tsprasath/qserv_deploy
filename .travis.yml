@@ -2,6 +2,10 @@ sudo: required
 services: docker
 language: minimal
 
+install:
+  - sudo apt-get install socat
+  - ./minikube/install-nsenter.sh
+
 before_script:
   - ./minikube/minikube-create.sh
 
