@@ -2,6 +2,9 @@ sudo: required
 services: docker
 language: minimal
 
+install:
+  - sudo apt-get install socat
+
 before_script:
   - ./minikube/minikube-create.sh
 
