@@ -1,8 +1,8 @@
 #!/bin/sh
 
-# Creates K8s Volumes and Claims for Master and Workers
+# Drops K8s Volumes and Claims for Master and Workers
 
-# @author Benjamin Roziere, IN2P3
+# @author Fabrice Jammes, IN2P3
 
 set -e
 set -x
@@ -21,7 +21,7 @@ usage() {
       -h          this message
 
       Drop Qserv Volumes and Claims for volume type <volume_type>
-
+      <volume_type> might be 'data' or 'tmp'
 EOD
 }
 

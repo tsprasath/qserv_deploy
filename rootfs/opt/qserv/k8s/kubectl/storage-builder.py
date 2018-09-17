@@ -56,12 +56,9 @@ def _build_yaml(data_path, hostname, data_id, output_dir, template_dir):
     yaml_storage['spec']['selector']['matchLabels']['dataid'] = data_id
 
     if minikube:
-        yaml_storage['spec']['storageClassName'] = 'standard'
-
-    if minikube:
         # See
         # https://github.com/kubernetes/minikube/blob/master/deploy/addons/storageclass/storageclass.yaml
-        yaml_storage['spec']
+        yaml_storage['spec']['storageClassName'] = 'standard'
 
     yaml_fname = "qserv-{}-pvc-{}.yaml".format(data_name, data_id)
     yaml_fname = os.path.join(output_dir, yaml_fname)
