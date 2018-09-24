@@ -214,4 +214,3 @@ spec:
       name: qserv-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: <STORAGE-CLASS>

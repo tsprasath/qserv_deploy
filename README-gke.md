@@ -7,7 +7,7 @@ Status](https://travis-ci.org/lsst/qserv_deploy.svg?branch=master)](https://trav
 
 # Prequisites
 
-* Create a cluster configuration directory which contains a kubeconfig file.
+* Create a cluster configuration directory:
 
 ```shell
    git clone https://github.com/lsst/qserv_deploy.git
@@ -16,11 +16,7 @@ Status](https://travis-ci.org/lsst/qserv_deploy.svg?branch=master)](https://trav
    export QSERV_CFG_DIR="$HOME/.qserv/"
    mkdir -p $QSERV_CFG_DIR
 
-   # Please ask support for how to fine tune files below
-   # (This files should be deprecated in near future)
-   cp -r "qserv_deploy/config.examples/petasky* "$QSERV_CFG_DIR"
-
-   cp <kubeconfig> $QSERV_CFG_DIR
+   cp -r "qserv_deploy/config.examples/gke "$QSERV_CFG_DIR"
 
 ```
 
@@ -30,7 +26,24 @@ It is also possible to use an existing cluster configuration directory, by expor
 
 Start the tool by running `./qserv-deploy.sh`
 
+Then get kubeconfig for your gke cluster, following example below:
+
+```
+gcloud auth login
+# Example:
+# PROJECT=neural-theory-215601
+PROJECT=<project>
+# Example:
+# CLUSTER=lsst-k8s-test
+CLUSTER=<cluster>
+gcloud config set project "$PROJECT"
+gcloud container clusters resize "$CLUSTER" --region us-central1-a --size=3
+gcloud container clusters get-credentials "$CLUSTER" --zone us-central1-a --project "$PROJECT"
+```
+
 In the container, all commands are prefixed with qserv-***
+
+
 Your working directory is /qserv-deploy with your cluster configuration mounted in config folder
 
 ## Install Qserv
@@ -41,3 +54,11 @@ Your working directory is /qserv-deploy with your cluster configuration mounted 
 * `qserv-status`: Show Qserv running status
 * `qserv-stop`: Stop Qserv
 * `/opt/qserv/k8s/kubectl/run-multinode-tests.sh`: Run integration tests
+
+## Clean up storage
+
+```
+# WARN: this will delete all persistent volumes and volumes claims in your project
+kubectl delete pvc --all
+kubectl delete pv --all
+```

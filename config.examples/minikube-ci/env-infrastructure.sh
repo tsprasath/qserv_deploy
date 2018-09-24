@@ -11,3 +11,9 @@ WORKERS="-MK- -MK-"
 
 # Used for ssh access to Kubernetes master
 ORCHESTRATOR="$HOSTNAME"
+
+# Check Minikube
+if [ "$MASTER" = "-MK-" ]; then
+    MINIKUBE=true
+fi
+export MINIKUBE
