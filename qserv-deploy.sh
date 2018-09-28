@@ -6,7 +6,7 @@
 
 set -e
 
-STABLE_VERSION="3c8ea2a"
+STABLE_VERSION="0deeeaf"
 IMAGE="qserv/deploy:$STABLE_VERSION"
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
