@@ -16,7 +16,6 @@ try:
 except ImportError:
     import ConfigParser as configparser  # python2
 import logging
-import os
 import sys
 import warnings
 import yaml
@@ -42,6 +41,15 @@ def _str_presenter(dumper, data):
         return dumper.represent_scalar('tag:yaml.org,2002:str', data,
                                        style='|')
     return dumper.represent_scalar('tag:yaml.org,2002:str', data)
+
+
+def _str_to_bool(s):
+    if s == 'True':
+        return True
+    elif s == 'False':
+        return False
+    else:
+        raise ValueError
 
 
 def _config_logger(verbose):
@@ -72,15 +80,18 @@ def _get_container_id(container_name):
             return i
     return None
 
+
 def _get_init_container_id(container_name):
     for i, container in enumerate(yaml_data_tpl['initContainers']):
         if container['name'] == container_name:
             return i
     return None
 
+
 def _is_master():
     labels = yaml_data['metadata']['labels']
     return labels.get('node') == 'master'
+
 
 def _mount_volume(container_name, container_dir, volume_name):
     """
@@ -98,6 +109,7 @@ def _mount_volume(container_name, container_dir, volume_name):
         volume_mounts = yaml_data_tpl['containers'][container_id]['volumeMounts']
         volume_mount = {'mountPath': container_dir, 'name': volume_name}
         volume_mounts.append(volume_mount)
+
 
 def _add_volume(host_dir, volume_name):
     if 'volumes' not in yaml_data_tpl:
@@ -119,7 +131,8 @@ def _add_emptydir_volume(volume_name):
 if __name__ == "__main__":
     try:
 
-        parser = argparse.ArgumentParser(description='Create k8s pods configuration file from template')
+        parser = argparse.ArgumentParser(
+            description='Create k8s pods configuration file from template')
 
         parser.add_argument('-v', '--verbose', dest='verbose', default=[],
                             action='append_const', const=None,
@@ -159,14 +172,23 @@ if __name__ == "__main__":
 
         yaml_data['spec']['replicas'] = int(config.get('spec', 'replicas'))
 
-        minikube = bool(config.get('spec', 'minikube'))
+        minikube = _str_to_bool(config.get('spec', 'minikube'))
+        gke = _str_to_bool(config.get('spec', 'gke'))
+        volumeClaimTemplates = yaml_data['spec']['volumeClaimTemplates']
         if minikube:
             storage_class = "standard"
+        elif gke:
+            storage_class = "manual"
         else:
             storage_class = "qserv-local-storage"
 
-        volumeClaimTemplates = yaml_data['spec']['volumeClaimTemplates']
-        volumeClaimTemplates[0]['spec']['storageClassName'] = storage_class
+        if gke:
+            volumeClaimTemplates[0]['spec']['resources'] = dict()
+            vct_resources = volumeClaimTemplates[0]['spec']['resources']
+            vct_resources['requests'] = dict()
+            vct_resources['requests']['storage'] = "10Gi"
+        else:
+            volumeClaimTemplates[0]['spec']['storageClassName'] = storage_class
 
         # Configure xrootd
         #
@@ -236,7 +258,6 @@ if __name__ == "__main__":
         _mount_volume('wmgr', mount_path, volume_name)
         # xrootd mmap/mlock *.MYD files and need to access mysql.sock
         _mount_volume('xrootd', mount_path, volume_name)
-
 
         with open(args.yamlFile, 'w') as f:
             f.write(yaml.dump(yaml_data, default_flow_style=False))

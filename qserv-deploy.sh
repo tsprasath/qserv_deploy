@@ -6,7 +6,7 @@
 
 set -e
 
-STABLE_VERSION="3c8ea2a"
+STABLE_VERSION="ecf0776"
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
@@ -43,17 +43,26 @@ fi
 
 VERSION=${DEPLOY_VERSION:-$STABLE_VERSION}
 
-SSH_DIR="$HOME/.ssh"
-CONTAINER_HOME="$HOME"
-
 if [ ! -d "$QSERV_CFG_DIR" ]; then
     >&2 echo "ERROR: Incorrect QSERV_CFG_DIR parameter: \"$QSERV_CFG_DIR\""
     exit 1
 fi
 
 MOUNTS="-v $QSERV_CFG_DIR:/qserv-deploy/config "
+
+CONTAINER_HOME="$HOME"
+SSH_DIR="$HOME/.ssh"
 MOUNTS="$MOUNTS -v $SSH_DIR:$CONTAINER_HOME/.ssh"
+
 MOUNTS="$MOUNTS -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro"
+
+GCLOUD_DIR="$QSERV_CFG_DIR/gcloud"
+mkdir -p $GCLOUD_DIR
+MOUNTS="$MOUNTS -v $GCLOUD_DIR:$CONTAINER_HOME/.config"
+
+DOT_KUBE_DIR="$QSERV_CFG_DIR/dot-kube"
+mkdir -p "$DOT_KUBE_DIR"
+MOUNTS="$MOUNTS -v $DOT_KUBE_DIR:$CONTAINER_HOME/.kube"
 
 echo "Starting Qserv deploy on cluster $QSERV_CFG_DIR"
 

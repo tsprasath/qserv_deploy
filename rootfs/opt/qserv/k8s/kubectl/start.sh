@@ -118,18 +118,32 @@ echo "Create kubernetes pod for Qserv statefulset"
 
 REPLICAS=$(echo $WORKERS $MASTER | wc -w)
 
-if [ "$MASTER" = "-MK-" ]; then
-    MINIKUBE="True"
+if [ $MINIKUBE ]; then
+    INI_MINIKUBE="True"
 else
-    MINIKUBE="False"
+    INI_MINIKUBE="False"
+fi
+
+if [ $GKE ]; then
+    INI_GKE="True"
+else
+    INI_GKE="False"
+fi
+
+if kubectl get nodes -o go-template='{{range .items}}{{.metadata.name}} {{"\n"}}{{end}}' | egrep "^gke-"
+then
+    GKE="True"
+else
+    GKE="False"
 fi
 
 cat << EOF > "$INI_FILE"
 [spec]
+gke: $INI_GKE
 host_data_dir: $HOST_DATA_DIR
 host_tmp_dir: $HOST_TMP_DIR
 image: $CONTAINER_IMAGE
-minikube: $MINIKUBE
+minikube: $INI_MINIKUBE
 replicas: $REPLICAS
 EOF
 

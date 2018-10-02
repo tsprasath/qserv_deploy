@@ -7,3 +7,8 @@ before_script:
 
 script:
   - ./minikube/launch.sh
+
+after_success:
+  - echo "Push qserv_deploy image to Docker Hub"
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+  - ./build-image.sh

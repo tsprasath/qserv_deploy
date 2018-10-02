@@ -22,7 +22,7 @@ RUN export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)" && \
     apt-get -y update && apt-get -y install google-cloud-sdk
 
 # Install kubectl
-ENV KUBECTL_VERSION 1.10.3
+ENV KUBECTL_VERSION 1.11.0
 RUN wget -O /usr/local/bin/kubectl \
     https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl && \
     chmod +x /usr/local/bin/kubectl

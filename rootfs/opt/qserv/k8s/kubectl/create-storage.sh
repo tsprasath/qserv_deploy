@@ -38,6 +38,10 @@ if [ $# -ne 1  ] ; then
     exit 2
 fi
 
+if [ "$GKE" = true ]; then
+    exit
+fi
+
 DATA_PATH="$1"
 
 STORAGE_OUTPUT_DIR="$CLUSTER_CONFIG_DIR"/storage
@@ -47,10 +51,6 @@ mkdir -p $STORAGE_OUTPUT_DIR
 echo "Creating local volumes for Qserv nodes"
 
 DATA_ID=0
-
-if [ "$MASTER" = "-MK-" ]; then
-    MINIKUBE=true
-fi
 
 for host in $MASTER $WORKERS;
 do

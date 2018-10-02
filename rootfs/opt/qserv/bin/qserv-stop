@@ -8,6 +8,6 @@ set -e
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
-echo "Delete Qserv pods on Kubernetes cluster"
+echo "Delete Qserv statefulset on Kubernetes cluster"
 
 $QSERV_INSTALL_DIR/k8s/kubectl/stop.sh
