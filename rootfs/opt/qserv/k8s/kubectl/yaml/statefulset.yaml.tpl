@@ -161,7 +161,7 @@ spec:
           - mountPath: /config-sql/worker
             name: config-sql-worker
           - mountPath: /qserv/data
-            name: data-volume
+            name: qserv-data
       volumes:
         - name: config-dot-lsst
           configMap:
