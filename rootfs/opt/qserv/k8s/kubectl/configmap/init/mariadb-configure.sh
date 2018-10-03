@@ -98,4 +98,6 @@ then
     echo "-- Stop mariadb server."
     mysqladmin -u root --password="$MYSQLD_PASSWORD_ROOT" shutdown
     rm "$MARIADB_LOCK"
+else
+    echo "WARN: Skip mysqld initialization because of non empty data directory"
 fi

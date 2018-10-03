@@ -246,7 +246,7 @@ if __name__ == "__main__":
 
         # Attach data-dir to containers
         #
-        volume_name = 'data-volume'
+        volume_name = 'qserv-data'
         mount_path = '/qserv/data'
         if config.get('spec', 'host_data_dir'):
             _add_volume(config.get('spec', 'host_data_dir'), volume_name)
