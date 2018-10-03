@@ -44,10 +44,10 @@ else
     echo "Container timezone not modified"
 fi
 
-# Run configuration step iff Qserv data directory is empty
-EMPTY_DATA_DIR="$(find "$DATA_DIR" -prune -empty -type d)"
+EXCLUDE_DIR1="lost+found"
+DATA_FILES=$(find "$DATA_DIR" -mindepth 1 ! -name "$EXCLUDE_DIR1")
 
-if [ -n "$EMPTY_DATA_DIR" ]
+if [ ! "$DATA_FILES" ]
 then
     touch "$MARIADB_LOCK"
     echo "-- "
@@ -99,5 +99,6 @@ then
     mysqladmin -u root --password="$MYSQLD_PASSWORD_ROOT" shutdown
     rm "$MARIADB_LOCK"
 else
-    echo "WARN: Skip mysqld initialization because of non empty data directory"
+    echo "WARN: Skip mysqld initialization because of non empty $DATA_DIR:"
+    ls -l "$DATA_DIR"
 fi
