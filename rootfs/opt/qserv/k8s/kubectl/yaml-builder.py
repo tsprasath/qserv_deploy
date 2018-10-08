@@ -186,7 +186,7 @@ if __name__ == "__main__":
             volumeClaimTemplates[0]['spec']['resources'] = dict()
             vct_resources = volumeClaimTemplates[0]['spec']['resources']
             vct_resources['requests'] = dict()
-            vct_resources['requests']['storage'] = "10Gi"
+            vct_resources['requests']['storage'] = "3Ti"
         else:
             volumeClaimTemplates[0]['spec']['storageClassName'] = storage_class
 
