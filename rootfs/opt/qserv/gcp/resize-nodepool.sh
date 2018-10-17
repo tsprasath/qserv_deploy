@@ -38,7 +38,18 @@ if [ $# -ne 2 ] ; then
 fi
 
 POOL_NAME=$1
-SIZE=$3
+SIZE=$2
 
-gcloud container clusters resize "$CLUSTER" \
+NODES=$(kubectl get nodes -l cloud.google.com/gke-nodepool=${POOL_NAME} -o=name)
+
+if [ $SIZE -eq 0 ]; then
+    for node in $NODES; do
+        kubectl cordon "$node";
+    done
+    for node in $NODES; do
+        kubectl drain --force --ignore-daemonsets --delete-local-data --grace-period=10 "$node";
+    done
+fi
+
+gcloud --quiet container clusters resize "$CLUSTER" \
     --node-pool "$POOL_NAME" --zone "$ZONE" --size="$SIZE"

@@ -10,7 +10,7 @@ set -x
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 . "$DIR/env.sh"
 
-# gcloud container node-pools delete default-pool --zone $ZONE --cluster $CLUSTER
+gcloud --quiet container node-pools delete default-pool --zone $ZONE --cluster $CLUSTER
 
 $DIR/create-nodepool.sh "pool-czar" "$MTYPE_CZAR" "$SIZE_CZAR"
 $DIR/create-nodepool.sh "pool-worker" "$MTYPE_WORKER" "$SIZE_WORKER"
