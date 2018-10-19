@@ -16,8 +16,7 @@ Status](https://travis-ci.org/lsst/qserv_deploy.svg?branch=master)](https://trav
    export QSERV_CFG_DIR="$HOME/.qserv/"
    mkdir -p $QSERV_CFG_DIR
 
-   cp -r "qserv_deploy/config.examples/gke "$QSERV_CFG_DIR"
-
+   cp -r qserv_deploy/config.examples/gke/* "$QSERV_CFG_DIR"
 ```
 
 It is also possible to use an existing cluster configuration directory, by exporting the `QSERV_CFG_DIR` variable.
@@ -41,7 +40,7 @@ gcloud container clusters resize "$CLUSTER" --region us-central1-a --size=3
 gcloud container clusters get-credentials "$CLUSTER" --zone us-central1-a --project "$PROJECT"
 ```
 
-In the container, all commands are prefixed with qserv-***
+In the container, all commands are prefixed with "qserv-"
 
 
 Your working directory is /qserv-deploy with your cluster configuration mounted in config folder

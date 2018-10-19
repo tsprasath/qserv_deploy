@@ -17,7 +17,7 @@ VERSION=828ff67
 # and Qserv may crash
 
 # Data directory location on docker host
-# HOST_DATA_DIR=/qserv/data
+HOST_DATA_DIR=/qserv/data
 
 # Qserv temporary directory location on docker host
 # HOST_TMP_DIR=/qserv/tmp

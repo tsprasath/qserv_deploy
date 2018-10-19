@@ -186,7 +186,7 @@ if __name__ == "__main__":
             volumeClaimTemplates[0]['spec']['resources'] = dict()
             vct_resources = volumeClaimTemplates[0]['spec']['resources']
             vct_resources['requests'] = dict()
-            vct_resources['requests']['storage'] = "10Gi"
+            vct_resources['requests']['storage'] = "3Ti"
         else:
             volumeClaimTemplates[0]['spec']['storageClassName'] = storage_class
 
@@ -246,7 +246,7 @@ if __name__ == "__main__":
 
         # Attach data-dir to containers
         #
-        volume_name = 'data-volume'
+        volume_name = 'qserv-data'
         mount_path = '/qserv/data'
         if config.get('spec', 'host_data_dir'):
             _add_volume(config.get('spec', 'host_data_dir'), volume_name)
