@@ -47,7 +47,3 @@ gcloud beta container --project "$PROJECT" node-pools create "$POOL_NAME" \
     --disk-type "pd-standard" --disk-size "100" \
     --scopes $SCOPE  \
     --num-nodes "$SIZE" --no-enable-autoupgrade --enable-autorepair
-
-# Resize a node-pool
-#gcloud container clusters resize "$CLUSTER" \
-#    --node-pool "$POOL_NAME" --zone "$ZONE" --size="0"

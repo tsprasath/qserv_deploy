@@ -16,5 +16,5 @@ gcloud beta compute --project="$PROJECT" instances create "$INSTANCE" \
     --boot-disk-device-name=instance-1
 
 # Attach disk
-$DISK="pd-xxx"
-gcloud compute instances attach-disk "$INSTANCE" --disk "$DISK" --zone "$ZONE"
+# $DISK="pd-xxx"
+# gcloud compute instances attach-disk "$INSTANCE" --disk "$DISK" --zone "$ZONE"
