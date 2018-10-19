@@ -4,6 +4,8 @@ NODES=$(kubectl get nodes -o go-template='{{range .items}}{{.metadata.name}} {{e
 if [ $? ]
 then
     GKE=true
+else
+    >&2 echo "ERROR: no GKE nodes found"
 fi
 
 # Size for GKE volumes

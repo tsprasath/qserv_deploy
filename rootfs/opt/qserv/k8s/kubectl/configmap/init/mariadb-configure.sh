@@ -69,7 +69,7 @@ then
 
     echo "-- "
     echo "-- Initializing Qserv database"
-    if [ "$HOSTNAME" = "$QSERV_MASTER" ]; then
+    if [ "$HOSTNAME" = "$CZAR" ]; then
         INSTANCE_NAME='master'
     else
         INSTANCE_NAME='worker'

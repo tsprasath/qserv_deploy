@@ -1,8 +1,8 @@
 # Unified configuration for xrootd/cmsd for both manager and server instances
 # "if"-block separates manager-only and server-only configuration.
 
-# QSERV_MASTER_DN env var must be defined inside container
-set masterdn = $QSERV_MASTER_DN
+# CZAR_DN env var must be defined inside container
+set masterdn = $CZAR_DN
 
 ############################
 # if: manager node

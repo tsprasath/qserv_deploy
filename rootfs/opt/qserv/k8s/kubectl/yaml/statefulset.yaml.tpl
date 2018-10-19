@@ -46,21 +46,21 @@ spec:
           imagePullPolicy: Always
           command: [<RESOURCE_START_MASTER>]
           env:
-            - name: QSERV_MASTER
+            - name: CZAR
               valueFrom:
                 configMapKeyRef:
                   name: config-master
-                  key: qserv_master
+                  key: czar
             - name: QSERV_DOMAIN
               valueFrom:
                 configMapKeyRef:
                   name: config-master
                   key: qserv_domain
-            - name: QSERV_MASTER_DN
+            - name: CZAR_DN
               valueFrom:
                 configMapKeyRef:
                   name: config-master
-                  key: qserv_master_dn
+                  key: czar_dn
           securityContext:
             capabilities:
               add:
@@ -77,11 +77,11 @@ spec:
           image: "<INI_IMAGE>"
           imagePullPolicy: Always
           env:
-            - name: QSERV_MASTER
+            - name: CZAR
               valueFrom:
                 configMapKeyRef:
                   name: config-master
-                  key: qserv_master
+                  key: czar
           livenessProbe:
             exec:
               command:
@@ -115,11 +115,11 @@ spec:
             - sh
             - /config-start/start.sh
           env:
-            - name: QSERV_MASTER_DN
+            - name: CZAR_DN
               valueFrom:
                 configMapKeyRef:
                   name: config-master
-                  key: qserv_master_dn
+                  key: czar_dn
           image: "<INI_IMAGE>"
           imagePullPolicy: Always
           livenessProbe:
@@ -144,11 +144,11 @@ spec:
           - sh
           - /config-mariadb/mariadb-configure.sh
           env:
-            - name: QSERV_MASTER
+            - name: CZAR
               valueFrom:
                 configMapKeyRef:
                   name: config-master
-                  key: qserv_master
+                  key: czar
           image: "<INI_IMAGE>"
           imagePullPolicy: Always
           name: init-data-dir

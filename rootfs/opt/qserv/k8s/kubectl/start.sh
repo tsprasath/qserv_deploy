@@ -54,14 +54,14 @@ INI_FILE="${TMP_DIR}/statefulset.ini"
 
 echo "Create kubernetes configmaps for Qserv"
 
-QSERV_MASTER="qserv-0"
+CZAR="qserv-0"
 QSERV_DOMAIN="qserv"
-QSERV_MASTER_DN="${QSERV_MASTER}.${QSERV_DOMAIN}"
+CZAR_DN="${CZAR}.${QSERV_DOMAIN}"
 
 kubectl delete configmap --ignore-not-found=true config-master
-kubectl create configmap config-master --from-literal=qserv_master="$QSERV_MASTER" \
+kubectl create configmap config-master --from-literal=czar="$CZAR" \
     --from-literal=qserv_domain="$QSERV_DOMAIN" \
-    --from-literal=qserv_master_dn="$QSERV_MASTER_DN"
+    --from-literal=czar_dn="$CZAR_DN"
 
 kubectl delete configmap --ignore-not-found=true config-dot-lsst
 kubectl create configmap --from-file="$CONFIGMAP_DIR/dot-lsst" config-dot-lsst

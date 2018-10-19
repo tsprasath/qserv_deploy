@@ -7,6 +7,6 @@
 
 set -e
 
-if [ "$HOSTNAME" = "$QSERV_MASTER" ]; then
+if [ "$HOSTNAME" = "$CZAR" ]; then
     cat < /dev/null > /dev/tcp/127.0.0.1/4040
 fi
