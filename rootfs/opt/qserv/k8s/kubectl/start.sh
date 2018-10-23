@@ -15,10 +15,12 @@ CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR:-/qserv-deploy/config}"
 CFG_DIR="${DIR}/yaml"
 RESOURCE_DIR="${DIR}/resource"
 CONFIGMAP_DIR="${DIR}/configmap"
-TMP_DIR=$(mktemp -d --suffix=-qserv-deploy-yaml)
+
+mkdir -p "${CLUSTER_CONFIG_DIR}/tmp"
+TMP_DIR=$(mktemp -d --tmpdir="${CLUSTER_CONFIG_DIR}/tmp" --suffix=-qserv-deploy-yaml)
 
 # For in2p3 cluster: k8s schema cache must not be on AFS
-CACHE_DIR=$(mktemp -d --suffix=-kube-$USER)
+CACHE_DIR=$(mktemp -d --tmpdir="${CLUSTER_CONFIG_DIR}/tmp" --suffix=-kube-$USER)
 CACHE_OPT="--cache-dir=$CACHE_DIR/schema"
 
 usage() {
@@ -48,13 +50,11 @@ if [ $# -ne 0 ] ; then
     exit 2
 fi
 
-YAML_TPL="${CFG_DIR}/statefulset.yaml.tpl"
-YAML_FILE="${TMP_DIR}/statefulset.yaml"
 INI_FILE="${TMP_DIR}/statefulset.ini"
 
 echo "Create kubernetes configmaps for Qserv"
 
-CZAR="qserv-0"
+CZAR="czar-0"
 QSERV_DOMAIN="qserv"
 CZAR_DN="${CZAR}.${QSERV_DOMAIN}"
 
@@ -87,9 +87,6 @@ kubectl create configmap --from-file="$CONFIGMAP_DIR/proxy/etc" config-proxy-etc
 kubectl delete configmap --ignore-not-found=true config-proxy-start
 kubectl create configmap --from-file="$CONFIGMAP_DIR/proxy/start.sh" config-proxy-start
 
-kubectl delete configmap --ignore-not-found=true config-proxy-probe
-kubectl create configmap --from-file="$CONFIGMAP_DIR/proxy/probe.sh" config-proxy-probe
-
 kubectl delete configmap --ignore-not-found=true config-wmgr-etc
 kubectl create configmap --from-file="$CONFIGMAP_DIR/wmgr/etc" config-wmgr-etc 
 
@@ -116,7 +113,7 @@ kubectl apply $CACHE_OPT -f ${CFG_DIR}/qserv-nodeport-service.yaml
 
 echo "Create kubernetes pod for Qserv statefulset"
 
-REPLICAS=$(echo $WORKERS $MASTER | wc -w)
+WORKERS_NB=$(echo $WORKERS | wc -w)
 
 if [ $MINIKUBE ]; then
     INI_MINIKUBE="True"
@@ -138,9 +135,14 @@ host_data_dir: $HOST_DATA_DIR
 host_tmp_dir: $HOST_TMP_DIR
 image: $CONTAINER_IMAGE
 minikube: $INI_MINIKUBE
-replicas: $REPLICAS
+replicas: $WORKERS_NB
 EOF
 
-"$DIR"/yaml-builder.py -i "$INI_FILE" -r "$RESOURCE_DIR" -t "$YAML_TPL" -o "$YAML_FILE"
+for service in "czar" "worker"
+do
+    YAML_TPL="${CFG_DIR}/statefulset-${service}.yaml.tpl"
+    YAML_FILE="${TMP_DIR}/statefulset-${service}.yaml"
+    "$DIR"/yaml-builder.py -i "$INI_FILE" -r "$RESOURCE_DIR" -t "$YAML_TPL" -o "$YAML_FILE"
+    kubectl apply $CACHE_OPT -f "$YAML_FILE"
+done
 
-kubectl apply $CACHE_OPT -f "$YAML_FILE"

@@ -166,11 +166,11 @@ if __name__ == "__main__":
         resourcePath = args.resourcePath
         yaml.add_representer(str, _str_presenter)
 
-        yaml_data['metadata']['name'] = 'qserv'
 
         yaml_data_tpl = yaml_data['spec']['template']['spec']
 
-        yaml_data['spec']['replicas'] = int(config.get('spec', 'replicas'))
+        if yaml_data['metadata']['name'] == 'qserv':
+          yaml_data['spec']['replicas'] = int(config.get('spec', 'replicas'))
 
         minikube = _str_to_bool(config.get('spec', 'minikube'))
         gke = _str_to_bool(config.get('spec', 'gke'))
