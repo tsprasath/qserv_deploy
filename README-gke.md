@@ -33,10 +33,10 @@ gcloud auth login
 # PROJECT=neural-theory-215601
 PROJECT=<project>
 # Example:
-# CLUSTER=lsst-k8s-test
+# CLUSTER=qserv-cluster
 CLUSTER=<cluster>
 gcloud config set project "$PROJECT"
-gcloud container clusters resize "$CLUSTER" --region us-central1-a --size=3
+gcloud container clusters resize "$CLUSTER" --region us-central1-a --size=31
 gcloud container clusters get-credentials "$CLUSTER" --zone us-central1-a --project "$PROJECT"
 ```
 
@@ -49,9 +49,9 @@ Your working directory is /qserv-deploy with your cluster configuration mounted 
 
 # Commands list
 
-* `qserv-start`: Start Qserv on the cluster
+* `qserv-start`: Start Qserv on the cluster (and create all pods)
 * `qserv-status`: Show Qserv running status
-* `qserv-stop`: Stop Qserv
+* `qserv-stop`: Stop Qserv (and remove all pods)
 * `/opt/qserv/k8s/kubectl/run-multinode-tests.sh`: Run integration tests
 
 ## Clean up storage
