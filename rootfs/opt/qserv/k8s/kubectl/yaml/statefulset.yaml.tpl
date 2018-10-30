@@ -6,6 +6,7 @@ metadata:
     app: qserv
 spec:
   serviceName: qserv
+  podManagementPolicy: "Parallel"
   replicas: <REPLICAS>
   selector:
     matchLabels:
