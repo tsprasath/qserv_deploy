@@ -88,9 +88,9 @@ def _get_init_container_id(container_name):
     return None
 
 
-def _is_master():
-    labels = yaml_data['metadata']['labels']
-    return labels.get('node') == 'master'
+def _is_czar():
+    name = yaml_data['metadata']['name']
+    return name == 'czar'
 
 
 def _mount_volume(container_name, container_dir, volume_name):
@@ -186,6 +186,8 @@ if __name__ == "__main__":
             volumeClaimTemplates[0]['spec']['resources'] = dict()
             vct_resources = volumeClaimTemplates[0]['spec']['resources']
             vct_resources['requests'] = dict()
+            if not config.get('spec', 'storage_size'):
+                raise ValueError('Undefined storage size in env-infrastructure.sh')
             vct_resources['requests']['storage'] = config.get('spec',
                                                               'storage_size')
         else:
@@ -224,6 +226,12 @@ if __name__ == "__main__":
         container_id = _get_container_id('mariadb')
         if container_id is not None:
             yaml_data_tpl['containers'][container_id]['image'] = config.get('spec', 'image')
+            if _is_czar() and config.get('spec', 'mem_request'):
+                yaml_data_tpl['containers'][container_id]['resources'] = dict()
+                resources = yaml_data_tpl['containers'][container_id]['resources']
+                resources['requests'] = dict()
+                resources['requests']['memory'] = config.get('spec', 'mem_request')
+
 
         # initContainer: configure qserv-data-dir using mariadb image
         #
@@ -243,21 +251,6 @@ if __name__ == "__main__":
         _mount_volume('mariadb', mount_path, volume_name)
         _mount_volume('proxy', mount_path, volume_name)
         _mount_volume('wmgr', mount_path, volume_name)
-        _mount_volume('xrootd', mount_path, volume_name)
-
-        # Attach data-dir to containers
-        #
-        volume_name = 'qserv-data'
-        mount_path = '/qserv/data'
-        if config.get('spec', 'host_data_dir'):
-            _add_volume(config.get('spec', 'host_data_dir'), volume_name)
-        else:
-            _add_emptydir_volume(volume_name)
-
-        _mount_volume('mariadb', mount_path, volume_name)
-        _mount_volume('proxy', mount_path, volume_name)
-        _mount_volume('wmgr', mount_path, volume_name)
-        # xrootd mmap/mlock *.MYD files and need to access mysql.sock
         _mount_volume('xrootd', mount_path, volume_name)
 
         with open(args.yamlFile, 'w') as f:

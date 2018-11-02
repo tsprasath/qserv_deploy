@@ -44,6 +44,8 @@ spec:
             mountPath: /config-etc
           - name: config-mariadb-start
             mountPath: /config-start
+          - mountPath: /qserv/data
+            name: qserv-data
         - name: xrootd
           image: "<INI_IMAGE>"
           imagePullPolicy: Always
@@ -73,6 +75,8 @@ spec:
             mountPath: /config-etc
           - name: config-xrootd-start
             mountPath: /config-start
+          - mountPath: /qserv/data
+            name: qserv-data
         - name: proxy
           command:
             - sh
@@ -105,8 +109,8 @@ spec:
             name: config-proxy-start
           - mountPath: /config-etc
             name: config-proxy-etc
-          - mountPath: /config-probe
-            name: config-proxy-probe
+          - mountPath: /qserv/data
+            name: qserv-data
           - mountPath: /secret
             name: secret-wmgr
         - name: wmgr
@@ -136,6 +140,8 @@ spec:
             name: config-wmgr-start
           - mountPath: /config-etc
             name: config-wmgr-etc
+          - mountPath: /qserv/data
+            name: qserv-data
           - mountPath: /secret
             name: secret-wmgr
       initContainers:
@@ -197,9 +203,6 @@ spec:
           configMap:
             name: config-proxy-start
             defaultMode: 0755
-        - name: config-proxy-probe
-          configMap:
-            name: config-proxy-probe
         - name: config-wmgr-etc
           configMap:
             name: config-wmgr-etc
