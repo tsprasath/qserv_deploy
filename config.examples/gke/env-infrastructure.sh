@@ -9,7 +9,7 @@ else
 fi
 
 # Size for GKE volumes
-GKE_STORAGE_SIZE="3Ti"
+STORAGE_SIZE="3Ti"
 
 # Force Qserv master to first node, in order to be consistent with local storage
 # for bare-metal.

@@ -130,7 +130,7 @@ fi
 cat << EOF > "$INI_FILE"
 [spec]
 gke: $INI_GKE
-gke_storage_size: $GKE_STORAGE_SIZE
+storage_size: $STORAGE_SIZE
 host_data_dir: $HOST_DATA_DIR
 host_tmp_dir: $HOST_TMP_DIR
 image: $CONTAINER_IMAGE

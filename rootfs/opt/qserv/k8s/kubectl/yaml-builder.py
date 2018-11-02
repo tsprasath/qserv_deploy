@@ -182,12 +182,12 @@ if __name__ == "__main__":
         else:
             storage_class = "qserv-local-storage"
 
-        if gke:
+        if gke or minikube:
             volumeClaimTemplates[0]['spec']['resources'] = dict()
             vct_resources = volumeClaimTemplates[0]['spec']['resources']
             vct_resources['requests'] = dict()
             vct_resources['requests']['storage'] = config.get('spec',
-                                                              'gke_storage_size')
+                                                              'storage_size')
         else:
             volumeClaimTemplates[0]['spec']['storageClassName'] = storage_class
 

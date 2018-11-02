@@ -13,7 +13,7 @@ CLUSTER_CONFIG_DIR="${CLUSTER_CONFIG_DIR:-/qserv-deploy/config}"
 . "$CLUSTER_CONFIG_DIR/env.sh"
 
 # Build CSS input data
-i=1
+i=0
 for node in $WORKERS;
 do
     CSS_INFO="${CSS_INFO}CREATE NODE worker${i} type=worker port=5012 \
