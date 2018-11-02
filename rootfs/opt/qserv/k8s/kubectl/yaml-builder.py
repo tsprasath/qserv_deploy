@@ -186,6 +186,8 @@ if __name__ == "__main__":
             volumeClaimTemplates[0]['spec']['resources'] = dict()
             vct_resources = volumeClaimTemplates[0]['spec']['resources']
             vct_resources['requests'] = dict()
+            if not config.get('spec', 'storage_size'):
+                raise ValueError('Undefined storage size in env-infrastructure.sh')
             vct_resources['requests']['storage'] = config.get('spec',
                                                               'storage_size')
         else:
@@ -224,6 +226,12 @@ if __name__ == "__main__":
         container_id = _get_container_id('mariadb')
         if container_id is not None:
             yaml_data_tpl['containers'][container_id]['image'] = config.get('spec', 'image')
+            if config.get('spec', 'mem_request'):
+                yaml_data_tpl['containers'][container_id]['resources'] = dict()
+                resources = yaml_data_tpl['containers'][container_id]['resources']
+                resources['requests'] = dict()
+                resources['requests']['memory'] = config.get('spec', 'mem_request')
+
 
         # initContainer: configure qserv-data-dir using mariadb image
         #

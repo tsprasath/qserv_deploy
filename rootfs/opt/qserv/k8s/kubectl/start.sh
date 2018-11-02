@@ -131,6 +131,7 @@ cat << EOF > "$INI_FILE"
 [spec]
 gke: $INI_GKE
 storage_size: $STORAGE_SIZE
+mem_request: $MEM_REQUEST
 host_data_dir: $HOST_DATA_DIR
 host_tmp_dir: $HOST_TMP_DIR
 image: $CONTAINER_IMAGE

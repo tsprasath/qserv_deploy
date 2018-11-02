@@ -17,19 +17,23 @@ GO_TPL="{{if .status.readyReplicas}}\
     .status.readyReplicas is set \
     {{end}}"
 
-until [ -n "$READY" ]
+for sf in 'czar' 'qserv'
 do
-    echo "Wait for statefulset to start first pod"
-    READY=$(kubectl get statefulset qserv -o go-template --template "$GO_TPL")
-    sleep 1
-done
+    until [ -n "$READY" ]
+    do
+        echo "Wait for statefulset '$sf' to start first pod"
+        READY=$(kubectl get statefulset "$sf" -o go-template --template "$GO_TPL")
+        sleep 1
+    done
 
-GO_TPL="{{if and (eq .spec.replicas .status.replicas) \
-    (eq .status.replicas .status.readyReplicas) \
-    (eq .status.currentRevision .status.updateRevision)}}true{{end}}"
-until [ -n "$STARTED" ]
-do
-    echo "Wait for statefulset to start all pods"
-    STARTED=$(kubectl get statefulset qserv -o go-template --template "$GO_TPL")
-    sleep 2
+    GO_TPL="{{if and (eq .spec.replicas .status.replicas) \
+        (eq .status.replicas .status.readyReplicas) \
+        (eq .status.currentRevision .status.updateRevision)}}true{{end}}"
+    until [ -n "$STARTED" ]
+    do
+        echo "Wait for statefulset '$sf' to start all pods"
+        STARTED=$(kubectl get statefulset "$sf" -o go-template --template "$GO_TPL")
+        sleep 2
+    done
+    echo "Statefulset '$sf' ready"
 done

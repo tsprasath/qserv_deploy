@@ -105,8 +105,6 @@ spec:
             name: config-proxy-start
           - mountPath: /config-etc
             name: config-proxy-etc
-          - mountPath: /config-probe
-            name: config-proxy-probe
           - mountPath: /secret
             name: secret-wmgr
         - name: wmgr
@@ -197,9 +195,6 @@ spec:
           configMap:
             name: config-proxy-start
             defaultMode: 0755
-        - name: config-proxy-probe
-          configMap:
-            name: config-proxy-probe
         - name: config-wmgr-etc
           configMap:
             name: config-wmgr-etc

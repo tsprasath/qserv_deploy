@@ -8,11 +8,10 @@ DIR=$(cd "$(dirname "$0")"; pwd -P)
 
 
 # Creates a GKE cluster
-
 #gcloud auth login
 gcloud config set project "$PROJECT"
 gcloud beta container --project "$PROJECT" clusters create "$CLUSTER" \
-    --zone "$ZONE" --username "admin" --cluster-version "1.9.7-gke.6" \
+    --zone "$ZONE" --username "admin" --cluster-version "CLUSTER_VERSION" \
     --machine-type "$DEFAULT_MTYPE" --image-type "COS" \
     --disk-type "pd-standard" --disk-size "100" \
     --scopes $SCOPE \
