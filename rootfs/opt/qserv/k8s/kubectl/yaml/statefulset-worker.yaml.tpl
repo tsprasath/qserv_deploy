@@ -49,7 +49,12 @@ spec:
         - name: xrootd
           image: "<INI_IMAGE>"
           imagePullPolicy: Always
-          command: [<RESOURCE_START_MASTER>]
+          args:
+            - qserv
+            - -c
+            - sh /config-start/start.sh
+          command:
+            - /bin/su
           env:
             - name: CZAR
               valueFrom:
