@@ -198,14 +198,7 @@ if __name__ == "__main__":
         container_id = _get_container_id('xrootd')
         if container_id is not None:
             container = yaml_data_tpl['containers'][container_id]
-            command = ["/bin/su"]
-            _args = ["qserv", "-c", "sh /config-start/start.sh"]
-            # Uncomment line below for debugging purpose
-            # command = ["tail", "-f", "/dev/null"]
-            container['command'] = command
-            container['args'] = _args
             container['image'] = config.get('spec', 'image')
-            yaml_data_tpl['containers'][container_id] = container
 
         # Configure mysql-proxy
         #
@@ -231,7 +224,6 @@ if __name__ == "__main__":
                 resources = yaml_data_tpl['containers'][container_id]['resources']
                 resources['requests'] = dict()
                 resources['requests']['memory'] = config.get('spec', 'mem_request')
-
 
         # initContainer: configure qserv-data-dir using mariadb image
         #
