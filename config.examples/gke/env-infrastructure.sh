@@ -8,7 +8,7 @@ else
     >&2 echo "ERROR: no GKE nodes found"
 fi
 
-MEM_REQUEST="30M"
+MEM_REQUEST="30G"
 
 # Size for GKE volumes
 STORAGE_SIZE="3Ti"
