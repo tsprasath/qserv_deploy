@@ -94,7 +94,8 @@ kubectl delete configmap --ignore-not-found=true config-wmgr-start
 kubectl create configmap --from-file="$CONFIGMAP_DIR/wmgr/start.sh" config-wmgr-start
 
 kubectl delete configmap --ignore-not-found=true config-xrootd-start
-kubectl create configmap --from-file="$CONFIGMAP_DIR/xrootd/start.sh" config-xrootd-start
+kubectl create configmap --from-file="$CONFIGMAP_DIR/xrootd/start.sh" \
+    --from-file="$CONFIGMAP_DIR/xrootd/xrootd.sh" config-xrootd-start
 
 kubectl delete configmap --ignore-not-found=true config-xrootd-etc
 kubectl create configmap --from-file="$CONFIGMAP_DIR/xrootd/etc" config-xrootd-etc

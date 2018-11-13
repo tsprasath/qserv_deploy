@@ -50,11 +50,9 @@ spec:
           image: "<INI_IMAGE>"
           imagePullPolicy: Always
           args:
-            - qserv
-            - -c
-            - sh /config-start/start.sh
+            - /config-start/start.sh
           command:
-            - /bin/su
+            - sh
           env:
             - name: CZAR
               valueFrom:

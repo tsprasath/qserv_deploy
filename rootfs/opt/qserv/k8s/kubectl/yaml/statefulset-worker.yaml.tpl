@@ -50,11 +50,9 @@ spec:
           image: "<INI_IMAGE>"
           imagePullPolicy: Always
           args:
-            - qserv
-            - -c
-            - sh /config-start/start.sh
+            - /config-start/start.sh
           command:
-            - /bin/su
+            - sh
           env:
             - name: CZAR
               valueFrom:
@@ -75,6 +73,7 @@ spec:
             capabilities:
               add:
               - IPC_LOCK
+              - SYS_RESOURCE
           volumeMounts:
           - name: config-xrootd-etc
             mountPath: /config-etc
