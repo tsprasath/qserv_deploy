@@ -28,16 +28,16 @@ spec:
             - /config-start/start.sh
           livenessProbe:
             tcpSocket:
-              port: mariadb-port
+              port: mariadb
             initialDelaySeconds: 15
             periodSeconds: 20
           readinessProbe:
             tcpSocket:
-              port: mariadb-port
+              port: mariadb
             initialDelaySeconds: 5
             periodSeconds: 10
           ports:
-          - name: mariadb-port
+          - name: mariadb
             containerPort: 3306
           volumeMounts:
           - name: config-mariadb-etc
@@ -96,16 +96,16 @@ spec:
                   key: czar
           livenessProbe:
             tcpSocket:
-              port: proxy-port
+              port: proxy
             initialDelaySeconds: 15
             periodSeconds: 20
           readinessProbe:
             tcpSocket:
-              port: proxy-port
+              port: proxy
             initialDelaySeconds: 5
             periodSeconds: 10
           ports:
-          - name: proxy-port
+          - name: proxy
             containerPort: 4040
           volumeMounts:
           - mountPath: /home/qserv/.lsst

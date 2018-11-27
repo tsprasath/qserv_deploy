@@ -16,6 +16,7 @@ usage() {
 Usage: `basename $0` [options] [cmd]
 
   Available options:
+    -d          run in development mode (i.e. mount source files on host)
     -h          this message
 
   Run a docker container with all the Qserv deployment tools inside.
@@ -26,8 +27,9 @@ EOD
 }
 
 # get the options
-while getopts h c ; do
+while getopts dh c ; do
     case $c in
+        d) QSERV_DEV=true ;;
         h) usage ; exit 0 ;;
         \?) usage ; exit 2 ;;
     esac
