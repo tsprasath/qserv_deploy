@@ -36,12 +36,18 @@ while true; do
     sleep 2
 done
 
-# Required by xrdssi plugin to choose which type
-# of queries to launch against metadata
-if [ "$HOSTNAME" = "$QSERV_MASTER" ]; then
+# INSTANCE_NAME is required by xrdssi plugin to
+# choose which type of queries to launch against metadata
+if [ "$HOSTNAME" = "$CZAR" ]; then
     INSTANCE_NAME='master'
 else
     INSTANCE_NAME='worker'
+    # Wait for xrootd master reachability
+    until timeout 1 bash -c "cat < /dev/null > /dev/tcp/${CZAR_DN}/1094"
+    do
+        echo "waiting for xrootd master (${CZAR_DN})..."
+        sleep 2
+    done
 fi
 
 # When at least one of the current pod's containers
@@ -49,12 +55,6 @@ fi
 until ping -c 1 ${HOSTNAME}.${QSERV_DOMAIN}; do
   echo "waiting for DNS (${HOSTNAME}.${QSERV_DOMAIN})..."
   sleep 2
-done
-
-# Wait for xrootd master reachability
-until ping -c 1 "$QSERV_MASTER_DN"; do
-    echo "waiting for DNS (${QSERV_MASTER_DN})..."
-    sleep 2
 done
 
 # Start cmsd and xrootd

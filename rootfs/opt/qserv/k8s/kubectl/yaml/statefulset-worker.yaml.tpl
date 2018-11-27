@@ -3,6 +3,7 @@ kind: StatefulSet
 metadata:
   name: qserv
   labels:
+    tier: worker
     app: qserv
 spec:
   serviceName: qserv
@@ -10,10 +11,12 @@ spec:
   replicas: <REPLICAS>
   selector:
     matchLabels:
+      tier: worker
       app: qserv
   template:
     metadata:
       labels:
+        tier: worker
         app: qserv
     spec:
       containers:
@@ -41,26 +44,33 @@ spec:
             mountPath: /config-etc
           - name: config-mariadb-start
             mountPath: /config-start
+          - mountPath: /qserv/data
+            name: qserv-data
         - name: xrootd
           image: "<INI_IMAGE>"
           imagePullPolicy: Always
-          command: [<RESOURCE_START_MASTER>]
+          args:
+            - qserv
+            - -c
+            - sh /config-start/start.sh
+          command:
+            - /bin/su
           env:
-            - name: QSERV_MASTER
+            - name: CZAR
               valueFrom:
                 configMapKeyRef:
                   name: config-master
-                  key: qserv_master
+                  key: czar
             - name: QSERV_DOMAIN
               valueFrom:
                 configMapKeyRef:
                   name: config-master
                   key: qserv_domain
-            - name: QSERV_MASTER_DN
+            - name: CZAR_DN
               valueFrom:
                 configMapKeyRef:
                   name: config-master
-                  key: qserv_master_dn
+                  key: czar_dn
           securityContext:
             capabilities:
               add:
@@ -70,56 +80,18 @@ spec:
             mountPath: /config-etc
           - name: config-xrootd-start
             mountPath: /config-start
-        - name: proxy
-          command:
-            - sh
-            - /config-start/start.sh
-          image: "<INI_IMAGE>"
-          imagePullPolicy: Always
-          env:
-            - name: QSERV_MASTER
-              valueFrom:
-                configMapKeyRef:
-                  name: config-master
-                  key: qserv_master
-          livenessProbe:
-            exec:
-              command:
-                - /bin/bash
-                - /config-probe/probe.sh
-            initialDelaySeconds: 15
-            periodSeconds: 20
-          readinessProbe:
-            exec:
-              command:
-                - /bin/bash
-                - /config-probe/probe.sh
-            initialDelaySeconds: 5
-            periodSeconds: 10
-          ports:
-          - name: proxy-port
-            containerPort: 4040
-          volumeMounts:
-          - mountPath: /home/qserv/.lsst
-            name: config-dot-lsst
-          - mountPath: /config-start
-            name: config-proxy-start
-          - mountPath: /config-etc
-            name: config-proxy-etc
-          - mountPath: /config-probe
-            name: config-proxy-probe
-          - mountPath: /secret
-            name: secret-wmgr
+          - mountPath: /qserv/data
+            name: qserv-data
         - name: wmgr
           command:
             - sh
             - /config-start/start.sh
           env:
-            - name: QSERV_MASTER_DN
+            - name: CZAR_DN
               valueFrom:
                 configMapKeyRef:
                   name: config-master
-                  key: qserv_master_dn
+                  key: czar_dn
           image: "<INI_IMAGE>"
           imagePullPolicy: Always
           livenessProbe:
@@ -137,6 +109,8 @@ spec:
             name: config-wmgr-start
           - mountPath: /config-etc
             name: config-wmgr-etc
+          - mountPath: /qserv/data
+            name: qserv-data
           - mountPath: /secret
             name: secret-wmgr
       initContainers:
@@ -144,11 +118,11 @@ spec:
           - sh
           - /config-mariadb/mariadb-configure.sh
           env:
-            - name: QSERV_MASTER
+            - name: CZAR
               valueFrom:
                 configMapKeyRef:
                   name: config-master
-                  key: qserv_master
+                  key: czar
           image: "<INI_IMAGE>"
           imagePullPolicy: Always
           name: init-data-dir
@@ -198,9 +172,6 @@ spec:
           configMap:
             name: config-proxy-start
             defaultMode: 0755
-        - name: config-proxy-probe
-          configMap:
-            name: config-proxy-probe
         - name: config-wmgr-etc
           configMap:
             name: config-wmgr-etc

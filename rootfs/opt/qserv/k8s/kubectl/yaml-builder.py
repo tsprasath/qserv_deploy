@@ -88,9 +88,9 @@ def _get_init_container_id(container_name):
     return None
 
 
-def _is_master():
-    labels = yaml_data['metadata']['labels']
-    return labels.get('node') == 'master'
+def _is_czar():
+    name = yaml_data['metadata']['name']
+    return name == 'czar'
 
 
 def _mount_volume(container_name, container_dir, volume_name):
@@ -166,11 +166,11 @@ if __name__ == "__main__":
         resourcePath = args.resourcePath
         yaml.add_representer(str, _str_presenter)
 
-        yaml_data['metadata']['name'] = 'qserv'
 
         yaml_data_tpl = yaml_data['spec']['template']['spec']
 
-        yaml_data['spec']['replicas'] = int(config.get('spec', 'replicas'))
+        if yaml_data['metadata']['name'] == 'qserv':
+          yaml_data['spec']['replicas'] = int(config.get('spec', 'replicas'))
 
         minikube = _str_to_bool(config.get('spec', 'minikube'))
         gke = _str_to_bool(config.get('spec', 'gke'))
@@ -182,11 +182,14 @@ if __name__ == "__main__":
         else:
             storage_class = "qserv-local-storage"
 
-        if gke:
+        if gke or minikube:
             volumeClaimTemplates[0]['spec']['resources'] = dict()
             vct_resources = volumeClaimTemplates[0]['spec']['resources']
             vct_resources['requests'] = dict()
-            vct_resources['requests']['storage'] = "3Ti"
+            if not config.get('spec', 'storage_size'):
+                raise ValueError('Undefined storage size in env-infrastructure.sh')
+            vct_resources['requests']['storage'] = config.get('spec',
+                                                              'storage_size')
         else:
             volumeClaimTemplates[0]['spec']['storageClassName'] = storage_class
 
@@ -195,14 +198,7 @@ if __name__ == "__main__":
         container_id = _get_container_id('xrootd')
         if container_id is not None:
             container = yaml_data_tpl['containers'][container_id]
-            command = ["/bin/su"]
-            _args = ["qserv", "-c", "sh /config-start/start.sh"]
-            # Uncomment line below for debugging purpose
-            # command = ["tail", "-f", "/dev/null"]
-            container['command'] = command
-            container['args'] = _args
             container['image'] = config.get('spec', 'image')
-            yaml_data_tpl['containers'][container_id] = container
 
         # Configure mysql-proxy
         #
@@ -223,6 +219,11 @@ if __name__ == "__main__":
         container_id = _get_container_id('mariadb')
         if container_id is not None:
             yaml_data_tpl['containers'][container_id]['image'] = config.get('spec', 'image')
+            if _is_czar() and config.get('spec', 'mem_request'):
+                yaml_data_tpl['containers'][container_id]['resources'] = dict()
+                resources = yaml_data_tpl['containers'][container_id]['resources']
+                resources['requests'] = dict()
+                resources['requests']['memory'] = config.get('spec', 'mem_request')
 
         # initContainer: configure qserv-data-dir using mariadb image
         #
@@ -242,21 +243,6 @@ if __name__ == "__main__":
         _mount_volume('mariadb', mount_path, volume_name)
         _mount_volume('proxy', mount_path, volume_name)
         _mount_volume('wmgr', mount_path, volume_name)
-        _mount_volume('xrootd', mount_path, volume_name)
-
-        # Attach data-dir to containers
-        #
-        volume_name = 'qserv-data'
-        mount_path = '/qserv/data'
-        if config.get('spec', 'host_data_dir'):
-            _add_volume(config.get('spec', 'host_data_dir'), volume_name)
-        else:
-            _add_emptydir_volume(volume_name)
-
-        _mount_volume('mariadb', mount_path, volume_name)
-        _mount_volume('proxy', mount_path, volume_name)
-        _mount_volume('wmgr', mount_path, volume_name)
-        # xrootd mmap/mlock *.MYD files and need to access mysql.sock
         _mount_volume('xrootd', mount_path, volume_name)
 
         with open(args.yamlFile, 'w') as f:

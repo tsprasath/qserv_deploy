@@ -40,6 +40,8 @@ fi
 
 if [ "$GKE" = true ]; then
     exit
+elif [ "$MINIKUBE" = true ]; then
+    exit
 fi
 
 DATA_PATH="$1"
@@ -65,14 +67,10 @@ done
 
 DATA_ID=0
 
-if [ "$MINIKUBE" != true ]; then
-    kubectl apply -f "${DIR}/yaml/qserv-storageclass.yaml"
-fi
+kubectl apply -f "${DIR}/yaml/qserv-storageclass.yaml"
 for host in $MASTER $WORKERS;
 do
-    if [ "$MINIKUBE" != true ]; then
-        kubectl apply -f "${STORAGE_OUTPUT_DIR}/qserv-data-pv-${DATA_ID}.yaml"
-    fi
+    kubectl apply -f "${STORAGE_OUTPUT_DIR}/qserv-data-pv-${DATA_ID}.yaml"
     kubectl apply -f "${STORAGE_OUTPUT_DIR}/qserv-data-pvc-${DATA_ID}.yaml"
     DATA_ID=$((DATA_ID+1))
 done

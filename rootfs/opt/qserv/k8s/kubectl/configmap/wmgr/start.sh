@@ -15,7 +15,7 @@ DIR=$(cd "$(dirname "$0")"; pwd -P)
 
 CONFIG="/etc/wmgr.cnf"
 cp "/config-etc/wmgr.cnf" "$CONFIG"
-sed -i "s/<ENV_QSERV_MASTER_DN>/${QSERV_MASTER_DN}/" "$CONFIG"
+sed -i "s/<ENV_CZAR_DN>/${CZAR_DN}/" "$CONFIG"
 
 su qserv -c "
 # Source functions library.

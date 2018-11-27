@@ -4,7 +4,15 @@ NODES=$(kubectl get nodes -o go-template='{{range .items}}{{.metadata.name}} {{e
 if [ $? ]
 then
     GKE=true
+else
+    >&2 echo "ERROR: no GKE nodes found"
 fi
+
+# Size of memory for czar pod(s)
+MEM_REQUEST="30G"
+
+# Size of GKE volumes for all pods
+STORAGE_SIZE="3Ti"
 
 # Force Qserv master to first node, in order to be consistent with local storage
 # for bare-metal.
