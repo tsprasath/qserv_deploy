@@ -8,9 +8,10 @@ else
     >&2 echo "ERROR: no GKE nodes found"
 fi
 
+# Size of memory for czar pod(s)
 MEM_REQUEST="30G"
 
-# Size for GKE volumes
+# Size of GKE volumes for all pods
 STORAGE_SIZE="3Ti"
 
 # Force Qserv master to first node, in order to be consistent with local storage

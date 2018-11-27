@@ -113,7 +113,7 @@ kubectl apply $CACHE_OPT -f ${CFG_DIR}/qserv-nodeport-service.yaml
 
 echo "Create kubernetes pod for Qserv statefulset"
 
-WORKERS_NB=$(echo $WORKERS | wc -w)
+WORKERS_COUNT=$(echo $WORKERS | wc -w)
 
 if [ $MINIKUBE ]; then
     INI_MINIKUBE="True"
@@ -136,7 +136,7 @@ host_data_dir: $HOST_DATA_DIR
 host_tmp_dir: $HOST_TMP_DIR
 image: $CONTAINER_IMAGE
 minikube: $INI_MINIKUBE
-replicas: $WORKERS_NB
+replicas: $WORKERS_COUNT
 EOF
 
 for service in "czar" "worker"
