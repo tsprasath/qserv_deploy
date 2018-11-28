@@ -3,7 +3,7 @@
 
 # CZAR_DN env var must be defined inside container
 # DN stands for "Domain Name"
-# set masterdn = $CZAR_DN
+set masterdn = $CZAR_DN
 
 ############################
 # if: manager node
