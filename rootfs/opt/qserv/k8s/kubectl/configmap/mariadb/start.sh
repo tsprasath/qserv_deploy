@@ -10,7 +10,8 @@ set -e
 
 MARIADB_CONF="/config-etc/my.cnf"
 if [ -e "$MARIADB_CONF" ]; then
-    ln -sf "$MARIADB_CONF" /etc/my.cnf
+    mkdir -p /etc/mysql
+    ln -sf "$MARIADB_CONF" /etc/mysql/my.cnf
 fi
 
 echo "-- Start mariadb server."

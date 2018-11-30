@@ -55,13 +55,17 @@ INI_FILE="${TMP_DIR}/statefulset.ini"
 echo "Create kubernetes configmaps for Qserv"
 
 CZAR="czar-0"
+REPL_CTL="repl-ctl"
+REPL_DB="repl-db-0"
 QSERV_DOMAIN="qserv"
 CZAR_DN="${CZAR}.${QSERV_DOMAIN}"
 
-kubectl delete configmap --ignore-not-found=true config-master
-kubectl create configmap config-master --from-literal=czar="$CZAR" \
-    --from-literal=qserv_domain="$QSERV_DOMAIN" \
-    --from-literal=czar_dn="$CZAR_DN"
+kubectl delete configmap --ignore-not-found=true config-domainnames
+kubectl create configmap config-domainnames --from-literal=CZAR="$CZAR" \
+    --from-literal=CZAR_DN="$CZAR_DN" \
+    --from-literal=QSERV_DOMAIN="$QSERV_DOMAIN" \
+    --from-literal=REPL_CTL="$REPL_CTL" \
+    --from-literal=REPL_DB="$REPL_DB"
 
 kubectl delete configmap --ignore-not-found=true config-dot-lsst
 kubectl create configmap --from-file="$CONFIGMAP_DIR/dot-lsst" config-dot-lsst
@@ -72,8 +76,11 @@ kubectl create configmap --from-file="$CONFIGMAP_DIR/init/mariadb-configure.sh" 
 kubectl delete configmap --ignore-not-found=true config-mariadb-start
 kubectl create configmap --from-file="$CONFIGMAP_DIR/mariadb/start.sh" config-mariadb-start
 
-kubectl delete configmap --ignore-not-found=true config-sql-master
-kubectl create configmap --from-file="$CONFIGMAP_DIR/init/sql/master" config-sql-master
+kubectl delete configmap --ignore-not-found=true config-sql-czar
+kubectl create configmap --from-file="$CONFIGMAP_DIR/init/sql/czar" config-sql-czar
+
+kubectl delete configmap --ignore-not-found=true config-sql-repl
+kubectl create configmap --from-file="$CONFIGMAP_DIR/init/sql/repl" config-sql-repl
 
 kubectl delete configmap --ignore-not-found=true config-sql-worker
 kubectl create configmap --from-file="$CONFIGMAP_DIR/init/sql/worker" config-sql-worker
@@ -86,6 +93,12 @@ kubectl create configmap --from-file="$CONFIGMAP_DIR/proxy/etc" config-proxy-etc
 
 kubectl delete configmap --ignore-not-found=true config-proxy-start
 kubectl create configmap --from-file="$CONFIGMAP_DIR/proxy/start.sh" config-proxy-start
+
+kubectl delete configmap --ignore-not-found=true config-repl-db-etc
+kubectl create configmap --from-file="$CONFIGMAP_DIR/repl-db/etc/my.cnf" config-repl-db-etc
+
+kubectl delete configmap --ignore-not-found=true config-repl-db-start
+kubectl create configmap --from-file="$CONFIGMAP_DIR/repl-db/start.sh" config-repl-db-start
 
 kubectl delete configmap --ignore-not-found=true config-wmgr-etc
 kubectl create configmap --from-file="$CONFIGMAP_DIR/wmgr/etc" config-wmgr-etc 
@@ -147,3 +160,4 @@ do
     kubectl apply $CACHE_OPT -f "$YAML_FILE"
 done
 
+kubectl apply $CACHE_OPT -f "${CFG_DIR}/statefulset-repl-db.yaml"

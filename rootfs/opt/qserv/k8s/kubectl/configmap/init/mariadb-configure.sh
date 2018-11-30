@@ -1,23 +1,27 @@
 #!/bin/sh
 
-# Configure mariadb:
+# Configure mariadb for qserv or replication service :
 # - create data directory
 # - create root password
-# - create qserv databases and user
-# - deploy scisql plugin
+# - create qserv/repl databases and user
+# - deploy scisql plugin (qserv only)
 
 # @author  Fabrice Jammes, IN2P3/SLAC
 
 set -e
 set -x
 
-# Source pathes to eups packages
-. /qserv/run/etc/sysconfig/qserv
+if [ "$HOSTNAME" = "$REPL_DB" ]; then
+    MYSQL_INSTALL_DB="mysql_install_db"
+else
+    # Source pathes to eups packages
+    . /qserv/run/etc/sysconfig/qserv
+    MYSQL_INSTALL_DB="${MYSQL_DIR}/scripts/mysql_install_db --basedir=$MYSQL_DIR"
+fi
 
 # tail -f /dev/null
 
 DATA_DIR="/qserv/data"
-MARIADB_LOCK="$DATA_DIR/mariadb-cfg.lock"
 MYSQLD_DATA_DIR="$DATA_DIR/mysql"
 MYSQLD_SOCKET="$MYSQLD_DATA_DIR/mysql.sock"
 # TODO: Set password using k8s
@@ -26,22 +30,8 @@ SQL_DIR="/config-sql"
 
 MARIADB_CONF="/config-etc/my.cnf"
 if [ -e "$MARIADB_CONF" ]; then
-    ln -sf "$MARIADB_CONF" /etc/my.cnf
-fi
-
-# Make timezone adjustments (if requested)
-# TODO: set tz using k8s: http://cloudgeekz.com/1170/howto-timezone-for-kubernetes-pods.html
-if [ "$SET_CONTAINER_TIMEZONE" = "true" ]; then
-
-    # These files have to be write-enabled for the current user ('qserv')
-
-    echo ${CONTAINER_TIMEZONE} >/etc/timezone && \
-    cp /usr/share/zoneinfo/${CONTAINER_TIMEZONE} /etc/localtime
-    dpkg-reconfigure -f noninteractive tzdata
-
-    echo "Container timezone set to: $CONTAINER_TIMEZONE"
-else
-    echo "Container timezone not modified"
+    mkdir -p /etc/mysql
+    ln -sf "$MARIADB_CONF" /etc/mysql/my.cnf
 fi
 
 EXCLUDE_DIR1="lost+found"
@@ -49,10 +39,9 @@ DATA_FILES=$(find "$DATA_DIR" -mindepth 1 ! -name "$EXCLUDE_DIR1")
 
 if [ ! "$DATA_FILES" ]
 then
-    touch "$MARIADB_LOCK"
     echo "-- "
     echo "-- Installing mysql database files."
-    ${MYSQL_DIR}/scripts/mysql_install_db --basedir="${MYSQL_DIR}" >/dev/null ||
+    ${MYSQL_INSTALL_DB} >/dev/null ||
         {
             echo "ERROR : mysql_install_db failed, exiting"
             exit 1
@@ -70,7 +59,9 @@ then
     echo "-- "
     echo "-- Initializing Qserv database"
     if [ "$HOSTNAME" = "$CZAR" ]; then
-        INSTANCE_NAME='master'
+        INSTANCE_NAME='czar'
+    elif [ "$HOSTNAME" = "$REPL_DB" ]; then
+        INSTANCE_NAME='repl'
     else
         INSTANCE_NAME='worker'
     fi
@@ -86,18 +77,19 @@ then
         fi
     done
 
-    echo "-- "
-    echo "-- Deploy scisql plugin"
-	# WARN: SciSQL shared library (libcisql*.so) deployed by command
-	# below will be removed at each container startup.
-    # That's why this shared library is currently 
-	# installed in mysql plugin directory at image creation.
-    echo "$MYSQLD_PASSWORD_ROOT" | scisql-deploy.py --mysql-dir="$MYSQL_DIR" \
-        --mysql-socket="$MYSQLD_SOCKET"
+    if [ "$HOSTNAME" != "$REPL_DB" ]; then
+        echo "-- "
+        echo "-- Deploy scisql plugin"
+        # WARN: SciSQL shared library (libcisql*.so) deployed by command
+        # below will be removed at each container startup.
+        # That's why this shared library is currently 
+        # installed in mysql plugin directory at image creation.
+        echo "$MYSQLD_PASSWORD_ROOT" | scisql-deploy.py --mysql-dir="$MYSQL_DIR" \
+            --mysql-socket="$MYSQLD_SOCKET"
+    fi
 
     echo "-- Stop mariadb server."
     mysqladmin -u root --password="$MYSQLD_PASSWORD_ROOT" shutdown
-    rm "$MARIADB_LOCK"
 else
     echo "WARN: Skip mysqld initialization because of non empty $DATA_DIR:"
     ls -l "$DATA_DIR"

@@ -15,7 +15,6 @@ CONFIG_DIR="/config-etc"
 XROOTD_CONFIG="$CONFIG_DIR/xrootd.cf"
 XRDSSI_CONFIG="$CONFIG_DIR/xrdssi.cf"
 DATA_DIR="/qserv/data"
-MARIADB_LOCK="$DATA_DIR/mariadb-cfg.lock"
 MYSQLD_DATA_DIR="$DATA_DIR/mysql"
 MYSQLD_SOCKET="$MYSQLD_DATA_DIR/mysql.sock"
 
@@ -24,12 +23,7 @@ while true; do
     if mysql --socket "$MYSQLD_SOCKET" --user="$MYSQLD_USER_QSERV"  --skip-column-names \
         -e "SELECT CONCAT('Mariadb is up: ', version())"
     then
-        if [ -f $MARIADB_LOCK ]
-        then
-            echo "Wait for MySQL to be configured"
-        else
-            break
-        fi
+        break
     else
         echo "Wait for MySQL startup"
     fi
