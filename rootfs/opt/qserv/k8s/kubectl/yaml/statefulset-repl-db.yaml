@@ -60,14 +60,14 @@ spec:
             memory: 1Gi
         livenessProbe:
           exec:
-            command: ["mysqladmin", "ping"]
+            command: ["mysqladmin", "ping", "--password=CHANGEME"]
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
         readinessProbe:
           exec:
             # Check we can execute queries over TCP (skip-networking is off).
-            command: ["mysql", "-h", "127.0.0.1", "-e", "SELECT 1"]
+            command: ["mysql", "-h", "127.0.0.1", "--password=CHANGEME", "-e", "SELECT 1"]
           initialDelaySeconds: 5
           periodSeconds: 2
           timeoutSeconds: 1
