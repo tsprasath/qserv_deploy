@@ -1,0 +1,162 @@
+#!/bin/sh
+
+# Test script which performs the following tasks:
+
+# Create image
+# Boot instances
+# Launch Qserv containers
+# Lauch integration tests
+
+# @author  Oualid Achbal, IN2P3
+# @author  Fabrice Jammes, IN2P3
+
+set -e
+set -x
+
+DIR=$(cd "$(dirname "$0")"; pwd -P)
+
+usage() {
+  cat << EOD
+
+Usage: `basename $0` [options]
+
+  Available options:
+    -h          this message
+    -c          update CentOS7/Docker snapshot
+    -d          remove all host VMs
+    -L          run S15 queries
+    -k          launch Qserv integration test using kubernetes
+    -p          provision Qserv cluster on Openstack
+
+  Create up to date CentOS7 snapshot and use it to provision Qserv cluster on
+  Openstack, then install Qserv and launch integration test on it.
+  If no option provided, do nothing
+
+  QSERV_CFG_DIR environment variable point to a directory which contains
+  configuration for cloud platform, node, ssh access, and k8s/docker
+  specific setup
+
+  QSERV_CFG_DIR is set to ${QSERV_CFG_DIR}
+EOD
+}
+
+# get the options
+while getopts hcdkLp c ; do
+    case $c in
+        h) usage ; exit 0 ;;
+        c) CREATE="TRUE" ;;
+        d) DELETE="TRUE" ;;
+        k) KUBERNETES="TRUE" ;;
+        L) LARGE="TRUE" ;;
+        p) PROVISION="TRUE" ;;
+        \?) usage ; exit 2 ;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+if [ $# -ne 0 ] ; then
+    usage
+    exit 2
+fi
+
+if [ ! -d "$QSERV_CFG_DIR" ]; then
+    echo "ERROR: incorrect QSERV_CFG_DIR parameter: \"$QSERV_CFG_DIR\""
+    usage
+    exit 2
+fi
+
+# Check if openstack connection parameters are available
+OS_RC_FILE="$QSERV_CFG_DIR/os-openrc.sh"
+if [ -z "$OS_PROJECT_NAME" ]; then
+    if [ -f "$OS_RC_FILE" ]; then
+        . "$OS_RC_FILE"
+    else
+        echo "ERROR: Missing Openstack resource file: $OS_RC_FILE"
+        exit 1
+    fi
+    if [ -z "$OS_PROJECT_NAME" ]; then
+        echo "ERROR: Incorrect Openstack resource file: $OS_RC_FILE"
+        exit 1
+    fi
+fi
+
+export QSERV_CFG_DIR
+K8S_DIR="$QSERV_INSTALL_DIR/k8s"
+OS_DIR="$QSERV_INSTALL_DIR/openstack"
+TF_DIR="$QSERV_INSTALL_DIR/openstack/terraform"
+
+# Choose the configuration file which contains instance parameters
+IMAGE_CONF_FILE="${QSERV_CFG_DIR}/image.conf"
+
+export TF_DIR=$QSERV_CFG_DIR/terraform
+
+if [ -n "$DELETE" ]; then
+    (
+    . "$TF_DIR/terraform-setup.sh"
+    cd "$TF_DIR"
+    terraform destroy --auto-approve \
+        --var-file="$QSERV_CFG_DIR/terraform.tfvars"
+    cd ..
+    rm -rf "$TF_DIR"
+    )
+fi
+
+
+if [ -n "$CREATE" ]; then
+    echo "Create up to date snapshot image"
+    "$OS_DIR/create-image.py" --cleanup --config "$IMAGE_CONF_FILE" -vv
+fi
+
+if [ -n "$PROVISION" ]; then
+    echo "Provision Qserv cluster on Openstack"
+    (
+    mkdir -p  "$TF_DIR"
+    cd "$TF_DIR"
+    if [ ! -f "$TF_DIR/terraform-setup.sh" ]; then
+        terraform init -from-module $OS_DIR/terraform
+    fi 
+    . "$TF_DIR/terraform-setup.sh"
+    terraform apply --auto-approve \
+        --var-file="$QSERV_CFG_DIR/terraform.tfvars"
+    cd -
+    )
+    $QSERV_INSTALL_DIR/sysadmin/create-gnuparallel-slf.sh
+fi
+
+if [ -n "$KUBERNETES" ]; then
+
+    # Trigger special behaviour for Openstack
+    export OPENSTACK=true
+
+    # set DEPLOY_VERSION value (in order to use kubectl commands)
+    ENV_FILE="$QSERV_CFG_DIR/env.sh"
+
+    echo "Create Kubernetes cluster"
+    # require sudo access on nodes
+    $QSERV_INSTALL_DIR/sysadmin/kube-destroy.sh
+
+    $QSERV_INSTALL_DIR/sysadmin/kube-create.sh
+
+    echo "Configure and launch Qserv"
+    # require access to kubectl configuration
+    . "$ENV_FILE"
+    echo "Use qserv version: qsev/qserv:$VERSION"
+    echo "Use qserv_deploy version: qserv/kubectl:$DEPLOY_VERSION"
+
+    if [ -n "$LARGE" ]; then
+        sed -i "s,# HOST_DATA_DIR=/qserv/data,HOST_DATA_DIR=/mnt/qserv/data," \
+            "$ENV_FILE"
+    fi
+    qserv-start
+
+    # TODO implement ping for pods.qserv
+    sleep 20
+
+    if [ -n "$LARGE" ]; then
+        echo "Launch large scale tests"
+        $K8S_DIR/kubectl/run-large-scale-tests.sh
+    else
+        echo "Launch multinode tests"
+        $K8S_DIR/kubectl/run-multinode-tests.sh
+    fi
+fi

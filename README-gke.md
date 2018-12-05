@@ -52,7 +52,7 @@ Your working directory is /qserv-deploy with your cluster configuration mounted 
 * `qserv-start`: Start Qserv on the cluster (and create all pods)
 * `qserv-status`: Show Qserv running status
 * `qserv-stop`: Stop Qserv (and remove all pods)
-* `/opt/qserv/k8s/kubectl/run-multinode-tests.sh`: Run integration tests
+* `/opt/kubectl/run-multinode-tests.sh`: Run integration tests
 
 ## Clean up storage
 

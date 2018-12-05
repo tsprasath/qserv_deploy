@@ -12,9 +12,9 @@ cp "$HOME"/.kube/config "$QSERV_CFG_DIR"/kubeconfig
 
 cp -r "$DIR"/../config.examples/minikube-ci/* "$QSERV_CFG_DIR"
 
-"$DIR"/../qserv-deploy.sh /opt/qserv/bin/qserv-start
+"$DIR"/../qserv-deploy.sh /opt/bin/qserv-start
 
 echo "Qserv pods are up:"
 kubectl get pods --selector="app=qserv"
 
-"$DIR"/../qserv-deploy.sh /opt/qserv/k8s/kubectl/run-multinode-tests.sh 
+"$DIR"/../qserv-deploy.sh /opt/kubectl/run-multinode-tests.sh

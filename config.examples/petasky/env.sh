@@ -13,10 +13,15 @@ VERSION=828ff67
 # =====================
 
 # Data directory location on docker host
-HOST_DATA_DIR=/qserv/desc/data
+# HOST_DATA_DIR=/qserv/data
 
 # Qserv temporary directory location on docker host
-HOST_TMP_DIR=/qserv/desc/tmp
+HOST_TMP_DIR=/qserv/tmp
+
+# Use for debugging purpose
+# Alternate command to execute at container startup
+# in order no to launch Qserv at container startup
+#ALT_CMD="tail -f /dev/null"
 
 # Advanced configuration
 # ======================
@@ -30,18 +35,3 @@ HOST_TMP_DIR=/qserv/desc/tmp
 
 # Container image name
 CONTAINER_IMAGE="qserv/qserv:${VERSION}"
-
-# Pods names
-# ==========
-
-MASTER_POD='master'
-WORKER_POD_FORMAT='worker-%g'
-
-# List of worker pods (and containers) names
-j=1
-WORKER_PODS=''
-for host in $WORKERS;
-do
-    WORKER_PODS="$WORKER_PODS worker-$j"
-    j=$((j+1));
-done

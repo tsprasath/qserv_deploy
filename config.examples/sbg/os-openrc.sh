@@ -35,6 +35,6 @@ export OS_INTERFACE=public
 export OS_IDENTITY_API_VERSION=3
 
 if [ -z "$OS_PASSWORD" ]; then
-    >&2 echo "ERROR: enter your OpenStack Password in $CLUSTER_CONFIG_DIR/os-openrc.sh"
+    >&2 echo "ERROR: enter your OpenStack Password in $QSERV_CFG_DIR/os-openrc.sh"
     exit 2
 fi

@@ -6,7 +6,7 @@
 
 set -e
 
-STABLE_VERSION="f6ea61d"
+STABLE_VERSION="7f8a5d5"
 
 DIR=$(cd "$(dirname "$0")"; pwd -P)
 
@@ -50,7 +50,7 @@ if [ ! -d "$QSERV_CFG_DIR" ]; then
     exit 1
 fi
 
-MOUNTS="-v $QSERV_CFG_DIR:/qserv-deploy/config "
+MOUNTS="-v $QSERV_CFG_DIR:/etc/qserv-deploy "
 
 CONTAINER_HOME="$HOME"
 SSH_DIR="$HOME/.ssh"
@@ -66,11 +66,13 @@ DOT_KUBE_DIR="$QSERV_CFG_DIR/dot-kube"
 mkdir -p "$DOT_KUBE_DIR"
 MOUNTS="$MOUNTS -v $DOT_KUBE_DIR:$CONTAINER_HOME/.kube"
 
+MOUNTS="$MOUNTS -v $DIR/home/.bashrc:$CONTAINER_HOME/.bashrc"
+
 echo "Starting Qserv deploy on cluster $QSERV_CFG_DIR"
 
 if [ "$QSERV_DEV" = true ]; then
     echo "Running in development mode"
-    MOUNTS="$MOUNTS -v $DIR/rootfs/opt/qserv:/opt/qserv"
+    MOUNTS="$MOUNTS -v $DIR/rootfs/opt:/opt"
 fi
 
 # Used with minikube to retrieve keys stored in $HOME/.minikube/
@@ -80,5 +82,7 @@ if [ "$MOUNT_DOT_MK" = true ]; then
 fi
 
 docker run -it --net=host --rm -l config-path=$QSERV_CFG_DIR \
-    --user=$(id -u):$(id -g $USER) $MOUNTS \
+    --user=$(id -u):$(id -g $USER) \
+    $MOUNTS \
+    -w $HOME \
     qserv/deploy:$VERSION $CMD

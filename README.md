@@ -46,7 +46,7 @@ Spawn a cluster of machines on OpenStack. This script will:
 * Create a k8s master (orchestra)
 * Create n+1 k8s workers (including n qserv workers and a qserv master)
 * Update the /etc/hosts on all machines
-* Create additional cluster configuration files in your `CLUSTER_CONFIG_DIR` directory (ssh configuration, name of the nodes, ...)
+* Create additional cluster configuration files in your `QSERV_CFG_DIR` directory (ssh configuration, name of the nodes, ...)
 
 ```shell
    # Edit file below (optional, advanced users)
