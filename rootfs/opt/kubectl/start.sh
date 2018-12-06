@@ -85,7 +85,7 @@ kubectl delete configmap --ignore-not-found=true config-sql-worker
 kubectl create configmap --from-file="$CONFIGMAP_DIR/init/sql/worker" config-sql-worker
 
 kubectl delete configmap --ignore-not-found=true config-mariadb-etc
-kubectl create configmap --from-file="$CONFIGMAP_DIR/mariadb/etc/my.cnf" config-mariadb-etc
+kubectl create configmap --from-file="$CONFIGMAP_DIR/mariadb/etc" config-mariadb-etc
 
 kubectl delete configmap --ignore-not-found=true config-proxy-etc
 kubectl create configmap --from-file="$CONFIGMAP_DIR/proxy/etc" config-proxy-etc
@@ -94,10 +94,16 @@ kubectl delete configmap --ignore-not-found=true config-proxy-start
 kubectl create configmap --from-file="$CONFIGMAP_DIR/proxy/start.sh" config-proxy-start
 
 kubectl delete configmap --ignore-not-found=true config-repl-db-etc
-kubectl create configmap --from-file="$CONFIGMAP_DIR/repl-db/etc/my.cnf" config-repl-db-etc
+kubectl create configmap --from-file="$CONFIGMAP_DIR/repl-db/etc" config-repl-db-etc
 
 kubectl delete configmap --ignore-not-found=true config-repl-db-start
 kubectl create configmap --from-file="$CONFIGMAP_DIR/repl-db/start.sh" config-repl-db-start
+
+kubectl delete configmap --ignore-not-found=true config-repl-wrk-etc
+kubectl create configmap --from-file="$CONFIGMAP_DIR/repl-wrk/etc" config-repl-wrk-etc
+
+kubectl delete configmap --ignore-not-found=true config-repl-wrk-start
+kubectl create configmap --from-file="$CONFIGMAP_DIR/repl-wrk/start.sh" config-repl-wrk-start
 
 kubectl delete configmap --ignore-not-found=true config-wmgr-etc
 kubectl create configmap --from-file="$CONFIGMAP_DIR/wmgr/etc" config-wmgr-etc 

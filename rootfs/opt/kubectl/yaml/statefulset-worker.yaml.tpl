@@ -113,6 +113,27 @@ spec:
             name: qserv-data
           - mountPath: /secret
             name: secret-wmgr
+        - name: repl
+          command:
+            - sh
+            - /config-start/start.sh
+          env:
+            - name: CZAR_DN
+              valueFrom:
+                configMapKeyRef:
+                  name: config-domainnames
+                  key: CZAR_DN
+          image: "qserv/replica:tools"
+          imagePullPolicy: Always
+          securityContext:
+            runAsUser: 1000
+          volumeMounts:
+          - mountPath: /config-start
+            name: config-repl-wrk-start
+          - mountPath: /config-etc
+            name: config-repl-wrk-etc
+          - mountPath: /qserv/data
+            name: qserv-data
       initContainers:
         - command:
           - sh
@@ -167,6 +188,12 @@ spec:
           configMap:
             name: config-proxy-start
             defaultMode: 0755
+        - name: config-repl-wrk-etc
+          configMap:
+            name: config-repl-wrk-etc
+        - name: config-repl-wrk-start
+          configMap:
+            name: config-repl-wrk-start
         - name: config-wmgr-etc
           configMap:
             name: config-wmgr-etc

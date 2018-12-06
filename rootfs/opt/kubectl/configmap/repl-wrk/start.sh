@@ -25,95 +25,22 @@
 
 set -e
 
-# Load parameters of the setup into the corresponding environment
-# variables
-
-. $(dirname "$0")/env_svc.sh
-
-# Start database services on the master node
-#
-# The general log is temporarily disabled because it results in a huge size
-# of the log file.
-#
-#   --general-log --general-log-file="${DB_DATA_DIR}/log/${DB_CONTAINER_NAME}.general.log" \
-
-if [ -n "${DB_SERVICE}" ]; then
-    HOST="qserv-${MASTER}"
-    echo "[${MASTER}] starting database service"
-    ssh -n $HOST docker run \
-        --detach \
-        --name "${DB_CONTAINER_NAME}" \
-        -u 1000:1000 \
-        -v /etc/passwd:/etc/passwd:ro \
-        -v "${DB_DATA_DIR}/mysql:/var/lib/mysql" \
-        -v "${DB_DATA_DIR}/log:${DB_DATA_DIR}/log" \
-        -e "MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}" \
-        -p "${DB_PORT}:${DB_PORT}/tcp" \
-        "${DB_IMAGE_TAG}" \
-        --port="${DB_PORT}" \
-        --max-connections=4096 \
-        --query-cache-size=0 \
-        --log-error="${DB_DATA_DIR}/log/${DB_CONTAINER_NAME}.error.log" \
-        --slow-query-log --slow-query-log-file="${DB_DATA_DIR}/log/${DB_CONTAINER_NAME}.slow-query.log" \
-        --log-warnings=2 \
-        --pid-file="${DB_DATA_DIR}/log/${DB_CONTAINER_NAME}.pid"
-    if [ $? -ne 0 ]; then
-        >&2 echo "failed to start the database container"
-        exit 1
+while true
+do
+    WORKER=$(mysql --socket /qserv/data/mysql/mysql.sock --batch \
+    --skip-column-names --user=qsmaster -e "SELECT id FROM qservw_worker.Id;")
+    if [ -n "$WORKER" ]; then
+        break
     fi
-fi
+done
 
 # Start workers on all nodes
 
-for WORKER in $WORKERS; do
-    HOST="qserv-${WORKER}"
-    echo "[${WORKER}] starting worker agent"
-    ssh -n $HOST docker run \
-        --detach \
-        --network host \
-        --name "${WORKER_CONTAINER_NAME}" \
-        -u 1000:1000 \
-        -v /etc/passwd:/etc/passwd:ro \
-        -v "${QSERV_DATA_DIR}/mysql:${QSERV_DATA_DIR}/mysql" \
-        -v "${CONFIG_DIR}:/qserv/replication/config:ro" \
-        -v "${LOG_DIR}:${LOG_DIR}" \
-        -e "WORKER_CONTAINER_NAME=${WORKER_CONTAINER_NAME}" \
-        -e "LOG_DIR=${LOG_DIR}" \
-        -e "LSST_LOG_CONFIG=${LSST_LOG_CONFIG}" \
-        -e "CONFIG=${CONFIG}" \
-        -e "WORKER=${WORKER}" \
-        "${REPLICATION_IMAGE_TAG}" \
-        bash -c \''/qserv/bin/qserv-replica-worker ${WORKER} --config=${CONFIG} --debug >& ${LOG_DIR}/${WORKER_CONTAINER_NAME}.log'\'
-done
+LSST_LOG_CONFIG="/config-etc/log4cxx.replication.properties"
 
-# Start master controller
+DB_HOST="repl-db-0"
+DB_PORT="3306"
 
-if [ -n "${MASTER_CONTROLLER}" ]; then
-    HOST="qserv-${MASTER}"
-    echo "[${MASTER}] starting master controller"
-    OPT_MALLOC_CONF=
-    OPT_LD_PRELOAD=
-    if [ ! -z "${USE_JEMALLOC}" ]; then
-        OPT_MALLOC_CONF=prof_leak:true,lg_prof_interval:31,lg_prof_sample:22,prof_final:true
-        OPT_LD_PRELOAD=/qserv/lib/libjemalloc.so
-    fi
-    ssh -n $HOST docker run \
-        --detach \
-        --network host \
-        -u 1000:1000 \
-        -v /etc/passwd:/etc/passwd:ro \
-        -v ${WORK_DIR}:${WORK_DIR} \
-        -v ${CONFIG_DIR}:/qserv/replication/config:ro \
-        -v ${LOG_DIR}:${LOG_DIR} \
-        -e "TOOL=qserv-replica-master" \
-        -e "'PARAMETERS=${MASTER_PARAMETERS}'" \
-        -e "WORK_DIR=${WORK_DIR}" \
-        -e "LOG_DIR=${LOG_DIR}" \
-        -e "LSST_LOG_CONFIG=${LSST_LOG_CONFIG}" \
-        -e "CONFIG=${CONFIG}" \
-        -e "OPT_MALLOC_CONF=${OPT_MALLOC_CONF}" \
-        -e "OPT_LD_PRELOAD=${OPT_LD_PRELOAD}" \
-        --name "${MASTER_CONTAINER_NAME}" \
-        "${REPLICATION_IMAGE_TAG}" \
-        bash -c \''cd ${WORK_DIR}; MALLOC_CONF=${OPT_MALLOC_CONF} LD_PRELOAD=${OPT_LD_PRELOAD} /qserv/bin/${TOOL} ${PARAMETERS} --config=${CONFIG} --debug >& ${LOG_DIR}/${TOOL}.log'\'
-fi
+CONFIG="mysql://qsreplica@${DB_HOST}:${DB_PORT}/qservReplica"
+/qserv/bin/qserv-replica-worker ${WORKER} --config=${CONFIG} --debug
+
