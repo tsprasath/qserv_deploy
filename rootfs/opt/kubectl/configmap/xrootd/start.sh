@@ -6,7 +6,7 @@
 # @author  Fabrice Jammes, IN2P3/SLAC
 
 set -e
-# set -x
+set -x
 
 # Source pathes to eups packages
 . /qserv/run/etc/sysconfig/qserv
@@ -36,6 +36,18 @@ if [ "$HOSTNAME" = "$CZAR" ]; then
     INSTANCE_NAME='master'
 else
     INSTANCE_NAME='worker'
+
+    # Write worker id to file
+    while true
+    do
+        WORKER=$(mysql --socket "$MYSQLD_SOCKET" --batch \
+        --skip-column-names --user="$MYSQLD_USER_QSERV" -e "SELECT id FROM qservw_worker.Id;")
+        if [ -n "$WORKER" ]; then
+            break
+        fi
+    done
+    echo "$WORKER" > "/qserv/data/mysql/worker_id.txt"
+
     # Wait for xrootd master reachability
     until timeout 1 bash -c "cat < /dev/null > /dev/tcp/${CZAR_DN}/1094"
     do
@@ -45,7 +57,7 @@ else
 fi
 
 # When at least one of the current pod's containers
-# readiness health check pass, then dns name resolve.
+# readiness health check pass, and all pods are up then dns name resolve.
 until ping -c 1 ${HOSTNAME}.${QSERV_DOMAIN}; do
   echo "waiting for DNS (${HOSTNAME}.${QSERV_DOMAIN})..."
   sleep 2
