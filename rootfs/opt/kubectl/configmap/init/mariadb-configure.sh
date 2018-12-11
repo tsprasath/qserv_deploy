@@ -19,8 +19,6 @@ else
     MYSQL_INSTALL_DB="${MYSQL_DIR}/scripts/mysql_install_db --basedir=$MYSQL_DIR"
 fi
 
-# tail -f /dev/null
-
 DATA_DIR="/qserv/data"
 MYSQLD_DATA_DIR="$DATA_DIR/mysql"
 MYSQLD_SOCKET="$MYSQLD_DATA_DIR/mysql.sock"
@@ -37,8 +35,17 @@ fi
 EXCLUDE_DIR1="lost+found"
 DATA_FILES=$(find "$DATA_DIR" -mindepth 1 ! -name "$EXCLUDE_DIR1")
 
+# Keep crashing if data initialization has failed in a previous instance
+# of this script
+STATE_FILE="$DATA_DIR/INIT_IN_PROGRESS.state"
+if [ -f "$STATE_FILE" ]; then
+    >&2 echo "ERROR: previous data initialization crashed"
+    exit 1
+fi
+
 if [ ! "$DATA_FILES" ]
 then
+    touch "$STATE_FILE"
     echo "-- "
     echo "-- Installing mysql database files."
     ${MYSQL_INSTALL_DB} >/dev/null ||
@@ -72,7 +79,7 @@ then
         then
             echo "-- -> success"
         else
-            echo "-- -> error"
+            >&2 echo "-- -> error"
             exit 1
         fi
     done
@@ -90,6 +97,7 @@ then
 
     echo "-- Stop mariadb server."
     mysqladmin -u root --password="$MYSQLD_PASSWORD_ROOT" shutdown
+    rm "$STATE_FILE"
 else
     echo "WARN: Skip mysqld initialization because of non empty $DATA_DIR:"
     ls -l "$DATA_DIR"

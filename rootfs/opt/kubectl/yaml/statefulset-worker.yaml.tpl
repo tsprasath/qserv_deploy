@@ -123,7 +123,7 @@ spec:
                 configMapKeyRef:
                   name: config-domainnames
                   key: CZAR_DN
-          image: "qserv/replica:tools"
+          image: "qserv/replica:tools-w.2018.16-496-g28484e5-dirty"
           imagePullPolicy: Always
           securityContext:
             runAsUser: 1000
