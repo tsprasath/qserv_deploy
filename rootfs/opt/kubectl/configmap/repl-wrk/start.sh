@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/ sh
 
 # Start Qserv replication worker service inside pod
 
@@ -30,16 +30,18 @@ while true; do
 done
 
  # Retrieve worker id
-WORKER=$(mysql --socket "$MYSQLD_SOCKET" --batch \
+WORKER_ID=$(mysql --socket "$MYSQLD_SOCKET" --batch \
     --skip-column-names --user="$MYSQLD_USER_QSERV" -e "SELECT id FROM qservw_worker.Id;")
-if [ -z "$WORKER" ]; then
+if [ -z "$WORKER_ID" ]; then
     >&2 echo "ERROR: unable to retrieve worker id for $HOSTNAME"
     exit 1 
 fi
 
+HOST_DN=$(hostname --fqdn)
+
 # Wait for repl-db started
 while true; do
-    if mysql  --host="$REPL_DB_HOST" --port="$REPL_DB_PORT" --user="$REPL_DB_USER"  --skip-column-names \
+    if mysql --host="$REPL_DB_HOST" --port="$REPL_DB_PORT" --user="$REPL_DB_USER" --skip-column-names \
         "${REPL_DB}" -e "SELECT CONCAT('Mariadb is up: ', version())"
     then
         break
@@ -49,10 +51,17 @@ while true; do
     sleep 2
 done
 
+# Register repl-wrk on repl-db
+SQL="INSERT INTO \`config_worker\` VALUES ('${WORKER_ID}', 1, 0, '${HOST_DN}', \
+    NULL, '${HOST_DN}',  NULL, NULL) ON DUPLICATE KEY UPDATE name='${WORKER_ID}', \
+    svc_host='${HOST_DN}', fs_host='${HOST_DN}';"
+mysql --host="$REPL_DB_HOST" --port="$REPL_DB_PORT" --user="$REPL_DB_USER" -vv \
+    "${REPL_DB}" -e "$SQL"
+
 export LSST_LOG_CONFIG="/config-etc/log4cxx.replication.properties"
 
 CONFIG="mysql://${REPL_DB_USER}@${REPL_DB_HOST}:${REPL_DB_PORT}/${REPL_DB}"
-qserv-replica-worker ${WORKER} --config=${CONFIG}
+qserv-replica-worker ${WORKER_ID} --config=${CONFIG}
 
 # For debug purpose
 #while true;
