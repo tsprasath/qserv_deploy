@@ -1,4 +1,4 @@
-set @repl_ctl_dn := 'repl-ctl.qserv.default.svc.cluster.local';
+set @repl_ctl_dn := 'repl-ctl-%.qserv.default.svc.cluster.local';
 
 SET @query = CONCAT('CREATE USER `qsreplica`@`', @repl_ctl_dn, '`');
 PREPARE stmt FROM @query;

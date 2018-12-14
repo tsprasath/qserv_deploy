@@ -58,9 +58,6 @@ kubectl create configmap --from-file="$CONFIGMAP_DIR/dot-lsst" config-dot-lsst
 kubectl delete configmap --ignore-not-found=true config-mariadb-configure
 kubectl create configmap --from-file="$CONFIGMAP_DIR/init/mariadb-configure.sh" config-mariadb-configure
 
-kubectl delete configmap --ignore-not-found=true config-mariadb-start
-kubectl create configmap --from-file="$CONFIGMAP_DIR/mariadb/start.sh" config-mariadb-start
-
 kubectl delete configmap --ignore-not-found=true config-sql-czar
 kubectl create configmap --from-file="$CONFIGMAP_DIR/init/sql/czar" config-sql-czar
 
@@ -70,38 +67,16 @@ kubectl create configmap --from-file="$CONFIGMAP_DIR/init/sql/repl" config-sql-r
 kubectl delete configmap --ignore-not-found=true config-sql-worker
 kubectl create configmap --from-file="$CONFIGMAP_DIR/init/sql/worker" config-sql-worker
 
-kubectl delete configmap --ignore-not-found=true config-mariadb-etc
-kubectl create configmap --from-file="$CONFIGMAP_DIR/mariadb/etc" config-mariadb-etc
+SERVICES="mariadb proxy repl-ctl repl-db repl-wrk wmgr xrootd"
 
-kubectl delete configmap --ignore-not-found=true config-proxy-etc
-kubectl create configmap --from-file="$CONFIGMAP_DIR/proxy/etc" config-proxy-etc
+for service in $SERVICES
+do
+    kubectl delete configmap --ignore-not-found=true config-${service}-etc
+    kubectl create configmap --from-file="$CONFIGMAP_DIR/$service/etc" config-${service}-etc
 
-kubectl delete configmap --ignore-not-found=true config-proxy-start
-kubectl create configmap --from-file="$CONFIGMAP_DIR/proxy/start.sh" config-proxy-start
-
-kubectl delete configmap --ignore-not-found=true config-repl-db-etc
-kubectl create configmap --from-file="$CONFIGMAP_DIR/repl-db/etc" config-repl-db-etc
-
-kubectl delete configmap --ignore-not-found=true config-repl-db-start
-kubectl create configmap --from-file="$CONFIGMAP_DIR/repl-db/start.sh" config-repl-db-start
-
-kubectl delete configmap --ignore-not-found=true config-repl-wrk-etc
-kubectl create configmap --from-file="$CONFIGMAP_DIR/repl-wrk/etc" config-repl-wrk-etc
-
-kubectl delete configmap --ignore-not-found=true config-repl-wrk-start
-kubectl create configmap --from-file="$CONFIGMAP_DIR/repl-wrk/start.sh" config-repl-wrk-start
-
-kubectl delete configmap --ignore-not-found=true config-wmgr-etc
-kubectl create configmap --from-file="$CONFIGMAP_DIR/wmgr/etc" config-wmgr-etc 
-
-kubectl delete configmap --ignore-not-found=true config-wmgr-start
-kubectl create configmap --from-file="$CONFIGMAP_DIR/wmgr/start.sh" config-wmgr-start
-
-kubectl delete configmap --ignore-not-found=true config-xrootd-start
-kubectl create configmap --from-file="$CONFIGMAP_DIR/xrootd/start.sh" config-xrootd-start
-
-kubectl delete configmap --ignore-not-found=true config-xrootd-etc
-kubectl create configmap --from-file="$CONFIGMAP_DIR/xrootd/etc" config-xrootd-etc
+    kubectl delete configmap --ignore-not-found=true config-${service}-start
+    kubectl create configmap --from-file="$CONFIGMAP_DIR/$service/start.sh" config-${service}-start
+done
 
 echo "Create kubernetes secrets for Qserv"
 kubectl delete secret --ignore-not-found=true secret-wmgr

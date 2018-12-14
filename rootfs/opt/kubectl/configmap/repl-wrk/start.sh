@@ -40,6 +40,7 @@ fi
 HOST_DN=$(hostname --fqdn)
 
 # Wait for repl-db started
+# and contactable
 while true; do
     if mysql --host="$REPL_DB_HOST" --port="$REPL_DB_PORT" --user="$REPL_DB_USER" --skip-column-names \
         "${REPL_DB}" -e "SELECT CONCAT('Mariadb is up: ', version())"
@@ -58,7 +59,7 @@ SQL="INSERT INTO \`config_worker\` VALUES ('${WORKER_ID}', 1, 0, '${HOST_DN}', \
 mysql --host="$REPL_DB_HOST" --port="$REPL_DB_PORT" --user="$REPL_DB_USER" -vv \
     "${REPL_DB}" -e "$SQL"
 
-export LSST_LOG_CONFIG="/config-etc/log4cxx.replication.properties"
+LSST_LOG_CONFIG="/config-etc/log4cxx.replication.properties"
 
 CONFIG="mysql://${REPL_DB_USER}@${REPL_DB_HOST}:${REPL_DB_PORT}/${REPL_DB}"
 qserv-replica-worker ${WORKER_ID} --config=${CONFIG}

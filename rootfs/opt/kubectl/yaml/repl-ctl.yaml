@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: repl-ctl
+  labels:
+    tier: repl-ctl
+    app: qserv
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      tier: repl-ctl
+      app: qserv
+  serviceName: qserv
+  template:
+    metadata:
+      labels:
+        tier: repl-ctl
+        app: qserv
+    spec:
+      containers:
+        - name: repl
+          command:
+            - sh
+            - /config-start/start.sh
+          env:
+            - name: CZAR_DN
+              valueFrom:
+                configMapKeyRef:
+                  name: config-domainnames
+                  key: CZAR_DN
+          image: "qserv/replica:tools-w.2018.16-496-g28484e5-dirty"
+          imagePullPolicy: Always
+          securityContext:
+            runAsUser: 1000
+          volumeMounts:
+          - mountPath: /config-start
+            name: config-repl-ctl-start
+          - mountPath: /config-etc
+            name: config-repl-ctl-etc
+      volumes:
+        - name: config-repl-ctl-etc
+          configMap:
+            name: config-repl-ctl-etc
+        - name: config-repl-ctl-start
+          configMap:
+            name: config-repl-ctl-start
