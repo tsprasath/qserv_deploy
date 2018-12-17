@@ -88,7 +88,7 @@ replicas: $WORKERS_COUNT
 EOF
 
 kubectl apply $CACHE_OPT -f "${CFG_DIR}/statefulset-repl-db.yaml"
-for service in "czar" "worker"
+for service in "czar" "worker" "repl-ctl"
 do
     YAML_TPL="${CFG_DIR}/statefulset-${service}.tpl.yaml"
     YAML_FILE="${TMP_DIR}/statefulset-${service}.yaml"
@@ -96,7 +96,5 @@ do
     kubectl apply $CACHE_OPT -f "$YAML_FILE"
 done
 
-kubectl apply $CACHE_OPT -f "${CFG_DIR}/repl-ctl.yaml"
-
-# TODO study deployment
+# TODO study deployment instead of stateful set for repl-ctl
 # kubectl apply $CACHE_OPT -f "${CFG_DIR}/repl-ctl-service.yaml"

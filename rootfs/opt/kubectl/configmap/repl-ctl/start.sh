@@ -32,6 +32,21 @@ while true; do
     sleep 2
 done
 
+
+# Wait for repl-wrk to register inside repl-db
+while true; do
+    REGISTERED_WORKERS=$(mysql --host="$REPL_DB_HOST" --port="$REPL_DB_PORT" --user="$REPL_DB_USER" \
+    --skip-column-names --batch "${REPL_DB}" -e "SELECT count(*) from config_worker")
+    if [ "$REGISTERED_WORKERS" -eq "$WORKER_COUNT" ]
+    then
+        break
+    else
+        echo "Wait for all replication workers to register inside replication database: \
+        (${REGISTERED_WORKERS}/${WORKER_COUNT})"
+    fi
+    sleep 2
+done
+
 OPT_MALLOC_CONF=
 OPT_LD_PRELOAD=
 if [ ! -z "${USE_JEMALLOC}" ]; then

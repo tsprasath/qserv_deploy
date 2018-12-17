@@ -80,10 +80,15 @@ def _get_container_id(container_name):
             return i
     return None
 
-
 def _get_init_container_id(container_name):
     for i, container in enumerate(yaml_data_tpl['initContainers']):
         if container['name'] == container_name:
+            return i
+    return None
+
+def _get_env_id(container_id, env_name):
+    for i, env in enumerate(yaml_data_tpl['containers'][container_id]['env']):
+        if env['name'] == env_name:
             return i
     return None
 
@@ -166,84 +171,94 @@ if __name__ == "__main__":
         resourcePath = args.resourcePath
         yaml.add_representer(str, _str_presenter)
 
-
         yaml_data_tpl = yaml_data['spec']['template']['spec']
 
-        if yaml_data['metadata']['name'] == 'qserv':
-          yaml_data['spec']['replicas'] = int(config.get('spec', 'replicas'))
+        # Configure replication controller
+        #
+        if yaml_data['metadata']['name'] == 'repl-ctl':
+            container_id = _get_container_id('repl')
+            env_id = _get_env_id(container_id, 'WORKER_COUNT')
+            yaml_data_tpl['containers'][container_id]['env'][env_id]['value'] = config.get('spec', 'replicas')
 
-        minikube = _str_to_bool(config.get('spec', 'minikube'))
-        gke = _str_to_bool(config.get('spec', 'gke'))
-        volumeClaimTemplates = yaml_data['spec']['volumeClaimTemplates']
-        if minikube:
-            storage_class = "standard"
-        elif gke:
-            storage_class = "manual"
+        elif yaml_data['metadata']['name'] in ['czar', 'qserv']:
+
+            if yaml_data['metadata']['name'] == 'qserv':
+                yaml_data['spec']['replicas'] = int(config.get('spec', 'replicas'))
+
+            minikube = _str_to_bool(config.get('spec', 'minikube'))
+            gke = _str_to_bool(config.get('spec', 'gke'))
+            volumeClaimTemplates = yaml_data['spec']['volumeClaimTemplates']
+            if minikube:
+                storage_class = "standard"
+            elif gke:
+                storage_class = "manual"
+            else:
+                storage_class = "qserv-local-storage"
+
+            if gke or minikube:
+                volumeClaimTemplates[0]['spec']['resources'] = dict()
+                vct_resources = volumeClaimTemplates[0]['spec']['resources']
+                vct_resources['requests'] = dict()
+                if not config.get('spec', 'storage_size'):
+                    raise ValueError('Undefined storage size in env-infrastructure.sh')
+                vct_resources['requests']['storage'] = config.get('spec',
+                                                                'storage_size')
+            else:
+                volumeClaimTemplates[0]['spec']['storageClassName'] = storage_class
+
+            # Configure xrootd
+            #
+            container_id = _get_container_id('xrootd')
+            if container_id is not None:
+                container = yaml_data_tpl['containers'][container_id]
+                container['image'] = config.get('spec', 'image')
+
+            # Configure mysql-proxy
+            #
+            container_id = _get_container_id('proxy')
+            if container_id is not None:
+                container = yaml_data_tpl['containers'][container_id]
+                container['image'] = config.get('spec', 'image')
+
+            # Configure wmgr
+            #
+            container_id = _get_container_id('wmgr')
+            if container_id is not None:
+                container = yaml_data_tpl['containers'][container_id]
+                container['image'] = config.get('spec', 'image')
+
+            # Configure mariadb
+            #
+            container_id = _get_container_id('mariadb')
+            if container_id is not None:
+                yaml_data_tpl['containers'][container_id]['image'] = config.get('spec', 'image')
+                if _is_czar() and config.get('spec', 'mem_request'):
+                    yaml_data_tpl['containers'][container_id]['resources'] = dict()
+                    resources = yaml_data_tpl['containers'][container_id]['resources']
+                    resources['requests'] = dict()
+                    resources['requests']['memory'] = config.get('spec', 'mem_request')
+
+            # initContainer: configure qserv-data-dir using mariadb image
+            #
+            container_id = _get_init_container_id('init-data-dir')
+            if container_id is not None:
+                yaml_data_tpl['initContainers'][container_id]['image'] = config.get('spec', 'image')
+
+            # Attach tmp-dir to containers
+            #
+            volume_name = 'tmp-volume'
+            mount_path = '/qserv/run/tmp'
+            if config.get('spec', 'host_tmp_dir'):
+                _add_volume(config.get('spec', 'host_tmp_dir'), volume_name)
+            else:
+                _add_emptydir_volume(volume_name)
+
+            _mount_volume('mariadb', mount_path, volume_name)
+            _mount_volume('proxy', mount_path, volume_name)
+            _mount_volume('wmgr', mount_path, volume_name)
+            _mount_volume('xrootd', mount_path, volume_name)
         else:
-            storage_class = "qserv-local-storage"
-
-        if gke or minikube:
-            volumeClaimTemplates[0]['spec']['resources'] = dict()
-            vct_resources = volumeClaimTemplates[0]['spec']['resources']
-            vct_resources['requests'] = dict()
-            if not config.get('spec', 'storage_size'):
-                raise ValueError('Undefined storage size in env-infrastructure.sh')
-            vct_resources['requests']['storage'] = config.get('spec',
-                                                              'storage_size')
-        else:
-            volumeClaimTemplates[0]['spec']['storageClassName'] = storage_class
-
-        # Configure xrootd
-        #
-        container_id = _get_container_id('xrootd')
-        if container_id is not None:
-            container = yaml_data_tpl['containers'][container_id]
-            container['image'] = config.get('spec', 'image')
-
-        # Configure mysql-proxy
-        #
-        container_id = _get_container_id('proxy')
-        if container_id is not None:
-            container = yaml_data_tpl['containers'][container_id]
-            container['image'] = config.get('spec', 'image')
-
-        # Configure wmgr
-        #
-        container_id = _get_container_id('wmgr')
-        if container_id is not None:
-            container = yaml_data_tpl['containers'][container_id]
-            container['image'] = config.get('spec', 'image')
-
-        # Configure mariadb
-        #
-        container_id = _get_container_id('mariadb')
-        if container_id is not None:
-            yaml_data_tpl['containers'][container_id]['image'] = config.get('spec', 'image')
-            if _is_czar() and config.get('spec', 'mem_request'):
-                yaml_data_tpl['containers'][container_id]['resources'] = dict()
-                resources = yaml_data_tpl['containers'][container_id]['resources']
-                resources['requests'] = dict()
-                resources['requests']['memory'] = config.get('spec', 'mem_request')
-
-        # initContainer: configure qserv-data-dir using mariadb image
-        #
-        container_id = _get_init_container_id('init-data-dir')
-        if container_id is not None:
-            yaml_data_tpl['initContainers'][container_id]['image'] = config.get('spec', 'image')
-
-        # Attach tmp-dir to containers
-        #
-        volume_name = 'tmp-volume'
-        mount_path = '/qserv/run/tmp'
-        if config.get('spec', 'host_tmp_dir'):
-            _add_volume(config.get('spec', 'host_tmp_dir'), volume_name)
-        else:
-            _add_emptydir_volume(volume_name)
-
-        _mount_volume('mariadb', mount_path, volume_name)
-        _mount_volume('proxy', mount_path, volume_name)
-        _mount_volume('wmgr', mount_path, volume_name)
-        _mount_volume('xrootd', mount_path, volume_name)
+            raise ValueError('Unsupported template file: {}'.format(args.templateFile))
 
         with open(args.yamlFile, 'w') as f:
             f.write(yaml.dump(yaml_data, default_flow_style=False))

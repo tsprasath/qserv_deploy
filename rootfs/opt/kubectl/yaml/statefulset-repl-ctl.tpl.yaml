@@ -24,11 +24,8 @@ spec:
             - sh
             - /config-start/start.sh
           env:
-            - name: CZAR_DN
-              valueFrom:
-                configMapKeyRef:
-                  name: config-domainnames
-                  key: CZAR_DN
+            - name: WORKER_COUNT
+              value: <WORKER_COUNT>
           image: "qserv/replica:tools-w.2018.16-496-g28484e5-dirty"
           imagePullPolicy: Always
           securityContext:
